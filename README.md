@@ -10,10 +10,10 @@ npm i
 
 Run the bot
 ```javascript
-npm i
+npm start
 ```
 
 ## Todo
 
-* Integrate google calendar api
+* Integrate [google calendar api](https://github.com/yuhong90/node-google-calendar)
 * Handlers for commands
