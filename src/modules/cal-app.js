@@ -13,7 +13,7 @@ function setupTimeArray() {
     const numOfSlots = 26;
     var timeStart = new Date("2016-05-24T08:00:00+08:00");
     for (var i = 0; i < numOfSlots; i++) {
-        timeslotDict[getTimeslotName(timeStart)] = 0;
+        timeslotDict[getTimeslotName(timeStart)] = timeStart.getFormatedTime();
     }
 }
 
@@ -33,6 +33,7 @@ exports.getColourForRoom = function (roomname) {
 };  
 
 exports.listBookedEvent = function(startDateTime, endDateTime, query) {
+    console.log('cal-app:listBookedEvent');
     var response = [];
     return new Promise(function(fulfill, reject) {
         cal.listEvents(startDateTime, endDateTime, query).then(function(json) {
