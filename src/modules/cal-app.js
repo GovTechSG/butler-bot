@@ -13,7 +13,8 @@ function setupTimeArray() {
     const numOfSlots = 26;
     var timeStart = new Date("2016-05-24T08:00:00+08:00");
     for (var i = 0; i < numOfSlots; i++) {
-        timeslotDict[getTimeslotName(timeStart)] = timeStart.getFormatedTime();
+        var startTime = timeStart.getFormatedTime();
+        timeslotDict[getTimeslotName(timeStart)] = startTime;
     }
 }
 
@@ -90,7 +91,7 @@ exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, locat
             resp['htmlLink'] = CALENDAR_URL;
             resp['start'] = json.start.dateTime;
             resp['end'] = json.end.dateTime;
-            resp['created'] = new Date(json.created).getTimeStamp();   
+            resp['created'] = new Date(json.created).getISO8601TimeStamp();   
             fulfill(resp);
         }, function(json) {
             reject("insertEvent error : " + json);

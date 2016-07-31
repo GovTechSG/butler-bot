@@ -3,7 +3,6 @@
 Date.prototype.setDateWithSimpleFormat = function(dateString){
     //dateString to be in dd/mm/yyyy
     var ary = dateString.split('/');
-    console.log(ary);
     this.setDate(ary[0]);
     this.setMonth(ary[1] - 1);
     this.setYear(ary[2]);
@@ -31,9 +30,7 @@ Date.prototype.getFormattedDate = function() {
 };
 
 Date.prototype.getFormattedDateTime = function() {
-    var timeFormatOptions = { year: "numeric", month: "numeric",
-    day: "numeric"};
-        return this.toLocaleTimeString("en-us", timeFormatOptions);
+        return this.getSimpleDate() + ', ' +this.getFormatedTime();
 };
 
 Date.prototype.getISO8601TimeStamp = function(date){
@@ -55,6 +52,18 @@ Date.prototype.getISO8601TimeStamp = function(date){
 
 Date.prototype.getISO8601DateWithDefinedTime = function(hour,min,sec,ms){
     this.setHours(hour,min,sec,ms);
+    return this.getISO8601TimeStamp(this);
+};
+
+Date.prototype.getISO8601DateWithDefinedTimeString = function(timeStr){
+    //08:30 AM
+    var tmp = timeStr.split(' ');
+    var timeAry = tmp[0].split(':');
+
+    if (tmp[1] == 'PM' && timeAry[0] < 12){
+        timeAry[0] = 12 + parseInt(timeAry[0]);
+    }
+    this.setHours(timeAry[0],timeAry[1],0,0);
     return this.getISO8601TimeStamp(this);
 };
 
