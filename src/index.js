@@ -1,4 +1,3 @@
-const ButlerBot = require('./modules/ButlerBot');
-const butlerBot = new ButlerBot(process.env['TELEGRAM_TOKEN_2']);
+const ButlerBot = require('./modules/TelegramBot');
 
-butlerBot.init();
+ButlerBot.startPolling();

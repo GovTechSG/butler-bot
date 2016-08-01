@@ -3,9 +3,9 @@ var request = require('google-oauth-jwt').requestWithJWT();
 const Promise = require('bluebird');
 const qs = require('querystring');
 
-var KEYFILE = 'googleapi-keyfile.pem';
-var USERID = require('../settings').userId;
-var SERVICE_ACCT_ID = require('../settings').serviceAcctId;
+var KEYFILE = require('../config/settings').keyFile;
+var USERID = require('../config/settings').userId;
+var SERVICE_ACCT_ID = require('../config/settings').serviceAcctId;
 var SCOPES = ['https://www.googleapis.com/auth/calendar'];
 var jwt = {
     // use the email address of the service account, as seen in the API console
@@ -18,7 +18,7 @@ var jwt = {
 const TIMEZONE = "UTC+08:00";
 
 /**
- * Returns a promise that list all events on calendar during selected period. 
+ * Returns a promise that list all events on calendar during selected period.
  *
  * @param {string} startDateTime (optional) - start datetime of event in 2016-04-29T14:00:00+08:00 format
  * @param {string} endDateTime (optional) - end datetime of event in 2016-04-29T18:00:00+08:00 format
@@ -52,13 +52,13 @@ exports.listEvents = function(startDateTime, endDateTime, query) {
                 }else{
                      console.log("[calender-api: listEvents] Error : Unknown Error");
                 }
-            }  
+            }
         });
     });
 };
 
 /**
- * Checks if queried calendar slot is busy during selected period. 
+ * Checks if queried calendar slot is busy during selected period.
  * Returns promise of list of events at specified slot.
  *
  * @param {string} startDateTime - start datetime of event in 2016-04-29T14:00:00+08:00 format
@@ -148,14 +148,14 @@ exports.deleteEvent = function(eventId) {
         request.del({
             url: 'https://www.googleapis.com/calendar/v3/calendars/' + USERID + '/events/' + eventId,
             jwt: jwt
-        }, function(err, res, body) { 
+        }, function(err, res, body) {
             if(res.statusCode == 204){
                 fulfill({status: 'success'});
-            }else{ 
-                var bod = JSON.parse(body); 
+            }else{
+                var bod = JSON.parse(body);
                 reject( { status: 'failed', error: bod.error.message} );
             }
-           
+
         });
     });
 };

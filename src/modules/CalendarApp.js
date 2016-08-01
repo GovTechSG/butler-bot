@@ -1,13 +1,13 @@
 //cal-app.js - booking app specific calendar logic
 
-const CALENDAR_URL = require('./settings.js').calendarUrl;
-var cal = require('./calendar-api/calendar-api.js');
-require('./date.js'); 
+const CALENDAR_URL = require('../config/settings').calendarUrl;
+var cal = require('./CalendarAPI');
+require('./Date');
 
 var colourDict = { "fgd": 1, "drone": 2, "queen-1": 3, "queen-2": 4, "queen-combined": 5 };
 var timeslotDict = {};
 
- 
+
 function setupTimeArray() {
     //setup array in 30min slots from 8am-9pm
     const numOfSlots = 26;
@@ -31,7 +31,7 @@ function countSlotsWithinTimeframe(startTime, endTime) {
 
 exports.getColourForRoom = function (roomname) {
     return colourDict[roomname];
-};  
+};
 
 exports.listBookedEvent = function(startDateTime, endDateTime, query) {
     console.log('cal-app:listBookedEvent');
@@ -81,8 +81,8 @@ exports.listEmptySlotsInDay = function (date, query) {
 };
 
 exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, location, status, description) {
-    return new Promise(function(fulfill, reject) { 
-        cal.insertEvent(bookingSummary, startDateTime, endDateTime, 
+    return new Promise(function(fulfill, reject) {
+        cal.insertEvent(bookingSummary, startDateTime, endDateTime,
             location, status, description, this.getColourForRoom(location)).then(function(json)  {
             var resp = {};
             resp['summary'] = json.summary;
@@ -91,7 +91,7 @@ exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, locat
             resp['htmlLink'] = CALENDAR_URL;
             resp['start'] = json.start.dateTime;
             resp['end'] = json.end.dateTime;
-            resp['created'] = new Date(json.created).getISO8601TimeStamp();   
+            resp['created'] = new Date(json.created).getISO8601TimeStamp();
             fulfill(resp);
         }, function(json) {
             reject("insertEvent error : " + json);
@@ -99,6 +99,6 @@ exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, locat
     }.bind(this));
 };
 
-exports.deleteEvent = function(eventId){ 
+exports.deleteEvent = function(eventId){
     return cal.deleteEvent(eventId);
 };

@@ -1,14 +1,14 @@
 //Test slimbot
 
-require('./date.js');
+require('./Date');
 const Slimbot = require('slimbot');
-const slimbot = new Slimbot(process.env['TELEGRAM_TOKEN']);
-console.log(process.env['TELEGRAM_TOKEN']);
-var cal_app = require('./cal-app.js');
- 
+const slimbot = new Slimbot(process.env['TELEGRAM_TOKEN_2']);
+console.log(process.env['TELEGRAM_TOKEN_2']);
+var cal_app = require('./CalendarApp');
+
  var startListeningForInputs = false;
  var bookerQueue = {};
-// Register listeners 
+// Register listeners
 
 console.log('bot started on ' + new Date().getFormattedDateTime());
 
@@ -18,11 +18,11 @@ slimbot.on('message', message => {
 	if (startListeningForInputs){
 		completeBooking(message);
 	}
-	
+
 });
 
 slimbot.on('inline_query', query => {
-  // do something with query 
+  // do something with query
   console.log('inline: ');
   console.log(query);
   var results = JSON.stringify([{
@@ -96,10 +96,10 @@ slimbot.on('chosen_inline_result', query => {
 slimbot.on('callback_query', query => {
 
 	console.log('callback');
-	console.log(query); 
+	console.log(query);
 	var callback_data = JSON.parse(query.data);
 
-	 
+
 	var daysInMonth = new Date().daysInMonth();
 	if (callback_data.date == 'pick_today'){
 		replyTimeslotOptions(query, new Date(), callback_data.room);
@@ -109,7 +109,7 @@ slimbot.on('callback_query', query => {
 		//date selected
 		if (callback_data.date != undefined && callback_data.time == undefined){
 
- 			console.log('selected date: ' + new Date().setDateWithSimpleFormat(callback_data.date).getSimpleDate()); 
+ 			console.log('selected date: ' + new Date().setDateWithSimpleFormat(callback_data.date).getSimpleDate());
 			//list out avail time
 			replyTimeslotOptions(query, new Date().setDateWithSimpleFormat(callback_data.date), callback_data.room);
 		}else{
@@ -124,12 +124,12 @@ slimbot.on('callback_query', query => {
 		  				startListeningForInputs = true;
 						bookerQueue[query.from.id] = {id: bot_id, msgid: query.message.message_id, name: query.from.username, date: callback_data.date, room: callback_data.room, time:callback_data.time};
 						console.log(bookerQueue);
-					});	
+					});
 
 			}else{
-				slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Done! Your room is booked :)');		
+				slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Done! Your room is booked :)');
 			}
-			
+
 		}
 	}
 });
@@ -148,7 +148,7 @@ console.log('completebooking');
 		var booking = bookerQueue[query.from.id];
 		var summary = query.text;
 		var fullname = query.from.first_name + ' ' + query.from.last_name ;
-		
+
 		insertBookingIntoCalendar(booking.id, booking.msgid, summary, new Date().setDateWithSimpleFormat(booking.date), booking.time, booking.room, booking.name, fullname);
 		delete bookerQueue[query.from.id];
 		if (Object.keys(bookerQueue).length == 0){
@@ -177,7 +177,7 @@ function insertBookingIntoCalendar(userid, msgid, description, startDate, timesl
 			slimbot.sendMessage(userid, msg).then(message => {
 				msg = 'Check out this link for the overall room booking schedules: ' + json.htmlLink;
 				slimbot.sendMessage(userid, msg);
-			});		
+			});
 
         }, function(err) {
             //failed
@@ -200,32 +200,32 @@ function replyDateOptions(query, startDate, room){
 
 function constructDateOptions(date, room){
 	const btnInRow = 5;
-	var days = date.daysInMonth(); 
-	var daysLeft = days - date.getCurrentDay() + 1; 
+	var days = date.daysInMonth();
+	var daysLeft = days - date.getCurrentDay() + 1;
 	var count =0;
 	var btnArr = [];
 	var row = [];
-	for (var i =1; i<= daysLeft ; i++){ 
-		row.push({ text: (date.getCurrentDay()) + '', 
+	for (var i =1; i<= daysLeft ; i++){
+		row.push({ text: (date.getCurrentDay()) + '',
 			callback_data: JSON.stringify({date: date.getSimpleDate() , room: room })
-		}); 
+		});
 		date = date.addDays(1);
 		count++;
-		if (count > btnInRow){ 
+		if (count > btnInRow){
 			btnArr.push(row);
 			row = [];
 			count = 0;
 		}
 		if (i == daysLeft){
-			btnArr.push(row); 
+			btnArr.push(row);
 		}
 	}
 	return btnArr;
 }
 
 function replyTimeslotOptions(query, startDate, room){
-	var startDateStr = startDate.getISO8601DateWithDefinedTime(8,0,0,0); 
-	console.log('startDateStr: ' + startDateStr); 
+	var startDateStr = startDate.getISO8601DateWithDefinedTime(8,0,0,0);
+	console.log('startDateStr: ' + startDateStr);
 
 	cal_app.listEmptySlotsInDay(startDateStr, room)
         .then(function(jsonArr) {
@@ -236,19 +236,19 @@ function replyTimeslotOptions(query, startDate, room){
             }else{
             	msg += startDate.getFormattedDate();
             }
-			
+
             var optionalParams = {
 			  parse_mode: 'Markdown',
 			  reply_markup: JSON.stringify({
 			   	inline_keyboard: constructTimeslotOptions(jsonArr, startDate, room)
 			  })
-			}; 
+			};
 			slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams);
 
         }, function(err) {
-            console.log('Error listEvent: ' + JSON.stringify(err)); 
+            console.log('Error listEvent: ' + JSON.stringify(err));
 			slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Unfortunately I ran into some issues booking your room. Please try again.');
-        }); 
+        });
 }
 
 function constructTimeslotOptions(availTimeJSON, date, room){
@@ -257,14 +257,14 @@ function constructTimeslotOptions(availTimeJSON, date, room){
 	var row = [];
 	var items = [];
 
-	for (var i in availTimeJSON){ 
-		var obj = {	text: i+ '', 
+	for (var i in availTimeJSON){
+		var obj = {	text: i+ '',
 					callback_data: JSON.stringify({date: date.getSimpleDate() ,time: availTimeJSON[i] , room: room })
 				};
-		items.push(obj);  
+		items.push(obj);
 		count++;
 
-		if (count >= btnInRow){ 
+		if (count >= btnInRow){
 			row.push(items);
 			items = [];
 			count = 0;
@@ -275,7 +275,7 @@ function constructTimeslotOptions(availTimeJSON, date, room){
 	}
 	return row;
 }
- 
+
 
 
 function checkCommandList(message){
@@ -283,11 +283,11 @@ function checkCommandList(message){
 	var optionalParams;
 	console.log(message);
 
-	if (message.text == '/book_fgd'){ 
+	if (message.text == '/book_fgd'){
 		roomSelected = 'fgd';
 		optionalParams = getDateSelectionOptions(roomSelected);
 		slimbot.sendMessage(message.chat.id,'When would you like to book the *Focus Group Discussion Room*?',optionalParams).then(message =>{
-			console.log('sent msg'); 
+			console.log('sent msg');
 		});
 		clearUncompletedBookings(message);
 
@@ -325,7 +325,7 @@ function checkCommandList(message){
 		var reply = 'Hi Sir/Mdm! Try /help command for more info on how to book a room. ';
 		slimbot.sendMessage(message.chat.id, reply).then(message => {
 	  		console.log(message);
-		});	
+		});
 	}
 }
 
@@ -341,7 +341,4 @@ function getDateSelectionOptions(roomSelected){
 	};
 }
 
-
-// Call API 
- 
-slimbot.startPolling();
+module.exports = slimbot;

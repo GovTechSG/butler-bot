@@ -15,5 +15,5 @@ npm start
 
 ## Todo
 
-* Integrate [google calendar api](https://github.com/yuhong90/node-google-calendar)
-* Handlers for commands
+* Publish NPM package for node-google-calendar
+* Refine interaction for booking
