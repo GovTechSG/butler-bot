@@ -4,9 +4,18 @@ const CALENDAR_URL = require('../config/settings').calendarUrl;
 var cal = require('./CalendarAPI');
 require('./Date');
 
-var colourDict = { "fgd": 1, "drone": 2, "queen-1": 3, "queen-2": 4, "queen-combined": 5 };
+var colourDict = { "fgd": 1, "drone": 2, "queen-1": 3, "queen-2": 4, "queen-c": 5 };
 var timeslotDict = {};
-
+var durationOptions = {
+    1: '30 mins',
+    2: '1 hour',
+    3: '1.5 hours',
+    4: '2 hours',
+    5: '2.5 hours',
+    6: '3 hours',
+    7: '3.5 hours',
+    8: '4 hours'
+};
 
 function setupTimeArray() {
     //setup array in 30min slots from 8am-9pm
@@ -21,13 +30,17 @@ function setupTimeArray() {
 function getTimeslotName(startTime) {
     var timeslot = startTime.getFormatedTime();
     startTime = startTime.addMinutes(30);
-    return timeslot + '-' + startTime.getFormatedTime();
+    return timeslot;
 }
 
 function countSlotsWithinTimeframe(startTime, endTime) {
     var timeDiff = endTime.getTime() - startTime.getTime();
     return Math.round(timeDiff / (30 * 60 * 1000));
 }
+
+exports.getDurationOptionNameWithId = function(option_id){
+    return durationOptions[option_id];
+};
 
 exports.getColourForRoom = function (roomname) {
     return colourDict[roomname];
@@ -59,8 +72,8 @@ exports.listBookedEvent = function(startDateTime, endDateTime, query) {
 //assumes booking for max length of a day
 exports.listEmptySlotsInDay = function (date, query) {
     setupTimeArray();
-    var endDate = new Date(date).addDays(1).toISOString();
-    date = new Date(date).toISOString();
+    var endDate = new Date(date).addDays(1).getISO8601TimeStamp();
+    date = new Date(date).getISO8601TimeStamp();
 
     return new Promise(function(fulfill, reject) {
         this.listBookedEvent(date, endDate, query).then(function(jsonArr) {
@@ -77,6 +90,42 @@ exports.listEmptySlotsInDay = function (date, query) {
         }, function(err) {
             reject("listEmptySlotsInDay error : " + err);
         });
+    }.bind(this));
+};
+
+exports.listAvailableDurationForStartTime = function (startDatetime, query) {
+
+    const maxDurationBlocksAllowed = 8;
+    var endDate = new Date(startDatetime).getISO8601DateWithDefinedTime(21,0,0,0);
+    var startTimestamp = new Date(startDatetime).getISO8601TimeStamp();
+
+
+    return new Promise(function(fulfill, reject) {
+
+        console.log('listAvailableDurationForStartTime: ' + query);
+        this.listBookedEvent(startTimestamp, endDate, query).then(function(jsonArr) {
+            console.log(jsonArr);
+            var durOptions = durationOptions;
+            var closestEventBlocksAway = 99;
+            for (event in jsonArr) {
+                var setOf30minsBlocks = new Date(startDatetime).getMinuteDiff(new Date(jsonArr[event].start.dateTime)) / 30;
+                if (setOf30minsBlocks < closestEventBlocksAway) {
+                    closestEventBlocksAway = setOf30minsBlocks;
+                }
+            }
+            console.log('closestEventBlocksAway = ' + closestEventBlocksAway);
+            if (closestEventBlocksAway > maxDurationBlocksAllowed) {
+                closestEventBlocksAway = maxDurationBlocksAllowed;
+            }
+            for (var x = maxDurationBlocksAllowed; x > closestEventBlocksAway; x--) {
+                delete durOptions[x];
+            }
+            console.log(durOptions);
+            fulfill(durOptions);
+        }, function(err) {
+            reject("listAvailableDurationForStartTime error : " + err);
+        });
+
     }.bind(this));
 };
 
