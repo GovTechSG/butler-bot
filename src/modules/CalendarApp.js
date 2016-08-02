@@ -52,102 +52,107 @@ exports.listBookedEvent = function(startDateTime, endDateTime, query) {
   let bookedEventsArray = [];
 
   return cal.listEvents(startDateTime, endDateTime, query)
-  .then(json => {
-    for (let i = 0; i < json.length; i++) {
-      let event = {
-        id: json[i].id,
-        summary: json[i].summary,
-        location: json[i].location,
-        start: json[i].start,
-        end: json[i].end,
-        status: json[i].status
+    .then(json => {
+      for (let i = 0; i < json.length; i++) {
+        let event = {
+          id: json[i].id,
+          summary: json[i].summary,
+          location: json[i].location,
+          start: json[i].start,
+          end: json[i].end,
+          status: json[i].status
+        };
+        bookedEventsArray.push(event);
       };
-      bookedEventsArray.push(event);
-    };
-    return bookedEventsArray;
-  }).catch(err => {
-    throw err;
-  });
+      return bookedEventsArray;
+
+    }).catch(err => {
+      throw err;
+    });
 };
 
 //assumes booking for max length of a day
-exports.listEmptySlotsInDay = function (date, query) {
-  setupTimeArray();
-  let endDate = new Date(date).addDays(1).getISO8601TimeStamp();
-  date = new Date(date).getISO8601TimeStamp();
+exports.listEmptySlotsInDay = function(date, query) {
+    setupTimeArray();
+    let endDate = new Date(date).addDays(1).getISO8601TimeStamp();
+    date = new Date(date).getISO8601TimeStamp();
 
-  return this.listBookedEvent(date, endDate, query)
-  .then(jsonArr => {
-    for (event in jsonArr) {
-      let startTime = new Date(jsonArr[event].start.dateTime);
-      let endTime = new Date(jsonArr[event].end.dateTime);
-      let count = countSlotsWithinTimeframe(startTime, endTime);
-      for (let x = 0; x < count; x++) {
-        delete timeslotDict[getTimeslotName(startTime)];
-      }
-    }
-    return timeslotDict;
-  })
-  .catch(err => {
-    throw new Error("listEmptySlotsInDay error: " + err);
-  });
+    return this.listBookedEvent(date, endDate, query)
+      .then(jsonArr => {
+        for (event in jsonArr) {
+          let startTime = new Date(jsonArr[event].start.dateTime);
+          let endTime = new Date(jsonArr[event].end.dateTime);
+          let count = countSlotsWithinTimeframe(startTime, endTime);
+          for (let x = 0; x < count; x++) {
+            delete timeslotDict[getTimeslotName(startTime)];
+          }
+        }
+        return timeslotDict;
+      })
+      .catch(err => {
+        throw new Error("listEmptySlotsInDay error: " + err);
+      });
 };
 
-exports.listAvailableDurationForStartTime = function (startDatetime, query) {
+exports.listAvailableDurationForStartTime = function(startDatetime, query) {
 
-  const maxDurationBlocksAllowed = 8;
-  let endDate = new Date(startDatetime).getISO8601DateWithDefinedTime(21,0,0,0);
-  let startTimestamp = new Date(startDatetime).getISO8601TimeStamp();
+    const maxDurationBlocksAllowed = 8;
+    let endDate = new Date(startDatetime).getISO8601DateWithDefinedTime(21, 0, 0, 0);
+    let startTimestamp = new Date(startDatetime).getISO8601TimeStamp();
 
-  console.log('listAvailableDurationForStartTime: ' + query);
-  return this.listBookedEvent(startTimestamp, endDate, query)
-  .then(jsonArr => {
-    console.log(jsonArr);
-    let durOptions = durationOptions;
-    let closestEventBlocksAway = 99;
-    for (event in jsonArr) {
-      let setOf30minsBlocks = new Date(startDatetime).getMinuteDiff(new Date(jsonArr[event].start.dateTime)) / 30;
-      if (setOf30minsBlocks < closestEventBlocksAway) {
-        closestEventBlocksAway = setOf30minsBlocks;
-      }
-    }
-    console.log('closestEventBlocksAway = ' + closestEventBlocksAway);
-    if (closestEventBlocksAway > maxDurationBlocksAllowed) {
-      closestEventBlocksAway = maxDurationBlocksAllowed;
-    }
-    for (let x = maxDurationBlocksAllowed; x > closestEventBlocksAway; x--) {
-      delete durOptions[x];
-    }
-    console.log(durOptions);
-    return durOptions;
-  })
-  .catch(err => {
-    throw new Error("listAvailableDurationForStartTime: " + err);
-  })
+    console.log('listAvailableDurationForStartTime: ' + query);
+    return this.listBookedEvent(startTimestamp, endDate, query)
+      .then(jsonArr => {
+        console.log(jsonArr);
+        let durOptions = durationOptions;
+        let closestEventBlocksAway = 99;
+
+        for (event in jsonArr) {
+          let setOf30minsBlocks = new Date(startDatetime).getMinuteDiff(new Date(jsonArr[event].start.dateTime)) / 30;
+          if (setOf30minsBlocks < closestEventBlocksAway) {
+            closestEventBlocksAway = setOf30minsBlocks;
+          }
+        }
+
+        console.log('closestEventBlocksAway = ' + closestEventBlocksAway);
+        if (closestEventBlocksAway > maxDurationBlocksAllowed) {
+          closestEventBlocksAway = maxDurationBlocksAllowed;
+        }
+
+        for (let x = maxDurationBlocksAllowed; x > closestEventBlocksAway; x--) {
+          delete durOptions[x];
+        }
+        console.log(durOptions);
+        return durOptions;
+
+      })
+      .catch(err => {
+        throw new Error("listAvailableDurationForStartTime: " + err);
+      });
 };
 
 exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, location, status, description) {
 
-  return cal.insertEvent(bookingSummary, startDateTime, endDateTime, location, status, description, this.getColourForRoom(location))
-  .then(resp => {
-    let json = resp.body;
-    let results = {
-      'summary': json.summary,
-      'location': json.location,
-      'status': json.status,
-      'htmlLink': CALENDAR_URL,
-      'start': json.start.dateTime,
-      'end': json.end.dateTime,
-      'created': new Date(json.created).getISO8601TimeStamp()
-    };
+    return cal.insertEvent(bookingSummary, startDateTime, endDateTime, location, status, description, this.getColourForRoom(location))
+        .then(resp => {
+            let json = resp.body;
+            let results = {
+                'summary': json.summary,
+                'location': json.location,
+                'status': json.status,
+                'htmlLink': CALENDAR_URL,
+                'start': json.start.dateTime,
+                'end': json.end.dateTime,
+                'created': new Date(json.created).getISO8601TimeStamp()
+            };
 
-    return results;
-  })
-  .catch(err => {
-    throw new Error("insertEvent: " + err);
-  })
+            return results;
+        })
+        .catch(err => {
+            throw new Error("insertEvent: " + err);
+        });
 };
 
-exports.deleteEvent = function(eventId){
-  return cal.deleteEvent(eventId);
+exports.deleteEvent = function(eventId) {
+    return cal.deleteEvent(eventId);
 };

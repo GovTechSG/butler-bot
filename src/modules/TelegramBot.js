@@ -18,7 +18,7 @@ var startListeningForInputs = false;
 var bookerQueue = {};
 
 console.log('bot started on ' + new Date().getFormatedTime()); 
-cal_app.listAvailableDurationForStartTime(new Date().addDays(0).setTime(11,30,0,0), 'fgd');
+cal_app.listAvailableDurationForStartTime(new Date().addDays(0).setTime(16,00,0,0), 'fgd');
 
 
 // Register listeners
@@ -247,24 +247,26 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
 	console.log(msgid);;
 
 	cal_app.insertEvent(bookingSummary, startTime, endTime, room, "confirmed", "booked via butler")
-        .then(function(json) {
-            slimbot.editMessageText(userid, msgid, 'Done! Your room booking is confirmed!');
+	  .then(json => {
 
-            var optionalParams = {parse_mode: 'Markdown'};
-            var msg = '#Booking Summary: \n*' + roomlist[room] +
-                '*\n*' + new Date(json.start).getFormattedDateTime() +
-                '* - *' + new Date(json.end).getFormatedTime() +'*\n\n' +
-                '' + description + ' by @' + username + ' (' + fullname + ')';
+	    slimbot.editMessageText(userid, msgid, 'Done! Your room booking is confirmed!');
 
-			slimbot.sendMessage(userid, msg, optionalParams).then(message => {
-				msg = 'Check out this link for the overall room booking schedules: ' + json.htmlLink;
-				slimbot.sendMessage(userid, msg);
-			});
-        }, function(err) {
-            //failed
-            console.log('Error insertBookingIntoCalendar: ' + JSON.stringify(err));
-            slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Oh dear, something went wrong while booking your room. Sorry, Please try again!');
-        });
+        var optionalParams = {parse_mode: 'Markdown'};
+        var msg = '#Booking Summary: \n*' + roomlist[room] +
+            '*\n*' + new Date(json.start).getFormattedDateTime() +
+            '* - *' + new Date(json.end).getFormatedTime() +'*\n\n' +
+            '' + description + ' by @' + username + ' (' + fullname + ')';
+
+		slimbot.sendMessage(userid, msg, optionalParams).then(message => {
+			msg = 'Check out this link for the overall room booking schedules: ' + json.htmlLink;
+			slimbot.sendMessage(userid, msg);
+		});
+
+	  }).catch(err => {
+	  	console.log('Error insertBookingIntoCalendar: ' + JSON.stringify(err));
+        slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Oh dear, something went wrong while booking your room. Sorry, Please try again!');
+	    throw err;
+	  });
 }
 
 function promptDateSelection(query, room, startDate){
