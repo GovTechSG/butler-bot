@@ -127,7 +127,7 @@ class CalendarAPI {
   * @param {string} endDateTime - end datetime of event in 2016-04-29T18:00:00+08:00 format
   */
   checkTimeslotBusy(startDateTime, endDateTime) {
-    var event = {
+    let event = {
       "timeMin": startDateTime,
       "timeMax": endDateTime,
       "timeZone": this._TIMEZONE,
