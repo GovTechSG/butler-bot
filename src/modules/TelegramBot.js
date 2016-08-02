@@ -4,9 +4,9 @@ require('./Date');
 const Slimbot = require('slimbot');
 const slimbot = new Slimbot(process.env['TELEGRAM_TOKEN']);
 console.log(process.env['TELEGRAM_TOKEN']);
-var cal_app = require('./CalendarApp');
+let cal_app = require('./CalendarApp');
 
-var roomlist = {
+let roomlist = {
     'queen-1': 'Queen 1',
     'queen-2': 'Queen 2',
     'queen-c': 'Queen (Combined)',
@@ -14,16 +14,14 @@ var roomlist = {
     'fgd': 'Focus Group Discussion Room'
 };
 
-var startListeningForInputs = false;
-var bookerQueue = {};
+let startListeningForInputs = false;
+let bookerQueue = {};
 
 console.log('bot started on ' + new Date().getFormatedTime()); 
-cal_app.listAvailableDurationForStartTime(new Date().addDays(0).setTime(16,00,0,0), 'fgd');
-
+// cal_app.listAvailableDurationForStartTime(new Date().addDays(0).setTime(16,00,0,0), 'fgd');
 
 // Register listeners
 slimbot.on('message', message => {
-	console.log(message);
 	checkCommandList(message);
 	if (startListeningForInputs){
 		completeBooking(message);
@@ -33,7 +31,6 @@ slimbot.on('message', message => {
 slimbot.on('inline_query', query => {
   // do something with @bot inline query
   console.log('inline: ');
-  console.log(query);
   var results = JSON.stringify([{
      'type': 'article',
      'id': 'help',
@@ -94,6 +91,43 @@ slimbot.answerInlineQuery(query.id, results).then(resp => {
 slimbot.on('chosen_inline_result', query => {
 	console.log('chosenanswerInlineQuery');
 });
+
+slimbot.on('callback_query', query => {
+	console.log('callback');
+	console.log(query.data);
+	var callback_data = JSON.parse(query.data);
+
+	var daysInMonth = new Date().daysInMonth();
+	if (callback_data.date == undefined){
+		console.log('reset to pick today or date');
+		promptTodayOrDateOption(callback_data.room, query, true);
+
+	}else if (callback_data.date == 'pick_today'){
+		promptTimeslotSelection(query, callback_data.room, new Date());
+
+	} else if (callback_data.date == 'pick_date') {
+		if (callback_data.month == undefined){
+			promptDateSelection(query, callback_data.room, new Date());	
+		}else{
+			//TODO: show promptDateSelection with selected month
+		}
+
+	}else{
+		//date selected
+		if (callback_data.time == undefined) {
+		    promptTimeslotSelection(query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date));
+
+		} else if (callback_data.dur == undefined) {
+		    promptDurationSelection(query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date), callback_data.time);
+
+		} else if (callback_data.description == undefined) {
+		    promptDescription(query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date), callback_data.time, callback_data.dur);
+
+		} else {
+		    // slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Done! Your room is booked :)');
+		}
+	}
+});
 // End of listeners
 
 
@@ -147,47 +181,12 @@ function checkCommandList(message){
 	}
 }
 
-
 function clearUncompletedBookings(msg){
 	console.log('current booking queue: ' + Object.keys(bookerQueue).length);
 	if (bookerQueue[msg.from.id] != undefined){
 		delete bookerQueue[msg.from.id];
 	}
 }
-
-slimbot.on('callback_query', query => {
-	console.log('callback');
-	console.log(query.data);
-	var callback_data = JSON.parse(query.data);
-
-	var daysInMonth = new Date().daysInMonth();
-	if (callback_data.date == undefined){
-		console.log('reset to pick today or date');
-		promptTodayOrDateOption(callback_data.room, query, true);
-
-	}else if (callback_data.date == 'pick_today'){
-		promptTimeslotSelection(query, callback_data.room, new Date());
-
-	} else if (callback_data.date == 'pick_date') {
-		promptDateSelection(query, callback_data.room, new Date());
-
-	}else{
-		//date selected
-		if (callback_data.time == undefined) {
-		    promptTimeslotSelection(query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date));
-
-		} else if (callback_data.dur == undefined) {
-		    promptDurationSelection(query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date), callback_data.time);
-
-		} else if (callback_data.description == undefined) {
-		    promptDescription(query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date), callback_data.time, callback_data.dur);
-
-		} else {
-		    // slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Done! Your room is booked :)');
-		}
-	}
-});
-
 
 function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
     console.log('/' +roomSelectedId);
@@ -241,10 +240,6 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
 		startDate.addMinutes(30);
 	}
 	var endTime = startDate.getISO8601TimeStamp();
-	console.log(startTime);
-	console.log(endTime);
-	console.log(userid);
-	console.log(msgid);;
 
 	cal_app.insertEvent(bookingSummary, startTime, endTime, room, "confirmed", "booked via butler")
 	  .then(json => {
@@ -303,6 +298,8 @@ function constructDateOptions(date, room){
 			btnArr.push(row);
 		}
 	}
+
+	//TODO: next month & prev month button
 	var back = [{
         text: '<<Back',
         callback_data: JSON.stringify({ room: room })
@@ -469,7 +466,6 @@ function constructBackOption(room, date, startTime, duration) {
     row.push(back);
     return row;
 }
-
 
 function replyCancelBookProcess(query){
 	var msg = 'Canceled your booking process. To check your current bookings type /booked.'
