@@ -1,7 +1,8 @@
 //cal-app.js - booking app specific calendar logic
-
+const CONFIG = require('../config/settings');
 const CALENDAR_URL = require('../config/settings').calendarUrl;
-var cal = require('./CalendarAPI');
+const CalendarAPI = require('./CalendarAPI');
+let cal = new CalendarAPI(CONFIG);
 require('./Date');
 
 var colourDict = { "fgd": 1, "drone": 2, "queen-1": 3, "queen-2": 4, "queen-c": 5 };
@@ -47,50 +48,48 @@ exports.getColourForRoom = function (roomname) {
 };
 
 exports.listBookedEvent = function(startDateTime, endDateTime, query) {
-    console.log('cal-app:listBookedEvent');
-    var response = [];
-    return new Promise(function(fulfill, reject) {
-        cal.listEvents(startDateTime, endDateTime, query).then(function(json) {
-            for (i = 0; i < json.length; i++) {
-                var event = {
-                    id: json[i].id,
-                    summary: json[i].summary,
-                    location: json[i].location,
-                    start: json[i].start,
-                    end: json[i].end,
-                    status: json[i].status
-                };
-                response.push(event);
-            }
-            fulfill(response);
-        }, function(json) {
-            reject("listBookedEvent error : " + json);
-        });
-    });
+  console.log('cal-app:listBookedEvent');
+  var bookedEventsArray = [];
+  return cal.listEvents(startDateTime, endDateTime, query)
+  .then(json => {
+    for (let i = 0; i < json.length; i++) {
+      var event = {
+        id: json[i].id,
+        summary: json[i].summary,
+        location: json[i].location,
+        start: json[i].start,
+        end: json[i].end,
+        status: json[i].status
+      };
+      bookedEventsArray.push(event);
+    };
+    return bookedEventsArray;
+  }).catch(err => {
+    throw err;
+  })
 };
 
 //assumes booking for max length of a day
 exports.listEmptySlotsInDay = function (date, query) {
-    setupTimeArray();
-    var endDate = new Date(date).addDays(1).getISO8601TimeStamp();
-    date = new Date(date).getISO8601TimeStamp();
+  setupTimeArray();
+  var endDate = new Date(date).addDays(1).getISO8601TimeStamp();
+  date = new Date(date).getISO8601TimeStamp();
 
-    return new Promise(function(fulfill, reject) {
-        this.listBookedEvent(date, endDate, query).then(function(jsonArr) {
-
-            for (event in jsonArr) {
-                var startTime = new Date(jsonArr[event].start.dateTime);
-                var endTime = new Date(jsonArr[event].end.dateTime);
-                var count = countSlotsWithinTimeframe(startTime, endTime);
-                for (var x = 0; x < count; x++) {
-                    delete timeslotDict[getTimeslotName(startTime)];
-                }
-            }
-            fulfill(timeslotDict);
-        }, function(err) {
-            reject("listEmptySlotsInDay error : " + err);
-        });
-    }.bind(this));
+  return this.listBookedEvent(date, endDate, query)
+  .then(jsonArr => {
+    for (event in jsonArr) {
+      var startTime = new Date(jsonArr[event].start.dateTime);
+      var endTime = new Date(jsonArr[event].end.dateTime);
+      var count = countSlotsWithinTimeframe(startTime, endTime);
+      for (var x = 0; x < count; x++) {
+        delete timeslotDict[getTimeslotName(startTime)];
+      }
+    }
+    return timeslotDict;
+  })
+  .catch(err => {
+    throw new Error("listEmptySlotsInDay error : " + err);
+  });
 };
 
 exports.listAvailableDurationForStartTime = function (startDatetime, query) {
@@ -130,24 +129,27 @@ exports.listAvailableDurationForStartTime = function (startDatetime, query) {
 };
 
 exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, location, status, description) {
-    return new Promise(function(fulfill, reject) {
-        cal.insertEvent(bookingSummary, startDateTime, endDateTime,
-            location, status, description, this.getColourForRoom(location)).then(function(json)  {
-            var resp = {};
-            resp['summary'] = json.summary;
-            resp['location'] = json.location;
-            resp['status'] = json.status;
-            resp['htmlLink'] = CALENDAR_URL;
-            resp['start'] = json.start.dateTime;
-            resp['end'] = json.end.dateTime;
-            resp['created'] = new Date(json.created).getISO8601TimeStamp();
-            fulfill(resp);
-        }, function(json) {
-            reject("insertEvent error : " + json);
-        });
-    }.bind(this));
+
+  return cal.insertEvent(bookingSummary, startDateTime, endDateTime, location, status, description, this.getColourForRoom(location))
+  .then(resp => {
+    let json = resp.body;
+    let results = {
+      'summary': json.summary,
+      'location': json.location,
+      'status': json.status,
+      'htmlLink': CALENDAR_URL,
+      'start': json.start.dateTime,
+      'end': json.end.dateTime,
+      'created': new Date(json.created).getISO8601TimeStamp()
+    };
+
+    return results;
+  })
+  .catch(err => {
+    throw err;
+  })
 };
 
 exports.deleteEvent = function(eventId){
-    return cal.deleteEvent(eventId);
+  return cal.deleteEvent(eventId);
 };

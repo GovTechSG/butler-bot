@@ -168,22 +168,20 @@ function insertBookingIntoCalendar(userid, msgid, description, startDate, timesl
 	console.log(msgid);;
 
 	cal_app.insertEvent(bookingSummary, startTime, endTime, room, "confirmed", "booked via butler")
-        .then(function(json) {
-            //success
-            console.log(json);
-            slimbot.editMessageText(userid, msgid, 'Done! Your room booking is confirmed!');
-            var msg = 'Booking Summary: \n' + json.summary + '\nStart: ' + new Date(json.start).getFormattedDateTime() + '\nEnd: ' + new Date(json.end).getFormattedDateTime();
+  .then(json => {
+    //success
+    console.log(json);
+    slimbot.editMessageText(userid, msgid, 'Done! Your room booking is confirmed!');
+    var msg = 'Booking Summary: \n' + json.summary + '\nStart: ' + new Date(json.start).getFormattedDateTime() + '\nEnd: ' + new Date(json.end).getFormattedDateTime();
 
-			slimbot.sendMessage(userid, msg).then(message => {
-				msg = 'Check out this link for the overall room booking schedules: ' + json.htmlLink;
-				slimbot.sendMessage(userid, msg);
-			});
-
-        }, function(err) {
-            //failed
-            console.log('Error insertEvent: ' + JSON.stringify(err));
-            slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Oh dear, something went wrong while booking your room. Sorry, Please try again!');
-        });
+    slimbot.sendMessage(userid, msg).then(message => {
+    	msg = 'Check out this link for the overall room booking schedules: ' + json.htmlLink;
+    	slimbot.sendMessage(userid, msg);
+    });
+  })
+  .catch(err => {
+    throw err;
+  });
 }
 
 function replyDateOptions(query, startDate, room){

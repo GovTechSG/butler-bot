@@ -1,161 +1,155 @@
-// obtain a JWT-enabled version of request
-var request = require('google-oauth-jwt').requestWithJWT();
 const Promise = require('bluebird');
+const requestWithJWT = Promise.promisify(require('google-oauth-jwt').requestWithJWT());
 const qs = require('querystring');
 
-var KEYFILE = require('../config/settings').keyFile;
-var USERID = require('../config/settings').userId;
-var SERVICE_ACCT_ID = require('../config/settings').serviceAcctId;
-var SCOPES = ['https://www.googleapis.com/auth/calendar'];
-var jwt = {
-    // use the email address of the service account, as seen in the API console
-    email: SERVICE_ACCT_ID,
-    // use the PEM file we generated from the downloaded key
-    keyFile: KEYFILE,
-    // specify the scopes you wish to access - each application has different scopes
-    scopes: SCOPES
-};
-const TIMEZONE = "UTC+08:00";
+class CalendarAPI {
+  constructor(config) {
+    this._USERID = config.userId;
+    this._JWT = {
+      email: config.serviceAcctId,
+      keyFile: config.keyFile,
+      scopes: ['https://www.googleapis.com/auth/calendar']
+    },
+    this._TIMEZONE = "UTC+08:00";
+  }
 
-/**
- * Returns a promise that list all events on calendar during selected period.
- *
- * @param {string} startDateTime (optional) - start datetime of event in 2016-04-29T14:00:00+08:00 format
- * @param {string} endDateTime (optional) - end datetime of event in 2016-04-29T18:00:00+08:00 format
- */
-exports.listEvents = function(startDateTime, endDateTime, query) {
-    return new Promise(function(fulfill, reject) {
-        if (startDateTime != undefined && endDateTime != undefined) {
-            var param = { timeMin: startDateTime, timeMax: endDateTime, q: query };
-        }
+  _request(params) {
+    // todo: need better validation
+    if (params === undefined) {
+      throw new Error('Missing argument; query terms needed');
+    }
 
-        request({
-            url: 'https://www.googleapis.com/calendar/v3/calendars/' + USERID + '/events',
-            jwt: jwt,
-            qs: param,
-            useQuerystring: true
-        }, function(err, res, body) {
-            var resp;
+    let options = {
+      url: 'https://www.googleapis.com/calendar/v3/calendars/' + this._USERID + '/events',
+      jwt: this._JWT,
+      qs: params,
+      useQuerystring: true
+    }
 
-            if (body != undefined){
-                resp = JSON.parse(body);
-                if (resp.error != undefined) {
-                    console.log("[calender-api: listEvents] Error");
-                    reject(resp.error);
-                }
+    return requestWithJWT(options);
+  }
 
-                fulfill(resp.items);
-            }else {
-                if (err){
-                    console.log("[calender-api: listEvents] Error : " + err);
-                    reject({ error: 'Connection to Google Error' });
-                }else{
-                     console.log("[calender-api: listEvents] Error : Unknown Error");
-                }
-            }
-        });
+  /**
+  * Returns a promise that list all events on calendar during selected period.
+  *
+  * @param {string} startDateTime (optional) - start datetime of event in 2016-04-29T14:00:00+08:00 format
+  * @param {string} endDateTime (optional) - end datetime of event in 2016-04-29T18:00:00+08:00 format
+  */
+  listEvents(startDateTime, endDateTime, query) {
+    let params;
+    if (startDateTime !== undefined && endDateTime !== undefined) {
+      params = { timeMin: startDateTime, timeMax: endDateTime, q: query };
+    }
+
+    return this._request(params)
+    .then(resp => {
+      if (resp.statusCode !== 200) {
+        throw new Error(resp.statusCode + ':\n'+ resp.body);
+      };
+      let body = JSON.parse(resp.body);
+      return body.items;
+    })
+    .catch(err => {
+      throw err;
     });
-};
+  }
 
-/**
- * Checks if queried calendar slot is busy during selected period.
- * Returns promise of list of events at specified slot.
- *
- * @param {string} startDateTime - start datetime of event in 2016-04-29T14:00:00+08:00 format
- * @param {string} endDateTime - end datetime of event in 2016-04-29T18:00:00+08:00 format
- */
-exports.checkTimeslotBusy = function(startDateTime, endDateTime) {
-    var event = {
-        "timeMin": startDateTime,
-        "timeMax": endDateTime,
-        "timeZone": TIMEZONE,
-        "items": [{ "id": USERID }]
+  /**
+  * Insert an event on the user's primary calendar. Returns promise of details of booking
+  *
+  * @param {string} bookingSummary - Name to be specified in calendar event summary
+  * @param {string} startDateTime - start datetime of event in 2016-04-29T14:00:00+08:00 format
+  * @param {string} endDateTime - end datetime of event in 2016-04-29T18:00:00+08:00 format
+  * @param {string} location - Location description of event
+  * @param {string} status - event status - confirmed, tentative, cancelled; tentative for all queuing
+  */
+  insertEvent(bookingSummary, startDateTime, endDateTime, location, status, description, colour) {
+    let event = {
+      "start": {
+        "dateTime": startDateTime
+      },
+      "end": {
+        "dateTime": endDateTime
+      },
+      "location": location,
+      "summary": bookingSummary,
+      "status": status,
+      "description": description,
+      "colorId": colour,
     };
 
-    return new Promise(function(fulfill, reject) {
+    let options = {
+      method: 'POST',
+      url: 'https://www.googleapis.com/calendar/v3/calendars/' + this._USERID + '/events',
+      json: true,
+      body: event,
+      jwt: this._JWT
+    }
 
-        request.post({
-            url: 'https://www.googleapis.com/calendar/v3/freeBusy',
-            json: true,
-            body: event,
-            jwt: jwt
-        }, function(err, res, body) {
-            if (err) {
-                reject({ error: 'Connection error' });
-            }
-            if (body.calendars[USERID].errors != undefined) {
-                reject();
-            }
-
-            console.log(body.calendars[USERID]);
-            var eventsList = body.calendars[USERID].busy;
-            fulfill(body.calendars[USERID].busy);
-
-        });
+    return requestWithJWT(options)
+    .then(resp => {
+      if (resp.statusCode !== 200) {
+        throw new Error(resp.statusCode + ':\n'+ resp.body);
+      };
+      return resp;
+    })
+    .catch(err => {
+      throw err;
     });
-};
+  }
 
-/**
- * Insert an event on the user's primary calendar. Returns promise of details of booking
- *
- * @param {string} bookingSummary - Name to be specified in calendar event summary
- * @param {string} startDateTime - start datetime of event in 2016-04-29T14:00:00+08:00 format
- * @param {string} endDateTime - end datetime of event in 2016-04-29T18:00:00+08:00 format
- * @param {string} location - Location description of event
- * @param {string} status - event status - confirmed, tentative, cancelled; tentative for all queuing
- */
-exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, location, status, description, colour) {
+  deleteEvent(eventId) {
+    if (eventId === undefined) {
+      throw new Error('Missing argument; need to pass in eventId');
+    }
+
+    return requestWithJWT({
+      method: 'DELETE',
+      url: 'https://www.googleapis.com/calendar/v3/calendars/' + this._USERID + '/events/' + eventId,
+      jwt: this._JWT
+    })
+    .then(resp => {
+      if (resp.statusCode !== 204) {
+        throw new Error(resp.statusCode + ':\n'+ resp.body);
+      }
+      return resp;
+    })
+    .catch(err => {
+      throw err;
+    });
+  }
+
+  /**
+  * Checks if queried calendar slot is busy during selected period.
+  * Returns promise of list of events at specified slot.
+  *
+  * @param {string} startDateTime - start datetime of event in 2016-04-29T14:00:00+08:00 format
+  * @param {string} endDateTime - end datetime of event in 2016-04-29T18:00:00+08:00 format
+  */
+  checkTimeslotBusy(startDateTime, endDateTime) {
     var event = {
-        "start": {
-            "dateTime": startDateTime
-        },
-        "end": {
-            "dateTime": endDateTime
-        },
-        "location": location,
-        "summary": bookingSummary,
-        "status": status,
-        "description": description,
-        "colorId": colour,
+      "timeMin": startDateTime,
+      "timeMax": endDateTime,
+      "timeZone": this._TIMEZONE,
+      "items": [{ "id": this._USERID }]
     };
 
-    return new Promise(function(fulfill, reject) {
-        request.post({
-            url: 'https://www.googleapis.com/calendar/v3/calendars/' + USERID + '/events',
-            json: true,
-            body: event,
-            jwt: jwt
-        }, function(err, res, body) {
-            if (err) {
-                console.log('Error contacting the Calendar service: ' + err);
-                reject({ error: 'Connection error' });
-            }
-            if (body.error != undefined) {
-                console.log('Error contacting the Calendar service: ' + body.error);
-                reject(body.error);
-            }
-            fulfill(body);
-        });
-    });
-};
+    let options = {
+      method: 'POST',
+      url: 'https://www.googleapis.com/calendar/v3/freeBusy',
+      json: true,
+      body: event,
+      jwt: this._JWT
+    }
 
-exports.deleteEvent = function(eventId) {
-    return new Promise(function(fulfill, reject) {
-        if (eventId == undefined) {
-            return { error: 'eventId to delete cannot be empty'};
-        }
+    return requestWithJWT(options)
+    .then(resp => {
+      return resp.body.calendars[this._USERID].busy;
+    })
+    .catch(err => {
+      throw err;
+    })
+  }
+}
 
-        request.del({
-            url: 'https://www.googleapis.com/calendar/v3/calendars/' + USERID + '/events/' + eventId,
-            jwt: jwt
-        }, function(err, res, body) {
-            if(res.statusCode == 204){
-                fulfill({status: 'success'});
-            }else{
-                var bod = JSON.parse(body);
-                reject( { status: 'failed', error: bod.error.message} );
-            }
-
-        });
-    });
-};
+module.exports = CalendarAPI;
