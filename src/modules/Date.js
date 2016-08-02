@@ -10,6 +10,11 @@ Date.prototype.setDateWithSimpleFormat = function(dateString){
     return this;
 };
 
+Date.prototype.setTime = function(hr, min, sec, ms){
+    this.setHours(hr, min, sec, ms);
+    return this;
+};
+
 Date.prototype.addDays = function(d) {
     this.setDate(this.getDate() + d);
     return this;
@@ -30,7 +35,7 @@ Date.prototype.getFormattedDate = function() {
 };
 
 Date.prototype.getFormattedDateTime = function() {
-        return this.getSimpleDate() + ', ' +this.getFormatedTime();
+        return this.getFormattedDate() + ', ' +this.getFormatedTime();
 };
 
 Date.prototype.getISO8601TimeStamp = function(date){
@@ -80,7 +85,13 @@ Date.prototype.getCurrentDay = function(){
     return this.getDate();
 };
  
-Date.prototype.daysInMonth= function(){ 
+Date.prototype.daysInMonth = function(){ 
     var d= new Date(this.getFullYear(), this.getMonth()+1, 0);
     return d.getDate();
 };
+
+Date.prototype.getMinuteDiff = function(timeCompared){
+    var timeDiff = Math.abs(timeCompared.getTime() - this.getTime());
+    var minDiff = Math.ceil(timeDiff / 60000);
+    return minDiff;
+}

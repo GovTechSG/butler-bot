@@ -101,14 +101,22 @@ exports.listAvailableDurationForStartTime = function (startDatetime, query) {
 
 
     return new Promise(function(fulfill, reject) {
-
-        console.log('listAvailableDurationForStartTime: ' + query);
         this.listBookedEvent(startTimestamp, endDate, query).then(function(jsonArr) {
             console.log(jsonArr);
-            var durOptions = durationOptions;
+            var durOptions = {
+                1: '30 mins',
+                2: '1 hour',
+                3: '1.5 hours',
+                4: '2 hours',
+                5: '2.5 hours',
+                6: '3 hours',
+                7: '3.5 hours',
+                8: '4 hours'
+            };
             var closestEventBlocksAway = 99;
             for (event in jsonArr) {
                 var setOf30minsBlocks = new Date(startDatetime).getMinuteDiff(new Date(jsonArr[event].start.dateTime)) / 30;
+                console.log(setOf30minsBlocks);
                 if (setOf30minsBlocks < closestEventBlocksAway) {
                     closestEventBlocksAway = setOf30minsBlocks;
                 }
@@ -117,7 +125,7 @@ exports.listAvailableDurationForStartTime = function (startDatetime, query) {
             if (closestEventBlocksAway > maxDurationBlocksAllowed) {
                 closestEventBlocksAway = maxDurationBlocksAllowed;
             }
-            for (var x = maxDurationBlocksAllowed; x > closestEventBlocksAway; x--) {
+            for (var x = closestEventBlocksAway + 1; x <= maxDurationBlocksAllowed; x++) {
                 delete durOptions[x];
             }
             console.log(durOptions);
