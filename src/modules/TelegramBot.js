@@ -5,6 +5,11 @@ const Slimbot = require('slimbot');
 const slimbot = new Slimbot(process.env['TELEGRAM_TOKEN_TEST']);
 console.log(process.env['TELEGRAM_TOKEN_TEST']);
 let cal_app = require('./CalendarApp');
+let botName;
+
+slimbot.getMe().then(update => {
+  botName = update.result.username;
+});
 
 let roomlist = {
   'queen-1': 'Queen 1',
@@ -156,23 +161,25 @@ function checkCommandList(message){
     roomSelected = 'drone';
     promptTodayOrDateOption(roomSelected, message);
 
-  }else if (message.text == '/help@hive_butler_bot'){
+  }else if (message.text == `/help@${botName}`){
     var optionalParams = { parse_mode: 'Markdown' };
     slimbot.sendMessage(message.chat.id,'Hi there, let me guide you through the steps to booking a meeting room?');
-    slimbot.sendMessage(message.chat.id,'Start searching for rooms to book by typing *@hive_butler_bot*',optionalParams);
+    slimbot.sendMessage(message.chat.id,`Start searching for rooms to book by typing *@${botName}*`,optionalParams);
 
   }else if (message.chat.type == 'private') {
     var optionalParams = { parse_mode: 'Markdown' };
 
     if (message.text == '/start'){
-      var reply = 'Hello there! Type\n *@hive_butler_bot* to start booking from a list of rooms available or\n' +
-      '*/help* in a private chat - for more info on how to book a room or \n*/booked* in a private chat - for list of rooms you have booked.';
+      var reply = `Hello there! Type\n
+        *@${botName}* to start booking from a list of rooms available or\n
+        */help* in a private chat - for more info on how to book a room or \n
+        */booked* in a private chat - for list of rooms you have booked.`;
       slimbot.sendMessage(message.chat.id, reply, optionalParams);
 
     }else if (message.text == '/help'){
 
       slimbot.sendMessage(message.chat.id,'Hi there, let me guide you through the steps to booking a meeting room?');
-      slimbot.sendMessage(message.chat.id,'Start searching for rooms to book by typing *@hive_butler_bot*',optionalParams);
+      slimbot.sendMessage(message.chat.id,`Start searching for rooms to book by typing *@${botName}*`,optionalParams);
       clearUncompletedBookings(message);
     }else if (message.text == '/booked'){
       var reply = 'You have booked: ... (coming soon)';
