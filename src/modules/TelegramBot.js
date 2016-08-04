@@ -464,7 +464,7 @@ function replyCancelBookProcess(query){
   slimbot.editMessageText(query.from.id, query.message.message_id, msg, optionalParams);
 }
 
-function replyBuilder(room, date, timeslot, duration) {
+function replyBuilder(room, date, time, duration) {
   let reply;
 
   if (arguments.length === 1) {
@@ -474,19 +474,19 @@ function replyBuilder(room, date, timeslot, duration) {
     if (date.getSimpleDate() === new Date().getSimpleDate()) {
       formattedDate += ' (Today)';
     }
-    reply = `Booking Details (_Step 2 of 4_)\n----------------------------------------\nRoom: *${room}*\nDate: *${formattedDate}*\n\nPlease select a timeslot for this booking:`;
+    reply = `Booking Details (_Step 2 of 4_)\n----------------------------------------\nRoom: *${room}*\nDate: *${formattedDate}*\n\nPlease select a time for this booking:`;
   } else if (arguments.length === 3) {
     let formattedDate = date.getFormattedDate();
     if (date.getSimpleDate() === new Date().getSimpleDate()) {
       formattedDate += ' (Today)';
     }
-    reply = `Booking Details (_Step 3 of 4_)\n----------------------------------------\nRoom: *${room}*\nDate: *${formattedDate}*\nTimeslot: *${timeslot}*\n\nPlease select a duration for this booking:`;
+    reply = `Booking Details (_Step 3 of 4_)\n----------------------------------------\nRoom: *${room}*\nDate: *${formattedDate}*\nTime: *${time}*\n\nPlease select a duration for this booking:`;
   } else if (arguments.length === 4) {
     let formattedDate = date.getFormattedDate();
     if (date.getSimpleDate() === new Date().getSimpleDate()) {
       formattedDate += ' (Today)';
     }
-    reply = `Booking Details (_Step 4 of 4_)\n----------------------------------------\nRoom: *${room}*\nDate: *${formattedDate}*\nTimeslot: *${timeslot}*\nDuration: *${duration}*\n\nPlease type a brief description for your booking:`;
+    reply = `Booking Details (_Step 4 of 4_)\n----------------------------------------\nRoom: *${room}*\nDate: *${formattedDate}*\nTime: *${time}*\nDuration: *${duration}*\n\nPlease type a brief description for your booking:`;
   }
 
   return reply;
