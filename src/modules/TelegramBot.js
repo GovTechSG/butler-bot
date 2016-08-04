@@ -170,10 +170,7 @@ function checkCommandList(message){
     var optionalParams = { parse_mode: 'Markdown' };
 
     if (message.text == '/start'){
-      var reply = `Hello there! Type\n
-        *@${botName}* to start booking from a list of rooms available or\n
-        */help* in a private chat - for more info on how to book a room or \n
-        */booked* in a private chat - for list of rooms you have booked.`;
+      var reply = `Hello there! Type\n*@${botName}* to start booking from a list of rooms available or\n*/help* in a private chat - for more info on how to book a room or \n*/booked* in a private chat - for list of rooms you have booked.`;
       slimbot.sendMessage(message.chat.id, reply, optionalParams);
 
     }else if (message.text == '/help'){
