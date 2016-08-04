@@ -3,8 +3,8 @@
 ## [unreleased]
 ### Added
 * Added function to list available duration till next booking @shekyh/@yuhong90
-* Improved navigation interaction between each booking step
-* Changed booking format - from 0.5hr slots to user-defined start time and duration
+* Improved navigation interaction between each booking step @edisonchee
+* Changed booking format - from 0.5hr slots to user-defined start time and duration @shekyh/@yuhong90
 
 ## [0.1.0] - 1st August 2016
 ### Added

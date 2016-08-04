@@ -15,9 +15,10 @@ npm start
 
 ## Contributing
 
-Step 1: Branch off from ```develop``` and work on your feature or hotfix.
-Step 2: Update the changelog.
-Step 3: Create a pull request when you're done.
+Easy as 1-2-3:
+* Step 1: Branch off from ```develop``` and work on your feature or hotfix.
+* Step 2: Update the changelog.
+* Step 3: Create a pull request when you're done.
 
 References:
 * [Git branching strategy](http://nvie.com/posts/a-successful-git-branching-model/)
