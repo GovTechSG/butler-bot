@@ -12,11 +12,11 @@ slimbot.getMe().then(update => {
 });
 
 let roomlist = {
-  'queen-1': 'Queen 1',
-  'queen-2': 'Queen 2',
-  'queen-c': 'Queen (Combined)',
-  'drone': 'Drone',
-  'fgd': 'Focus Group Discussion Room'
+  'q1': 'Queen 1',
+  'q2': 'Queen 2',
+  'qc': 'Queen (Combined)',
+  'dr': 'Drone',
+  'fg': 'Focus Group Discussion Room'
 };
 
 let startListeningForInputs = false;
@@ -24,6 +24,7 @@ let bookerQueue = {};
 
 console.log('bot started on ' + new Date().getFormatedTime());
 // cal_app.listAvailableDurationForStartTime(new Date().addDays(0).setTime(16,00,0,0), 'fgd');
+// console.log(cal_app.listEmptySlotsInDay(new Date().setDateWithSimpleFormat('10/8/2016'), 'qc'));
 
 // Register listeners
 slimbot.on('message', message => {
@@ -46,7 +47,7 @@ slimbot.on('inline_query', query => {
     }
  }, {
      'type': 'article',
-     'id': 'queen-c',
+     'id': 'qc',
      'title': 'Queen (Combined)',
      'input_message_content': {
          'message_text': '/book_queen_combined',
@@ -54,7 +55,7 @@ slimbot.on('inline_query', query => {
      }
  }, {
      'type': 'article',
-     'id': 'queen-1',
+     'id': 'q1',
      'title': 'Queen 1',
      'input_message_content': {
          'message_text': '/book_queen_1',
@@ -62,7 +63,7 @@ slimbot.on('inline_query', query => {
      }
  }, {
      'type': 'article',
-     'id': 'queen-2',
+     'id': 'q2',
      'title': 'Queen 2',
      'input_message_content': {
          'message_text': '/book_queen_2',
@@ -70,7 +71,7 @@ slimbot.on('inline_query', query => {
      }
  }, {
      'type': 'article',
-     'id': 'drone',
+     'id': 'dr',
      'title': 'Drone',
      'input_message_content': {
          'message_text': '/book_drone',
@@ -78,7 +79,7 @@ slimbot.on('inline_query', query => {
      }
  }, {
      'type': 'article',
-     'id': 'fgd',
+     'id': 'fg',
      'title': 'Focus Group Room',
      'input_message_content': {
          'message_text': '/book_fgd',
@@ -94,7 +95,8 @@ slimbot.answerInlineQuery(query.id, results).then(resp => {
 });
 
 slimbot.on('chosen_inline_result', query => {
-  console.log('chosenanswerInlineQuery');
+	//whenever any inline query option is selected
+	console.log('chosenanswerInlineQuery');
 });
 
 slimbot.on('callback_query', query => {
@@ -141,24 +143,24 @@ function checkCommandList(message){
   var optionalParams;
   console.log(message);
 
-  if (message.text == '/book_fgd'){
-    roomSelected = 'fgd';
+if (message.text == '/book_fgd'){
+    roomSelected = 'fg';
     promptTodayOrDateOption(roomSelected, message);
 
   }else if (message.text == '/book_queen_1'){
-    roomSelected = 'queen-1';
+    roomSelected = 'q1';
     promptTodayOrDateOption(roomSelected, message);
 
   }else if (message.text == '/book_queen_2'){
-    roomSelected = 'queen-2';
+    roomSelected = 'q2';
     promptTodayOrDateOption(roomSelected, message);
 
   }else if (message.text == '/book_queen_combined'){
-    roomSelected = 'queen-c';
+    roomSelected = 'qc';
     promptTodayOrDateOption(roomSelected, message);
 
   }else if (message.text == '/book_drone'){
-    roomSelected = 'drone';
+    roomSelected = 'dr';
     promptTodayOrDateOption(roomSelected, message);
 
   }else if (message.text == `/help@${botName}`){
@@ -361,30 +363,28 @@ function constructTimeslotOptions(availTimeJSON, room, date) {
 }
 
 function promptDurationSelection(query, room, startDate, startTime){
-  cal_app.listAvailableDurationForStartTime(startDate.getISO8601DateWithDefinedTimeString(startTime), room)
-      .then(function(jsonArr) {
-        console.log(jsonArr);
+	cal_app.listAvailableDurationForStartTime(startDate.getISO8601DateWithDefinedTimeString(startTime), room)
+	    .then(function(jsonArr) {
+	    	console.log('promptDuration');
+	    	console.log(jsonArr);
 
-    //    if (Object.keys(jsonArr).length == 0){
-      //  slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'I think someone just booked the timeslot following this. Please pick another starttime.');
-    //      promptTimeslotSelection(query, startDate, room);
-      // }
+	  //   	if (Object.keys(jsonArr).length == 0){
+			// 	slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'I think someone just booked the timeslot following this. Please pick another starttime.');
+	  //   		promptTimeslotSelection(query, startDate, room);
+			// }
           var msg = replyBuilder(roomlist[room], startDate, startTime);
-          // var msg = 'You have selected:\n*' + roomlist[room] + '* >> *' +
-          //     startDate.getFormattedDate() + '* >> *' +
-          //     startTime + '*\n\nSelect your booking duration from the available list';
-          var optionalParams = {
-              parse_mode: 'Markdown',
-              reply_markup: JSON.stringify({
-                  inline_keyboard: constructDurationOptions(jsonArr, room, startDate, startTime)
-              })
-          };
-          slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams);
+	        var optionalParams = {
+	            parse_mode: 'Markdown',
+	            reply_markup: JSON.stringify({
+	                inline_keyboard: constructDurationOptions(jsonArr, room, startDate, startTime)
+	            })
+	        };
+	        slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams);
 
-      }, function(err) {
-          console.log('Error promptDurationSelection: ' + JSON.stringify(err));
-          slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Unfortunately I ran into some issues booking your room. Please try again.');
-      });
+	    }, function(err) {
+	        console.log('Error promptDurationSelection: ' + JSON.stringify(err));
+	        slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Unfortunately I ran into some issues booking your room. Please try again.');
+	    });
 }
 
 function constructDurationOptions(durationJSON, room, date, startTime) {

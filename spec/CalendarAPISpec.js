@@ -48,10 +48,5 @@ describe('Calendar API', () => {
       });
     });
 
-    describe('post', () => {
-      it('should throw an error if params not supplied as argument', () => {
-        expect(() => { calendar._post(); }).toThrow();
-      });
-    });
   });
 });
