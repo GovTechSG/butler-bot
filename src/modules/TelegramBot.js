@@ -7,18 +7,19 @@ console.log(process.env['TELEGRAM_TOKEN']);
 let cal_app = require('./CalendarApp');
 
 let roomlist = {
-    'queen-1': 'Queen 1',
-    'queen-2': 'Queen 2',
-    'queen-c': 'Queen (Combined)',
-    'drone': 'Drone',
-    'fgd': 'Focus Group Discussion Room'
+    'q1': 'Queen 1',
+    'q2': 'Queen 2',
+    'qc': 'Queen (Combined)',
+    'dr': 'Drone',
+    'fg': 'Focus Group Discussion Room'
 };
 
 let startListeningForInputs = false;
 let bookerQueue = {};
 
-console.log('bot started on ' + new Date().getFormatedTime()); 
+console.log('bot started on ' + new Date().getFormatedTime());
 // cal_app.listAvailableDurationForStartTime(new Date().addDays(0).setTime(16,00,0,0), 'fgd');
+// console.log(cal_app.listEmptySlotsInDay(new Date().setDateWithSimpleFormat('10/8/2016'), 'qc'));
 
 // Register listeners
 slimbot.on('message', message => {
@@ -41,7 +42,7 @@ slimbot.on('inline_query', query => {
      }
  }, {
      'type': 'article',
-     'id': 'queen-c',
+     'id': 'qc',
      'title': 'Queen (Combined)',
      'input_message_content': {
          'message_text': '/book_queen_combined',
@@ -49,7 +50,7 @@ slimbot.on('inline_query', query => {
      }
  }, {
      'type': 'article',
-     'id': 'queen-1',
+     'id': 'q1',
      'title': 'Queen 1',
      'input_message_content': {
          'message_text': '/book_queen_1',
@@ -57,7 +58,7 @@ slimbot.on('inline_query', query => {
      }
  }, {
      'type': 'article',
-     'id': 'queen-2',
+     'id': 'q2',
      'title': 'Queen 2',
      'input_message_content': {
          'message_text': '/book_queen_2',
@@ -65,7 +66,7 @@ slimbot.on('inline_query', query => {
      }
  }, {
      'type': 'article',
-     'id': 'drone',
+     'id': 'dr',
      'title': 'Drone',
      'input_message_content': {
          'message_text': '/book_drone',
@@ -73,7 +74,7 @@ slimbot.on('inline_query', query => {
      }
  }, {
      'type': 'article',
-     'id': 'fgd',
+     'id': 'fg',
      'title': 'Focus Group Room',
      'input_message_content': {
          'message_text': '/book_fgd',
@@ -83,12 +84,12 @@ slimbot.on('inline_query', query => {
 
 slimbot.answerInlineQuery(query.id, results).then(resp => {
 		console.log('answerInlineQuery');
-		console.log(results);
 	  	console.log(resp);
 	});
 });
 
 slimbot.on('chosen_inline_result', query => {
+	//whenever any inline query option is selected
 	console.log('chosenanswerInlineQuery');
 });
 
@@ -137,23 +138,23 @@ function checkCommandList(message){
 	console.log(message);
 
 	if (message.text == '/book_fgd'){
-		roomSelected = 'fgd';
+		roomSelected = 'fg';
 		promptTodayOrDateOption(roomSelected, message);
 
 	}else if (message.text == '/book_queen_1'){
-		roomSelected = 'queen-1';
+		roomSelected = 'q1';
 		promptTodayOrDateOption(roomSelected, message);
 
 	}else if (message.text == '/book_queen_2'){
-		roomSelected = 'queen-2';
+		roomSelected = 'q2';
 		promptTodayOrDateOption(roomSelected, message);
 
 	}else if (message.text == '/book_queen_combined'){
-		roomSelected = 'queen-c';
+		roomSelected = 'qc';
 		promptTodayOrDateOption(roomSelected, message);
 
 	}else if (message.text == '/book_drone'){
-		roomSelected = 'drone';
+		roomSelected = 'dr';
 		promptTodayOrDateOption(roomSelected, message);
 
 	}else if (message.text == '/help@hive_butler_bot'){
@@ -259,7 +260,7 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
 
 	  }).catch(err => {
 	  	console.log('Error insertBookingIntoCalendar: ' + JSON.stringify(err));
-        slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Oh dear, something went wrong while booking your room. Sorry, Please try again!');
+        slimbot.editMessageText(userid, msgid, 'Oh dear, something went wrong while booking your room. Sorry, Please try again!');
 	    throw err;
 	  });
 }
@@ -368,6 +369,7 @@ function constructTimeslotOptions(availTimeJSON, room, date) {
 function promptDurationSelection(query, room, startDate, startTime){
 	cal_app.listAvailableDurationForStartTime(startDate.getISO8601DateWithDefinedTimeString(startTime), room)
 	    .then(function(jsonArr) {
+	    	console.log('promptDuration');
 	    	console.log(jsonArr);
 
 	  //   	if (Object.keys(jsonArr).length == 0){
