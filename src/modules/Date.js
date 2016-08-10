@@ -23,7 +23,7 @@ Date.prototype.addMinutes = function(h) {
     this.setMinutes(this.getMinutes() + h);
     return this;
 };
-Date.prototype.getFormatedTime = function() {
+Date.prototype.getFormattedTime = function() {
     var timeFormatOptions = { hour: "2-digit", minute: "2-digit" };
     return this.toLocaleTimeString("en-us", timeFormatOptions);
 };
@@ -35,7 +35,7 @@ Date.prototype.getFormattedDate = function() {
 };
 
 Date.prototype.getFormattedDateTime = function() {
-        return this.getFormattedDate() + ', ' +this.getFormatedTime();
+        return this.getFormattedDate() + ', ' +this.getFormattedTime();
 };
 
 Date.prototype.getISO8601TimeStamp = function(date){
@@ -47,10 +47,10 @@ Date.prototype.getISO8601TimeStamp = function(date){
     }
     date = date ? date : this;
     var offset = date.getTimezoneOffset();
-    return pad(date.getFullYear(), 4) + "-" + 
-    pad(date.getMonth() + 1, 2) + "-" + pad(date.getDate(), 2) + 
-    "T" + pad(date.getHours(), 2) + ":" + pad(date.getMinutes(), 2) + ":" + 
-    pad(date.getSeconds(), 2) + (offset > 0 ? "-" : "+") + 
+    return pad(date.getFullYear(), 4) + "-" +
+    pad(date.getMonth() + 1, 2) + "-" + pad(date.getDate(), 2) +
+    "T" + pad(date.getHours(), 2) + ":" + pad(date.getMinutes(), 2) + ":" +
+    pad(date.getSeconds(), 2) + (offset > 0 ? "-" : "+") +
     pad(Math.floor(Math.abs(offset) / 60), 2) + ":" + pad(Math.abs(offset) % 60, 2);
 
 };
@@ -84,8 +84,8 @@ Date.prototype.getSimpleDate = function() {
 Date.prototype.getCurrentDay = function(){
     return this.getDate();
 };
- 
-Date.prototype.daysInMonth = function(){ 
+
+Date.prototype.daysInMonth = function(){
     var d= new Date(this.getFullYear(), this.getMonth()+1, 0);
     return d.getDate();
 };

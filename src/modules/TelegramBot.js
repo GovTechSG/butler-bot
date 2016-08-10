@@ -22,7 +22,7 @@ let roomlist = {
 let startListeningForInputs = false;
 let bookerQueue = {};
 
-console.log('bot started on ' + new Date().getFormatedTime());
+console.log('bot started on ' + new Date().getFormattedTime());
 // cal_app.listAvailableDurationForStartTime(new Date().addDays(0).setTime(16,00,0,0), 'fgd');
 // console.log(cal_app.listEmptySlotsInDay(new Date().setDateWithSimpleFormat('10/8/2016'), 'qc'));
 
@@ -253,7 +253,7 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
       slimbot.editMessageText(userid, msgid, 'Done! Your room booking is confirmed!');
 
         var optionalParams = {parse_mode: 'Markdown'};
-        var msg = `#Booking Summary\n----------------------------\nRoom: *${roomlist[room]}*\nDate: *${startDate.getFormattedDate()}*\nTime: *${new Date(json.start).getFormatedTime()} - ${new Date(json.end).getFormatedTime()}*\nBy: *${fullname}* (@${username})\nDescription: ${description}`;
+        var msg = `#Booking Summary\n----------------------------\nRoom: *${roomlist[room]}*\nDate: *${startDate.getFormattedDate()}*\nTime: *${new Date(json.start).getFormattedTime()} - ${new Date(json.end).getFormattedTime()}*\nBy: *${fullname}* (@${username})\nDescription: ${description}`;
 
     slimbot.sendMessage(userid, msg, optionalParams).then(message => {
       msg = 'Check out this link for the overall room booking schedules: ' + json.htmlLink;

@@ -27,21 +27,20 @@ let durationOptions = {
   8: '4 hours'
 };
 
-
 function setupTimeArray() {
   let timeslotDict = {};
   //setup array in 30min slots from 8am-9pm
   const numOfSlots = 26;
   let timeStart = new Date("2016-05-24T08:00:00+08:00");
   for (let i = 0; i < numOfSlots; i++) {
-    let startTime = timeStart.getFormatedTime();
+    let startTime = timeStart.getFormattedTime();
     timeslotDict[getTimeslotName(timeStart)] = startTime;
   }
   return timeslotDict;
 }
 
 function getTimeslotName(startTime) {
-  let timeslot = startTime.getFormatedTime();
+  let timeslot = startTime.getFormattedTime();
   startTime = startTime.addMinutes(30);
   return timeslot;
 }
