@@ -195,7 +195,7 @@ exports.listAvailableDurationForStartTime = function(startDatetime, room) {
     return this.listBookedEventsByRoom(startTimestamp, endDate, room)
       .then(jsonArr => {
 
-        return filterDurationSlots(jsonArr);
+        return filterDurationSlots(jsonArr, startTimestamp);
 
       })
       .catch(err => {
