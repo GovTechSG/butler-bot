@@ -239,7 +239,7 @@ function completeBooking(query){
 }
 
 function insertBookingIntoCalendar(userid, msgid, description, room, startDate, timeslot, duration, username, fullname){
-  var bookingSummary = '[' + room + '] ' + description + ' by @' + username + ' (' + fullname + ')';
+  let bookingSummary = `[${room}] ${description} by @${username}(${fullname})`;
   console.log(bookingSummary);
   var startTime = startDate.getISO8601DateWithDefinedTimeString(timeslot);
   for (var i =0; i < duration; i++){
@@ -268,7 +268,7 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
 }
 
 function promptDateSelection(query, room, startDate){
-  var msg = 'You have selected:\n' + '*' + roomlist[room] + '*' + '\n\nPlease select a date in ' + new Date().getCurrentMonthNamed() + ':';
+  var msg = replyBuilder(roomlist[room]);
   var optionalParams = {
     parse_mode: 'Markdown',
     reply_markup: JSON.stringify({
@@ -472,7 +472,7 @@ function replyBuilder(room, date, time, duration) {
   let reply;
 
   if (arguments.length === 1) {
-    reply = `Booking Details (_Step 1 of 4_)\n----------------------------------------\nRoom: *${room}*\n\nPlease select a date for this booking:`;
+    reply = `Booking Details (_Step 1 of 4_)\n----------------------------------------\nRoom: *${room}*\n\nPlease select a date for this booking in the month of *${new Date().getCurrentMonthNamed()}*:`;
   } else if (arguments.length === 2) {
     let formattedDate = date.getFormattedDate();
     if (date.getSimpleDate() === new Date().getSimpleDate()) {
