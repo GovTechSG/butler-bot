@@ -59,26 +59,43 @@ exports.getColourForRoom = function(roomname) {
   return colourDict[roomname];
 };
 
-exports.listBookedEventsByUser = function(startDateTime, endDateTime, user, room) {
+exports.listBookedEventsByUser = function(startDateTime, user) {
+  let promiseList = [];
   let bookedEventsArray = [];
-  let calendarId = calendarIdList[room];
-  return cal.listEvents(calendarId, startDateTime, endDateTime, user)
-    .then(json => {
-      for (let i = 0; i < json.length; i++) {
-        let event = {
-          id: json[i].id,
-          summary: json[i].summary,
-          location: json[i].location,
-          start: json[i].start,
-          end: json[i].end,
-          status: json[i].status
-        };
-        bookedEventsArray.push(event);
-      };
-      return bookedEventsArray;
+  let endDateTime = startDateTime;
+  startDateTime = startDateTime.getISO8601TimeStamp();
+  endDateTime = endDateTime.addDays(365).getISO8601TimeStamp();
 
-    }).catch(err => {
-      throw err;
+  for (let room in calendarIdList) {
+    let calendarId = calendarIdList[room];
+    console.log(calendarId + ' ' + startDateTime + ' ' + endDateTime + ' ');
+
+    promiseList.push(cal.listEvents(calendarId, startDateTime, endDateTime, user)
+      .then(json => {
+        let eventsInCalendar = [];
+        for (let i = 0; i < json.length; i++) {
+          let event = {
+            id: json[i].id,
+            summary: json[i].summary,
+            location: json[i].location,
+            start: json[i].start,
+            end: json[i].end,
+            status: json[i].status
+          };
+          eventsInCalendar.push(event);
+          bookedEventsArray.push(event);
+        }
+        return eventsInCalendar;
+      }).catch(err => {
+        throw err;
+      })
+    );
+  }
+
+  return Promise.all(promiseList).then(
+    (eventsRoom1, eventsRoom2, eventsRoom3, eventsRoom4, eventsRoom5) => {
+      console.log(bookedEventsArray);
+      return bookedEventsArray;
     });
 };
 
@@ -131,13 +148,13 @@ exports.handleListingForTwoCalendars = function(date, endDate, room) {
   ).catch(err => {
     throw new Error("handleListingForTwoCalendars error: " + err);
   });
-
-}
+};
 
 function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
   for (let key in roomBusyTimeslot) {
     let startTime = new Date(roomBusyTimeslot[key].start.dateTime);
     let endTime = new Date(roomBusyTimeslot[key].end.dateTime);
+
     let count = countSlotsWithinTimeframe(startTime, endTime);
     console.log('busy: ' + count + ' slots @ ' + startTime);
     for (let x = 0; x < count; x++) {
@@ -162,13 +179,16 @@ exports.listEmptySlotsInDay = function(date, room) {
         filterBusyTimeslots(timeArr, timeslotObj);
         console.log(timeArr);
         return timeArr;
+      })
+      .catch(err => {
+        throw new Error("listEmptySlotsInDay error: " + err);
       });
 
   } else {
     let calendarId = calendarIdList[room];
-
     return this.listBookedEventsByRoom(date, endDate, room)
       .then(jsonArr => {
+
         let timeArr = setupTimeArray();
         filterBusyTimeslots(timeArr, jsonArr);
         return timeArr;
@@ -180,23 +200,27 @@ exports.listEmptySlotsInDay = function(date, room) {
 };
 
 exports.listAvailableDurationForStartTime = function(startDatetime, room) {
-
-  let endDate = new Date(startDatetime).getISO8601DateWithDefinedTime(21, 0, 0, 0);
+  const listAvailableTime = 21; //Check available time up to 9 pm
   let startTimestamp = new Date(startDatetime).getISO8601TimeStamp();
+  let endTimestamp = new Date(startDatetime).getISO8601DateWithDefinedTime(listAvailableTime, 0, 0, 0);
   let calendarId = calendarIdList[room];
 
   console.log('listAvailableDurationForStartTime: ' + room);
+
   if (room == RoomList.queenC) {
-    return this.handleListingForTwoCalendars(startTimestamp, endDate, room)
+    return this.handleListingForTwoCalendars(startTimestamp, endTimestamp, room)
       .then(timeslotObj => {
+
         return filterDurationSlots(timeslotObj, startTimestamp);
+      })
+      .catch(err => {
+        throw new Error("listAvailableDurationForStartTime: " + err);
       });
   } else {
-    return this.listBookedEventsByRoom(startTimestamp, endDate, room)
+    return this.listBookedEventsByRoom(startTimestamp, endTimestamp, room)
       .then(jsonArr => {
 
         return filterDurationSlots(jsonArr, startTimestamp);
-
       })
       .catch(err => {
         throw new Error("listAvailableDurationForStartTime: " + err);
@@ -209,6 +233,7 @@ function filterDurationSlots(roomBusyTimeslot, startDatetime) {
   console.log(roomBusyTimeslot);
 
   let maxDurationBlocksAllowed = 8;
+  let closestEventBlocksAway = 99;
   let durOptions = {
     1: '30 mins',
     2: '1 hour',
@@ -219,7 +244,6 @@ function filterDurationSlots(roomBusyTimeslot, startDatetime) {
     7: '3.5 hours',
     8: '4 hours'
   };
-  let closestEventBlocksAway = 99;
 
   if (roomBusyTimeslot.length == 0) {
     return durOptions;
@@ -278,7 +302,6 @@ exports.insertEventForCombinedRoom = function(room1Details, room2Details) {
 exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, location, status, description) {
   console.log('insert: ' + location);
   if (location === RoomList.queenC) {
-    //insert into both q1&q2
     let eventRoom1 = {
       'bookingSummary': bookingSummary,
       'startDateTime': startDateTime,
@@ -299,10 +322,10 @@ exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, locat
       .catch(err => {
         throw new Error("insertEvent: " + err);
       });
-  } else {
-    let calendarId = calendarIdList[location];
-    console.log('before insert: ' + calendarId);
 
+  } else {
+
+    let calendarId = calendarIdList[location];
     return cal.insertEvent(calendarId, bookingSummary, startDateTime, endDateTime, location, status, description, this.getColourForRoom(location))
       .then(resp => {
 
@@ -323,7 +346,6 @@ exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, locat
         throw new Error("insertEvent: " + err);
       });
   }
-
 };
 
 exports.deleteEvent = function(eventId, room) {
