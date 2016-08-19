@@ -9,11 +9,11 @@ const Promise = require('bluebird');
 
 let colourDict = { "fg": 1, "dr": 2, "q1": 3, "q2": 4, "qc": 5 };
 let RoomList = {
-  queen1: 'q1',
-  queen2: 'q2',
-  queenC: 'qc',
-  drone: 'dr',
-  fgd: 'fg'
+  queen1: { id: 'q1', name: 'Queen 1' },
+  queen2: { id: 'q2', name: 'Queen 2' },
+  queenC: { id: 'qc', name: 'Queen (Combined)' },
+  drone: { id: 'dr', name: 'Drone' },
+  fgd: { id: 'fg', name: 'Focus Group Discussion Room' }
 };
 
 let durationOptions = {
@@ -27,6 +27,13 @@ let durationOptions = {
   8: '4 hours'
 };
 
+function getRoomNameFromId(id) {
+  for (let index in RoomList) {
+    if (RoomList[index].id == id) {
+      return RoomList[index].name;
+    }
+  }
+}
 
 function setupTimeArray() {
   let timeslotDict = {};
@@ -94,15 +101,33 @@ exports.listBookedEventsByUser = function(startDateTime, user) {
 
   return Promise.all(promiseList).then(
     (eventsRoom1, eventsRoom2, eventsRoom3, eventsRoom4, eventsRoom5) => {
-      console.log(bookedEventsArray);
+
+      for (let key in bookedEventsArray) {
+        let evnt = bookedEventsArray[key];
+        let bookingDescription = evnt.summary.slice(evnt.summary.indexOf("]") + 2);
+        let bookedRoomName = evnt.summary.slice(1, evnt.summary.indexOf("]"));
+        evnt.summary = bookingDescription;
+
+        if (bookedRoomName == RoomList.queenC.name) {
+
+          if (evnt.location == RoomList.queen1.id) {
+            evnt.location = RoomList.queenC.name;
+          } else {
+            delete bookedEventsArray[key];
+          }
+        }
+      }
       return bookedEventsArray;
     });
 };
 
 exports.listBookedEventsByRoom = function(startDateTime, endDateTime, query) {
+  console.log('listBookedEventsByRoom: ' + query);
   let bookedEventsArray = [];
   let calendarId = calendarIdList[query];
-  return cal.listEvents(calendarId, startDateTime, endDateTime, query)
+  let room = getRoomNameFromId(query);
+
+  return cal.listEvents(calendarId, startDateTime, endDateTime, room)
     .then(json => {
       // console.log('listevent: ' + calendarId + ' ' + startDateTime + ' ' + endDateTime + ' ' + query);
 
@@ -127,14 +152,14 @@ exports.listBookedEventsByRoom = function(startDateTime, endDateTime, query) {
 exports.handleListingForTwoCalendars = function(date, endDate, room) {
 
   return Promise.join(
-    this.listBookedEventsByRoom(date, endDate, RoomList.queen1)
+    this.listBookedEventsByRoom(date, endDate, RoomList.queen1.id)
     .then(jsonArr => {
       console.log('q1: ' + date + ' ' + endDate);
       console.log(jsonArr);
       return jsonArr;
     }),
 
-    this.listBookedEventsByRoom(date, endDate, RoomList.queen2)
+    this.listBookedEventsByRoom(date, endDate, RoomList.queen2.id)
     .then(jsonArr => {
       console.log('q2: ' + date + ' ' + endDate);
       console.log(jsonArr);
@@ -169,9 +194,11 @@ exports.listEmptySlotsInDay = function(date, room) {
   let endDate = new Date(date).addDays(1).getISO8601TimeStamp();
   date = new Date(date).getISO8601TimeStamp();
 
-  console.log('listEmptySlotsInDay: ' + room);
+  console.log('listEmptySlotsInDay: ' + getRoomNameFromId(room));
 
-  if (room == RoomList.queenC) {
+  if (room == RoomList.queenC.id) {
+
+    console.log('searching qc: ');
     return this.handleListingForTwoCalendars(date, endDate, room)
       .then(timeslotObj => {
 
@@ -205,9 +232,9 @@ exports.listAvailableDurationForStartTime = function(startDatetime, room) {
   let endTimestamp = new Date(startDatetime).getISO8601DateWithDefinedTime(listAvailableTime, 0, 0, 0);
   let calendarId = calendarIdList[room];
 
-  console.log('listAvailableDurationForStartTime: ' + room);
+  console.log('listAvailableDurationForStartTime: ' + getRoomNameFromId(room));
 
-  if (room == RoomList.queenC) {
+  if (room == RoomList.queenC.id) {
     return this.handleListingForTwoCalendars(startTimestamp, endTimestamp, room)
       .then(timeslotObj => {
 
@@ -301,12 +328,12 @@ exports.insertEventForCombinedRoom = function(room1Details, room2Details) {
 
 exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, location, status, description) {
   console.log('insert: ' + location);
-  if (location === RoomList.queenC) {
+  if (location === RoomList.queenC.id) {
     let eventRoom1 = {
       'bookingSummary': bookingSummary,
       'startDateTime': startDateTime,
       'endDateTime': endDateTime,
-      'location': RoomList.queen1,
+      'location': RoomList.queen1.id,
       'status': status,
       'description': description
     };
@@ -314,7 +341,7 @@ exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, locat
       'bookingSummary': bookingSummary,
       'startDateTime': startDateTime,
       'endDateTime': endDateTime,
-      'location': RoomList.queen2,
+      'location': RoomList.queen2.id,
       'status': status,
       'description': description
     };
@@ -326,7 +353,8 @@ exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, locat
   } else {
 
     let calendarId = calendarIdList[location];
-    return cal.insertEvent(calendarId, bookingSummary, startDateTime, endDateTime, location, status, description, this.getColourForRoom(location))
+    let room = getRoomNameFromId(location);
+    return cal.insertEvent(calendarId, bookingSummary, startDateTime, endDateTime, room, status, description, this.getColourForRoom(location))
       .then(resp => {
 
         let json = resp.body;

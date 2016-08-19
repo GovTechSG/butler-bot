@@ -107,6 +107,7 @@ slimbot.on('callback_query', query => {
 
 
 function processCallBack(query) {
+  startListeningForInputs = false;
   var callback_data = JSON.parse(query.data);
   var daysInMonth = new Date().daysInMonth();
 
@@ -169,6 +170,9 @@ function checkCommandList(message) {
     var reply = 'Please check your bookings in a private chat with me :)';
     slimbot.sendMessage(message.chat.id, reply);
 
+  } else if (message.text == '/cancel') {
+    console.log('cancel last booking');
+
   } else if (message.text == `/help@${botName}`) {
     var optionalParams = { parse_mode: 'Markdown' };
     slimbot.sendMessage(message.chat.id, 'Hi there, let me guide you through the steps to booking a meeting room?');
@@ -198,24 +202,26 @@ function checkCommandList(message) {
 }
 
 function checkUserBookings(message, searchQuery) {
+
   let optionalParams = { parse_mode: 'Markdown' };
   cal_app.listBookedEventsByUser(new Date(), searchQuery)
     .then(
       (bookings) => {
 
         if (bookings == []) {
-          let reply = 'You have no upcoming room bookings scheduled.';
+          let reply = 'You have no upcoming room bookings.';
           slimbot.sendMessage(message.chat.id, reply, optionalParams);
 
         } else {
-          console.log('reply user');
+          let count = 0;
           let msg = '';
           for (let key in bookings) {
+            count++;
             let booking = bookings[key];
             msg += '-------------------------------\n';
             let details = booking.summary.split(' by ');
 
-            msg += bookingsReplyBuilder(parseInt(key)+1, details[0], roomlist[booking.location], booking.start.dateTime, booking.end.dateTime, details[1]);
+            msg += bookingsReplyBuilder(count, details[0], booking.location, booking.start.dateTime, booking.end.dateTime, details[1]);
             msg += '/deleteBooking@' + booking.id + '\n';
           }
           var reply = 'You have the following bookings scheduled: \n' + msg;
@@ -364,9 +370,9 @@ function promptDurationSelection(query, room, startDate, startTime) {
       console.log('promptDuration');
       console.log(jsonArr);
 
-      //   	if (Object.keys(jsonArr).length == 0){
-      // 	slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'I think someone just booked the timeslot following this. Please pick another starttime.');
-      //   		promptTimeslotSelection(query, startDate, room);
+      //    if (Object.keys(jsonArr).length == 0){
+      //    slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'I think someone just booked the timeslot following this. Please pick another starttime.');
+      //        promptTimeslotSelection(query, startDate, room);
       // }
       var msg = replyBuilder(roomlist[room], startDate, startTime);
       var optionalParams = {
