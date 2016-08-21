@@ -135,9 +135,7 @@ function processCallBack(query) {
     } else if (callback_data.description == undefined) {
       promptDescription(query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date), callback_data.time, callback_data.dur);
 
-    } else {
-      // slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Done! Your room is booked :)');
-    }
+    } 
   }
 }
 
