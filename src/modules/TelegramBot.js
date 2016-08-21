@@ -201,7 +201,6 @@ function checkCommandList(message) {
 }
 
 function checkUserBookings(message, searchQuery) {
-
   let optionalParams = { parse_mode: 'Markdown' };
   cal_app.listBookedEventsByUser(new Date(), searchQuery)
     .then(
@@ -222,8 +221,9 @@ function checkUserBookings(message, searchQuery) {
 
             msg += bookingsReplyBuilder(count, details[0], booking.location, booking.start.dateTime, booking.end.dateTime, details[1]);
             msg += '/deleteBooking@' + booking.id + '\n';
+            msg = msg.replace("_","-"); //escape _ cuz markdown cant handle it
           }
-          var reply = 'You have the following bookings scheduled: \n' + msg;
+          var reply = 'You have the following bookings scheduled: \n' + msg; 
           slimbot.sendMessage(message.chat.id, reply, optionalParams);
         }
       });
@@ -524,6 +524,8 @@ function completeBooking(query) {
   if (bookerQueue[query.from.id] == undefined) {
     return;
   }
+
+  //TODO: input validation before sending to gcal. _ wouldnt work properly
 
   var booking = bookerQueue[query.from.id];
 
