@@ -75,7 +75,6 @@ exports.listBookedEventsByUser = function(startDateTime, user) {
 
   for (let room in calendarIdList) {
     let calendarId = calendarIdList[room];
-    console.log(calendarId + ' ' + startDateTime + ' ' + endDateTime + ' ');
 
     promiseList.push(cal.listEvents(calendarId, startDateTime, endDateTime, user)
       .then(json => {
@@ -154,15 +153,11 @@ exports.handleListingForTwoCalendars = function(date, endDate, roomId) {
   return Promise.join(
     this.listBookedEventsByRoom(date, endDate, RoomList.queen1.id)
     .then(jsonArr => {
-      console.log('q1: ' + date + ' ' + endDate);
-      console.log(jsonArr);
       return jsonArr;
     }),
 
     this.listBookedEventsByRoom(date, endDate, RoomList.queen2.id)
     .then(jsonArr => {
-      console.log('q2: ' + date + ' ' + endDate);
-      console.log(jsonArr);
       return jsonArr;
     }),
 
@@ -197,14 +192,11 @@ exports.listEmptySlotsInDay = function(date, roomId) {
   console.log('listEmptySlotsInDay: ' + getRoomNameFromId(roomId));
 
   if (roomId == RoomList.queenC.id) {
-
-    console.log('searching qc: ');
     return this.handleListingForTwoCalendars(date, endDate, roomId)
       .then(timeslotObj => {
 
         let timeArr = setupTimeArray();
         filterBusyTimeslots(timeArr, timeslotObj);
-        console.log(timeArr);
         return timeArr;
       })
       .catch(err => {
@@ -255,7 +247,6 @@ exports.listAvailableDurationForStartTime = function(startDatetimeStr, roomId) {
 
 function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
   console.log('filterDuration');
-  console.log(roomBusyTimeslot);
 
   let maxDurationBlocksAllowed = 8;
   let closestEventBlocksAway = 99;
