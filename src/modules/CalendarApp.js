@@ -196,7 +196,7 @@ exports.listEmptySlotsInDay = function(date, roomId) {
 
   console.log('listEmptySlotsInDay: ' + getRoomNameFromId(roomId));
 
-  if (room == RoomList.queenC.id) {
+  if (roomId == RoomList.queenC.id) {
 
     console.log('searching qc: ');
     return this.handleListingForTwoCalendars(date, endDate, roomId)
@@ -212,7 +212,7 @@ exports.listEmptySlotsInDay = function(date, roomId) {
       });
 
   } else {
-    let calendarId = calendarIdList[room];
+    let calendarId = calendarIdList[roomId];
     return this.listBookedEventsByRoom(date, endDate, roomId)
       .then(jsonArr => {
 
@@ -226,15 +226,13 @@ exports.listEmptySlotsInDay = function(date, roomId) {
   }
 };
 
-exports.listAvailableDurationForStartTime = function(startDatetime, roomId) {
+exports.listAvailableDurationForStartTime = function(startDatetimeStr, roomId) {
   const listAvailableTime = 21; //Check available time up to 9 pm
-  let startTimestamp = new Date(startDatetime).getISO8601TimeStamp();
-  let endTimestamp = new Date(startDatetime).getISO8601DateWithDefinedTime(listAvailableTime, 0, 0, 0);
-  let calendarId = calendarIdList[room];
+  let startTimestamp = new Date(startDatetimeStr).getISO8601TimeStamp();
+  let endTimestamp = new Date(startDatetimeStr).getISO8601DateWithDefinedTime(listAvailableTime, 0, 0, 0);
+  let calendarId = calendarIdList[roomId];
 
-  console.log('listAvailableDurationForStartTime: ' + getRoomNameFromId(roomId));
-
-  if (room == RoomList.queenC.id) {
+  if (roomId == RoomList.queenC.id) {
     return this.handleListingForTwoCalendars(startTimestamp, endTimestamp, roomId)
       .then(timeslotObj => {
 
@@ -255,7 +253,7 @@ exports.listAvailableDurationForStartTime = function(startDatetime, roomId) {
   }
 };
 
-function filterDurationSlots(roomBusyTimeslot, startDatetime) {
+function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
   console.log('filterDuration');
   console.log(roomBusyTimeslot);
 
@@ -277,7 +275,7 @@ function filterDurationSlots(roomBusyTimeslot, startDatetime) {
   }
 
   for (event in roomBusyTimeslot) {
-    let setOf30minsBlocks = new Date(startDatetime).getMinuteDiff(new Date(roomBusyTimeslot[event].start.dateTime)) / 30;
+    let setOf30minsBlocks = new Date(startDatetimeStr).getMinuteDiff(new Date(roomBusyTimeslot[event].start.dateTime)) / 30;
     if (setOf30minsBlocks < closestEventBlocksAway) {
       closestEventBlocksAway = setOf30minsBlocks;
     }
@@ -326,21 +324,21 @@ exports.insertEventForCombinedRoom = function(room1Details, room2Details) {
     });
 }
 
-exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, location, status, description) {
+exports.insertEvent = function(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description) {
   console.log('insert: ' + location);
   if (location === RoomList.queenC.id) {
     let eventRoom1 = {
       'bookingSummary': bookingSummary,
-      'startDateTime': startDateTime,
-      'endDateTime': endDateTime,
+      'startDateTime': startDateTimeStr,
+      'endDateTime': endDateTimeStr,
       'location': RoomList.queen1.id,
       'status': status,
       'description': description
     };
     let eventRoom2 = {
       'bookingSummary': bookingSummary,
-      'startDateTime': startDateTime,
-      'endDateTime': endDateTime,
+      'startDateTime': startDateTimeStr,
+      'endDateTime': endDateTimeStr,
       'location': RoomList.queen2.id,
       'status': status,
       'description': description
@@ -354,7 +352,7 @@ exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, locat
 
     let calendarId = calendarIdList[location];
     let room = getRoomNameFromId(location);
-    return cal.insertEvent(calendarId, bookingSummary, startDateTime, endDateTime, room, status, description, this.getColourForRoom(location))
+    return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, this.getColourForRoom(location))
       .then(resp => {
 
         let json = resp.body;
