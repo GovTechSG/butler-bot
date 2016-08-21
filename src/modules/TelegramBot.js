@@ -29,8 +29,8 @@ console.log('bot started on ' + new Date().getFormatedTime());
 
 // Register listeners
 slimbot.on('message', message => {
-  checkCommandList(message);
-  if (startListeningForInputs) {
+  let isCommand = checkCommandList(message);
+  if (startListeningForInputs && !isCommand) {
     completeBooking(message);
   }
 });
@@ -194,7 +194,10 @@ function checkCommandList(message) {
       checkUserBookings(message, searchQuery);
 
     }
+  } else {
+    return false;
   }
+  return true;
 }
 
 function checkUserBookings(message, searchQuery) {
@@ -228,6 +231,7 @@ function checkUserBookings(message, searchQuery) {
 
 function startSessionCountdown(userChatId, msgId, username) {
   let sessionLength = 1000 * 30;
+  terminateSession(userChatId, 'This booking session has been cancelled. \nPlease refer to the latest booking message.');
   console.log('Booking session started at ' + new Date() + ' by @' + username);
 
   let timer = setTimeout(
@@ -235,33 +239,37 @@ function startSessionCountdown(userChatId, msgId, username) {
       console.log('Session expired for : ' + username);
 
       let msg = "This booking session has expired. Please start over to book again.";
-      sessionExpire(userChatId, msgId, username, msg);
+      expireSession(userChatId, msgId, username, msg);
     }, sessionLength);
 
   activeUsers[userChatId] = { userChatId: userChatId, msgId: msgId, username: username, timer: timer };
 }
 
-function sessionExpire(userChatId, msgId, username, msg) {
+function expireSession(userChatId, msgId, username, msg) {
   if (userChatId != undefined && msgId != undefined) {
     slimbot.editMessageText(userChatId, msgId, msg);
   }
   clearUncompletedBookings(userChatId);
 }
 
-function terminateSession(userChatId) {
+function terminateSession(userChatId, msg) {
   if (activeUsers[userChatId] == undefined) {
     return;
   }
 
-  let msg = 'This booking session has been cancelled.';
   let sess = activeUsers[userChatId];
   console.log('Session cancelled by @' + sess.username);
   clearTimeout(sess.timer);
   delete activeUsers[userChatId];
-  sessionExpire(userChatId, sess.msgId, sess.username, msg);
+
+  let defaultMsg = 'This booking session has been cancelled.';
+  if (msg == undefined) {
+    msg = defaultMsg;
+  }
+  expireSession(userChatId, sess.msgId, sess.username, msg);
 }
 
-function endSessionCoundown(userChatId) {
+function closeSession(userChatId) {
   if (activeUsers[userChatId] == undefined) {
     return;
   }
@@ -269,12 +277,16 @@ function endSessionCoundown(userChatId) {
   let sess = activeUsers[userChatId];
   clearTimeout(sess.timer);
   delete activeUsers[userChatId];
+  clearUncompletedBookings(userChatId);
 }
 
 function clearUncompletedBookings(userChatId) {
   console.log('clear uncomplete booking in queue: (length: ' + Object.keys(bookerQueue).length + ' )');
   if (bookerQueue[userChatId] != undefined) {
     delete bookerQueue[userChatId];
+    if (Object.keys(bookerQueue).length == 0) {
+      startListeningForInputs = false;
+    }
   }
 }
 
@@ -521,11 +533,6 @@ function completeBooking(query) {
 
     insertBookingIntoCalendar(booking.id, booking.msgid, summary, booking.room,
       new Date().setDateWithSimpleFormat(booking.date), booking.time, booking.dur, booking.name, fullname);
-
-    delete bookerQueue[query.from.id];
-    if (Object.keys(bookerQueue).length == 0) {
-      startListeningForInputs = false;
-    }
   }
 }
 
@@ -541,7 +548,7 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
   cal_app.insertEvent(bookingSummary, startTime, endTime, room, "confirmed", "booked via butler")
     .then(json => {
 
-      endSessionCoundown(userid);
+      closeSession(userid);
       slimbot.editMessageText(userid, msgid, 'Done! Your room booking is confirmed!');
 
       var msg = `#Booking Summary\n----------------------------\nRoom: *${roomlist[room]}*\nDate: *${startDate.getFormattedDate()}*\nTime: *${new Date(json.start).getFormatedTime()} - ${new Date(json.end).getFormatedTime()}*\nBy: *${fullname}* (@${username})\nDescription: ${description}`;
