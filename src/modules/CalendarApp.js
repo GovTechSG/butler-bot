@@ -9,11 +9,11 @@ const Promise = require('bluebird');
 
 let colourDict = { "fg": 1, "dr": 2, "q1": 3, "q2": 4, "qc": 5 };
 let RoomList = {
-  queen1: 'q1',
-  queen2: 'q2',
-  queenC: 'qc',
-  drone: 'dr',
-  fgd: 'fg'
+  queen1: { id: 'q1', name: 'Queen 1' },
+  queen2: { id: 'q2', name: 'Queen 2' },
+  queenC: { id: 'qc', name: 'Queen (Combined)' },
+  drone: { id: 'dr', name: 'Drone' },
+  fgd: { id: 'fg', name: 'Focus Group Discussion Room' }
 };
 
 let durationOptions = {
@@ -26,6 +26,14 @@ let durationOptions = {
   7: '3.5 hours',
   8: '4 hours'
 };
+
+function getRoomNameFromId(id) {
+  for (let index in RoomList) {
+    if (RoomList[index].id == id) {
+      return RoomList[index].name;
+    }
+  }
+}
 
 function setupTimeArray() {
   let timeslotDict = {};
@@ -58,33 +66,67 @@ exports.getColourForRoom = function(roomname) {
   return colourDict[roomname];
 };
 
-exports.listBookedEventsByUser = function(startDateTime, endDateTime, user, room) {
+exports.listBookedEventsByUser = function(startDateTime, user) {
+  let promiseList = [];
   let bookedEventsArray = [];
-  let calendarId = calendarIdList[room];
-  return cal.listEvents(calendarId, startDateTime, endDateTime, user)
-    .then(json => {
-      for (let i = 0; i < json.length; i++) {
-        let event = {
-          id: json[i].id,
-          summary: json[i].summary,
-          location: json[i].location,
-          start: json[i].start,
-          end: json[i].end,
-          status: json[i].status
-        };
-        bookedEventsArray.push(event);
-      };
-      return bookedEventsArray;
+  let endDateTime = startDateTime;
+  startDateTime = startDateTime.getISO8601TimeStamp();
+  endDateTime = endDateTime.addDays(365).getISO8601TimeStamp();
 
-    }).catch(err => {
-      throw err;
+  for (let room in calendarIdList) {
+    let calendarId = calendarIdList[room];
+
+    promiseList.push(cal.listEvents(calendarId, startDateTime, endDateTime, user)
+      .then(json => {
+        let eventsInCalendar = [];
+        for (let i = 0; i < json.length; i++) {
+          let event = {
+            id: json[i].id,
+            summary: json[i].summary,
+            location: json[i].location,
+            start: json[i].start,
+            end: json[i].end,
+            status: json[i].status
+          };
+          eventsInCalendar.push(event);
+          bookedEventsArray.push(event);
+        }
+        return eventsInCalendar;
+      }).catch(err => {
+        throw err;
+      })
+    );
+  }
+
+  return Promise.all(promiseList).then(
+    (eventsRoom1, eventsRoom2, eventsRoom3, eventsRoom4, eventsRoom5) => {
+      //modify event summaries + combine queensC events
+      for (let key in bookedEventsArray) {
+        let evnt = bookedEventsArray[key];
+        let bookingDescription = evnt.summary.slice(evnt.summary.indexOf("]") + 2);
+        let bookedRoomName = evnt.summary.slice(1, evnt.summary.indexOf("]"));
+        evnt.summary = bookingDescription;
+
+        if (bookedRoomName == RoomList.queenC.name) {
+
+          if (evnt.location == RoomList.queen1.id) {
+            evnt.location = RoomList.queenC.name;
+          } else {
+            delete bookedEventsArray[key];
+          }
+        }
+      }
+      return bookedEventsArray;
     });
 };
 
 exports.listBookedEventsByRoom = function(startDateTime, endDateTime, query) {
+  console.log('listBookedEventsByRoom: ' + query);
   let bookedEventsArray = [];
   let calendarId = calendarIdList[query];
-  return cal.listEvents(calendarId, startDateTime, endDateTime, query)
+  let roomName = getRoomNameFromId(query);
+
+  return cal.listEvents(calendarId, startDateTime, endDateTime, roomName)
     .then(json => {
       // console.log('listevent: ' + calendarId + ' ' + startDateTime + ' ' + endDateTime + ' ' + query);
 
@@ -106,20 +148,16 @@ exports.listBookedEventsByRoom = function(startDateTime, endDateTime, query) {
     });
 };
 
-exports.handleListingForTwoCalendars = function(date, endDate, room) {
+exports.handleListingForTwoCalendars = function(date, endDate, roomId) {
 
   return Promise.join(
-    this.listBookedEventsByRoom(date, endDate, RoomList.queen1)
+    this.listBookedEventsByRoom(date, endDate, RoomList.queen1.id)
     .then(jsonArr => {
-      console.log('q1: ' + date + ' ' + endDate);
-      console.log(jsonArr);
       return jsonArr;
     }),
 
-    this.listBookedEventsByRoom(date, endDate, RoomList.queen2)
+    this.listBookedEventsByRoom(date, endDate, RoomList.queen2.id)
     .then(jsonArr => {
-      console.log('q2: ' + date + ' ' + endDate);
-      console.log(jsonArr);
       return jsonArr;
     }),
 
@@ -130,13 +168,13 @@ exports.handleListingForTwoCalendars = function(date, endDate, room) {
   ).catch(err => {
     throw new Error("handleListingForTwoCalendars error: " + err);
   });
-
-}
+};
 
 function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
   for (let key in roomBusyTimeslot) {
     let startTime = new Date(roomBusyTimeslot[key].start.dateTime);
     let endTime = new Date(roomBusyTimeslot[key].end.dateTime);
+
     let count = countSlotsWithinTimeframe(startTime, endTime);
     console.log('busy: ' + count + ' slots @ ' + startTime);
     for (let x = 0; x < count; x++) {
@@ -147,27 +185,29 @@ function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
 }
 
 //assumes booking for max length of a day
-exports.listEmptySlotsInDay = function(date, room) {
+exports.listEmptySlotsInDay = function(date, roomId) {
   let endDate = new Date(date).addDays(1).getISO8601TimeStamp();
   date = new Date(date).getISO8601TimeStamp();
 
-  console.log('listEmptySlotsInDay: ' + room);
+  console.log('listEmptySlotsInDay: ' + getRoomNameFromId(roomId));
 
-  if (room == RoomList.queenC) {
-    return this.handleListingForTwoCalendars(date, endDate, room)
+  if (roomId == RoomList.queenC.id) {
+    return this.handleListingForTwoCalendars(date, endDate, roomId)
       .then(timeslotObj => {
 
         let timeArr = setupTimeArray();
         filterBusyTimeslots(timeArr, timeslotObj);
-        console.log(timeArr);
         return timeArr;
+      })
+      .catch(err => {
+        throw new Error("listEmptySlotsInDay error: " + err);
       });
 
   } else {
-    let calendarId = calendarIdList[room];
-
-    return this.listBookedEventsByRoom(date, endDate, room)
+    let calendarId = calendarIdList[roomId];
+    return this.listBookedEventsByRoom(date, endDate, roomId)
       .then(jsonArr => {
+
         let timeArr = setupTimeArray();
         filterBusyTimeslots(timeArr, jsonArr);
         return timeArr;
@@ -178,24 +218,26 @@ exports.listEmptySlotsInDay = function(date, room) {
   }
 };
 
-exports.listAvailableDurationForStartTime = function(startDatetime, room) {
+exports.listAvailableDurationForStartTime = function(startDatetimeStr, roomId) {
+  const listAvailableTime = 21; //Check available time up to 9 pm
+  let startTimestamp = new Date(startDatetimeStr).getISO8601TimeStamp();
+  let endTimestamp = new Date(startDatetimeStr).getISO8601DateWithDefinedTime(listAvailableTime, 0, 0, 0);
+  let calendarId = calendarIdList[roomId];
 
-  let endDate = new Date(startDatetime).getISO8601DateWithDefinedTime(21, 0, 0, 0);
-  let startTimestamp = new Date(startDatetime).getISO8601TimeStamp();
-  let calendarId = calendarIdList[room];
-
-  console.log('listAvailableDurationForStartTime: ' + room);
-  if (room == RoomList.queenC) {
-    return this.handleListingForTwoCalendars(startTimestamp, endDate, room)
+  if (roomId == RoomList.queenC.id) {
+    return this.handleListingForTwoCalendars(startTimestamp, endTimestamp, roomId)
       .then(timeslotObj => {
+
         return filterDurationSlots(timeslotObj, startTimestamp);
+      })
+      .catch(err => {
+        throw new Error("listAvailableDurationForStartTime: " + err);
       });
   } else {
-    return this.listBookedEventsByRoom(startTimestamp, endDate, room)
+    return this.listBookedEventsByRoom(startTimestamp, endTimestamp, roomId)
       .then(jsonArr => {
 
-        return filterDurationSlots(jsonArr);
-
+        return filterDurationSlots(jsonArr, startTimestamp);
       })
       .catch(err => {
         throw new Error("listAvailableDurationForStartTime: " + err);
@@ -203,11 +245,11 @@ exports.listAvailableDurationForStartTime = function(startDatetime, room) {
   }
 };
 
-function filterDurationSlots(roomBusyTimeslot, startDatetime) {
+function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
   console.log('filterDuration');
-  console.log(roomBusyTimeslot);
 
   let maxDurationBlocksAllowed = 8;
+  let closestEventBlocksAway = 99;
   let durOptions = {
     1: '30 mins',
     2: '1 hour',
@@ -218,14 +260,13 @@ function filterDurationSlots(roomBusyTimeslot, startDatetime) {
     7: '3.5 hours',
     8: '4 hours'
   };
-  let closestEventBlocksAway = 99;
 
   if (roomBusyTimeslot.length == 0) {
     return durOptions;
   }
 
   for (event in roomBusyTimeslot) {
-    let setOf30minsBlocks = new Date(startDatetime).getMinuteDiff(new Date(roomBusyTimeslot[event].start.dateTime)) / 30;
+    let setOf30minsBlocks = new Date(startDatetimeStr).getMinuteDiff(new Date(roomBusyTimeslot[event].start.dateTime)) / 30;
     if (setOf30minsBlocks < closestEventBlocksAway) {
       closestEventBlocksAway = setOf30minsBlocks;
     }
@@ -274,23 +315,22 @@ exports.insertEventForCombinedRoom = function(room1Details, room2Details) {
     });
 }
 
-exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, location, status, description) {
+exports.insertEvent = function(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description) {
   console.log('insert: ' + location);
-  if (location === RoomList.queenC) {
-    //insert into both q1&q2
+  if (location === RoomList.queenC.id) {
     let eventRoom1 = {
       'bookingSummary': bookingSummary,
-      'startDateTime': startDateTime,
-      'endDateTime': endDateTime,
-      'location': RoomList.queen1,
+      'startDateTime': startDateTimeStr,
+      'endDateTime': endDateTimeStr,
+      'location': RoomList.queen1.id,
       'status': status,
       'description': description
     };
     let eventRoom2 = {
       'bookingSummary': bookingSummary,
-      'startDateTime': startDateTime,
-      'endDateTime': endDateTime,
-      'location': RoomList.queen2,
+      'startDateTime': startDateTimeStr,
+      'endDateTime': endDateTimeStr,
+      'location': RoomList.queen2.id,
       'status': status,
       'description': description
     };
@@ -298,11 +338,12 @@ exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, locat
       .catch(err => {
         throw new Error("insertEvent: " + err);
       });
-  } else {
-    let calendarId = calendarIdList[location];
-    console.log('before insert: ' + calendarId);
 
-    return cal.insertEvent(calendarId, bookingSummary, startDateTime, endDateTime, location, status, description, this.getColourForRoom(location))
+  } else {
+
+    let calendarId = calendarIdList[location];
+    let room = getRoomNameFromId(location);
+    return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, this.getColourForRoom(location))
       .then(resp => {
 
         let json = resp.body;
@@ -322,7 +363,6 @@ exports.insertEvent = function(bookingSummary, startDateTime, endDateTime, locat
         throw new Error("insertEvent: " + err);
       });
   }
-
 };
 
 exports.deleteEvent = function(eventId, room) {
