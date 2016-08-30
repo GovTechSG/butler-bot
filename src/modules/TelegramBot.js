@@ -19,7 +19,6 @@ let roomlist = {
   'fg': 'Focus Group Discussion Room'
 };
 
-let startListeningForInputs = false;
 let bookerQueue = {};
 let activeUsers = {};
 
@@ -39,8 +38,12 @@ slimbot.on('message', message => {
   console.log('message');
   let isCommand = checkCommandList(message);
   console.log('isCommand' + isCommand);
-  console.log(startListeningForInputs);
-  if (startListeningForInputs && !isCommand) {
+
+  if (Object.keys(bookerQueue).length == 0) {
+    return;
+  }
+
+  if (!isCommand) {
     completeBooking(message);
   }
 });
@@ -117,7 +120,6 @@ slimbot.on('callback_query', query => {
 // End of listeners
 
 function processCallBack(query) {
-  startListeningForInputs = false;
   var callback_data = JSON.parse(query.data);
   var daysInMonth = new Date().daysInMonth();
 
@@ -181,22 +183,20 @@ function checkCommandList(message) {
     console.log('/cancel last booking');
     terminateSession(message.chat.id);
 
-  } else if (message.text == `/help@${botName}`) {
+  } else if (message.text == `/help@${botName}` || message.text == '/help') {
     var optionalParams = { parse_mode: 'Markdown' };
-    slimbot.sendMessage(message.chat.id, 'Hi there, let me guide you through the steps to booking a meeting room?');
-    slimbot.sendMessage(message.chat.id, `Start searching for rooms to book by typing *@${botName}*`, optionalParams);
+    slimbot.sendMessage(message.chat.id, `Hi there, start searching for rooms to book by typing *@${botName}* or \n*/cancel* during a booking - to cancel the current booking session`, optionalParams);
 
   } else if (message.chat.type == 'private') {
     var optionalParams = { parse_mode: 'Markdown' };
 
     if (message.text == '/start') {
-      var reply = `Hello there! Type\n*@${botName}* to start booking from a list of rooms available or\n*/help* in a private chat - for more info on how to book a room or \n*/booked* in a private chat - for list of rooms you have booked.`;
+      var reply = `Hello there! To get started, type\n\n*@${botName}* to start booking from a list of rooms available or\n*/help* in a private chat - for more info on how to book a room or \n*/booked* in a private chat - for list of rooms you have booked or \n*/cancel* during a booking - to cancel the current booking session.`;
       slimbot.sendMessage(message.chat.id, reply, optionalParams);
 
     } else if (message.text == '/help') {
+      slimbot.sendMessage(message.chat.id, `Hi there, let me guide you through the steps to booking a meeting room?\n\nStart searching for rooms to book by typing *@${botName}*. \n/booked in a private chat - for list of rooms you have booked or \n/cancel during a booking - to cancel the current booking session.`, optionalParams);
 
-      slimbot.sendMessage(message.chat.id, 'Hi there, let me guide you through the steps to booking a meeting room?');
-      slimbot.sendMessage(message.chat.id, `Start searching for rooms to book by typing *@${botName}*`, optionalParams);
     } else if (message.text == '/booked') {
 
       let fullname = message.from.first_name + ' ' + message.from.last_name;
@@ -297,9 +297,6 @@ function clearUncompletedBookings(userChatId) {
   console.log('clear uncomplete booking in queue: (length: ' + Object.keys(bookerQueue).length + ' )');
   if (bookerQueue[userChatId] != undefined) {
     delete bookerQueue[userChatId];
-    if (Object.keys(bookerQueue).length == 0) {
-      startListeningForInputs = false;
-    }
   }
 }
 
@@ -506,7 +503,6 @@ function promptDescription(query, room, startDate, startTime, duration) {
     .then(message => {
       console.log(message);
       bot_id = message.result.chat.id;
-      startListeningForInputs = true;
       bookerQueue[query.from.id] = {
         id: bot_id,
         chatType: query.message.chat.type,
@@ -537,7 +533,6 @@ function completeBooking(query) {
   if (bookerQueue[query.from.id] == undefined) {
     return;
   }
-
   //TODO: input validation before sending to gcal. _ wouldnt work properly
 
   var booking = bookerQueue[query.from.id];
@@ -576,7 +571,7 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
 
     }).catch(err => {
       console.log('Error insertBookingIntoCalendar: ' + JSON.stringify(err));
-      slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Oh dear, something went wrong while booking your room. Sorry, Please try again!');
+      slimbot.editMessageText(userid, msgid, 'Oh paiseh, think your room kena snatched away by someone else. Sorry please try again.');
       throw err;
     });
 }

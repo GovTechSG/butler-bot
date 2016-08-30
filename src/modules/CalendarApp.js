@@ -125,7 +125,6 @@ exports.listBookedEventsByUser = function(startDateTime, user) {
           }
         }
       }
-      console.log(bookedEventsArray);
       return bookedEventsArray;
     });
 };
@@ -344,11 +343,9 @@ exports.queueForInsert = function(bookingSummary, startDateTimeStr, endDateTimeS
     EE.once('booked' + username + bookTime, function(resp) {
       if (resp.success) {
         console.log('booking success:' + resp.success);
-        console.log(' ');
         fulfill(resp.results);
       } else {
         console.log('sorry cannot book');
-        console.log(' ');
         reject();
       }
     }, {});
