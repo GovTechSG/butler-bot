@@ -6,6 +6,9 @@ let cal = new CalendarAPI(CONFIG);
 let calendarIdList = CONFIG.calendarId;
 require('./Date');
 const Promise = require('bluebird');
+const EventEmitter = require('eventemitter3');
+var EE = new EventEmitter();
+
 
 let colourDict = { "fg": 1, "dr": 2, "q1": 3, "q2": 4, "qc": 5 };
 let RoomList = {
@@ -14,6 +17,10 @@ let RoomList = {
   queenC: { id: 'qc', name: 'Queen (Combined)' },
   drone: { id: 'dr', name: 'Drone' },
   fgd: { id: 'fg', name: 'Focus Group Discussion Room' }
+};
+
+let jointRoomList = {
+  'qc': ['q1', 'q2']
 };
 
 let durationOptions = {
@@ -26,6 +33,8 @@ let durationOptions = {
   7: '3.5 hours',
   8: '4 hours'
 };
+
+let bookingQueue = [];
 
 function getRoomNameFromId(id) {
   for (let index in RoomList) {
@@ -101,6 +110,7 @@ exports.listBookedEventsByUser = function(startDateTime, user) {
   return Promise.all(promiseList).then(
     (eventsRoom1, eventsRoom2, eventsRoom3, eventsRoom4, eventsRoom5) => {
       //modify event summaries + combine queensC events
+
       for (let key in bookedEventsArray) {
         let evnt = bookedEventsArray[key];
         let bookingDescription = evnt.summary.slice(evnt.summary.indexOf("]") + 2);
@@ -108,14 +118,14 @@ exports.listBookedEventsByUser = function(startDateTime, user) {
         evnt.summary = bookingDescription;
 
         if (bookedRoomName == RoomList.queenC.name) {
-
-          if (evnt.location == RoomList.queen1.id) {
+          if (evnt.location == RoomList.queen1.name) {
             evnt.location = RoomList.queenC.name;
           } else {
             delete bookedEventsArray[key];
           }
         }
       }
+      console.log(bookedEventsArray);
       return bookedEventsArray;
     });
 };
@@ -286,15 +296,15 @@ function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
   return durOptions;
 }
 
-exports.insertEventForCombinedRoom = function(room1Details, room2Details) {
+exports.insertEventForCombinedRoom = function(room1Details, room2Details, username) {
   return Promise.join(
       this.insertEvent(room1Details.bookingSummary, room1Details.startDateTime, room1Details.endDateTime,
-        room1Details.location, room1Details.status, room1Details.description)
+        room1Details.location, room1Details.status, room1Details.description, username)
       .then(results => {
         return results;
       }),
       this.insertEvent(room2Details.bookingSummary, room2Details.startDateTime, room2Details.endDateTime,
-        room2Details.location, room2Details.status, room2Details.description)
+        room2Details.location, room2Details.status, room2Details.description, username)
       .then(results => {
         return results;
       }),
@@ -315,8 +325,42 @@ exports.insertEventForCombinedRoom = function(room1Details, room2Details) {
     });
 }
 
-exports.insertEvent = function(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description) {
+exports.queueForInsert = function(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username) {
+  let bookTime = new Date();
+  let booking = {
+    bookingSummary: bookingSummary,
+    startDateTime: startDateTimeStr,
+    endDateTime: endDateTimeStr,
+    location: location,
+    status: status,
+    description: description,
+    username: username,
+    bookTime: bookTime
+  };
+
+  bookingQueue.push(booking);
+  console.log('queueForInsert');
+  return new Promise(function(fulfill, reject) {
+    EE.once('booked' + username + bookTime, function(resp) {
+      if (resp.success) {
+        console.log('booking success:' + resp.success);
+        console.log(' ');
+        fulfill(resp.results);
+      } else {
+        console.log('sorry cannot book');
+        console.log(' ');
+        reject();
+      }
+    }, {});
+
+    waitForTurnToBook(username, bookTime);
+  });
+}
+
+
+exports.insertEvent = function(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username) {
   console.log('insert: ' + location);
+
   if (location === RoomList.queenC.id) {
     let eventRoom1 = {
       'bookingSummary': bookingSummary,
@@ -334,7 +378,7 @@ exports.insertEvent = function(bookingSummary, startDateTimeStr, endDateTimeStr,
       'status': status,
       'description': description
     };
-    return this.insertEventForCombinedRoom(eventRoom1, eventRoom2)
+    return this.insertEventForCombinedRoom(eventRoom1, eventRoom2, username)
       .catch(err => {
         throw new Error("insertEvent: " + err);
       });
@@ -360,12 +404,120 @@ exports.insertEvent = function(bookingSummary, startDateTimeStr, endDateTimeStr,
         return results;
       })
       .catch(err => {
-        throw new Error("insertEvent: " + err);
+        console.log(JSON.stringify(err));
+        throw new Error("insertEvent: " +
+          console.log(err));
+      });
+  }
+};
+
+function waitForTurnToBook(username, bookTime) {
+  if (checkBookingTurn(username, bookTime)) {
+    let booking = bookingQueue[0];
+    handleBookingProcess(booking);
+  } else {
+    setTimeout(function() {
+      waitForTurnToBook(username, bookTime);
+    }, 3000);
+  }
+}
+
+function checkBookingTurn(username, bookTime) {
+  let firstItemInQueue = bookingQueue[0];
+  console.log('checking turn: ' + firstItemInQueue.username + ' == ' + username);
+  if (firstItemInQueue.username == username && firstItemInQueue.bookTime == bookTime) {
+    //current booking's turn
+    console.log('turn for ' + username);
+    return true;
+  } else {
+    //not current booking's turn yet
+    return false;
+  };
+}
+
+function handleBookingProcess(booking) {
+  console.log('handleBookingProcess');
+  exports.checkTimeslotFree(booking.startDateTime, booking.endDateTime, booking.location)
+    .then(isSlotFree => {
+      if (isSlotFree) {
+
+        exports.insertEvent(booking.bookingSummary, booking.startDateTime, booking.endDateTime,
+            booking.location, booking.status, booking.description, booking.username)
+          .then(results => {
+
+            bookingQueue.shift();
+            EE.emit('booked' + booking.username + booking.bookTime, { success: true, results: results });
+          });
+
+      } else {
+
+        bookingQueue.shift();
+        EE.emit('booked' + booking.username + booking.bookTime, { success: false });
+      }
+    });
+}
+
+function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
+  let promiseList = [];
+  let statusList = [];
+  let jointRoom = jointRoomList[room];
+
+  for (let smallRoom in jointRoom) {
+    console.log(jointRoom[smallRoom]);
+
+    let calendarId = calendarIdList[jointRoom[smallRoom]];
+
+    promiseList.push(
+      cal.checkBusyPeriod(calendarId, startDateTimeStr, endDateTimeStr)
+      .then(json => {
+        if (json != undefined && json.length > 0) {
+          statusList.push(false);
+          return false;
+        } else {
+          statusList.push(true);
+          return true;
+        }
+      }).catch(err => {
+        throw new Error("checkJointRoomFree: " + err);
+      })
+    );
+  }
+
+  return Promise.all(promiseList).then(
+    (room1Free, room2Free) => {
+      let result = statusList[0];
+      for (let index in statusList) {
+        result = result && statusList[index];
+      }
+      return result;
+    });
+
+}
+
+exports.checkTimeslotFree = function(startDateTimeStr, endDateTimeStr, room) {
+  console.log('received: ' + startDateTimeStr + ', ' + endDateTimeStr + ' ,' + room);
+
+  if (room == RoomList.queenC.id) {
+    return checkJointRoomFree(startDateTimeStr, endDateTimeStr, room);
+  } else {
+    let calendarId = calendarIdList[room];
+    return cal.checkBusyPeriod(calendarId, startDateTimeStr, endDateTimeStr)
+      .then(function(eventsJson) {
+        if (eventsJson != undefined && eventsJson.length > 0) {
+          return false;
+        } else {
+          return true;
+        }
+      }).catch(err => {
+        throw new Error("checkTimeslotFree: " + err);
       });
   }
 };
 
 exports.deleteEvent = function(eventId, room) {
   let calendarId = calendarIdList[room];
-  return cal.deleteEvent(calendarId, eventId);
+  return cal.deleteEvent(calendarId, eventId)
+    .catch(err => {
+      throw new Error("deleteEvent: " + err);
+    });
 };

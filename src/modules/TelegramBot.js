@@ -2,8 +2,8 @@
 
 require('./Date');
 const Slimbot = require('slimbot');
-const slimbot = new Slimbot(process.env['TELEGRAM_TOKEN_TEST']);
-console.log(process.env['TELEGRAM_TOKEN_TEST']);
+const slimbot = new Slimbot(process.env['TELEGRAM_TOKEN']);
+console.log(process.env['TELEGRAM_TOKEN']);
 let cal_app = require('./CalendarApp');
 let botName;
 
@@ -24,8 +24,15 @@ let bookerQueue = {};
 let activeUsers = {};
 
 console.log('bot started on ' + new Date().getFormattedTime());
+
+// cal_app.queueForInsert('bookingSummary', '2016-09-28T10:00:00+08:00', '2016-09-28T12:00:00+08:00', 'qc', 'confirmed', 'description', 'shekyh');
+
+// cal_app.queueForInsert('bookingSummary2', '2016-09-28T10:00:00+08:00', '2016-09-28T11:00:00+08:00', 'q1', 'confirmed', 'description', 'edi');
+// cal_app.queueForInsert('bookingSummary3', '2016-09-28T10:00:00+08:00', '2016-09-28T11:00:00+08:00', 'q1', 'confirmed', 'description', 'pax3')
+// ;
+// cal_app.queueForInsert('bookingSummary4', '2016-09-28T10:00:00+08:00', '2016-09-28T11:00:00+08:00', 'q2', 'confirmed', 'description', 'pax4');
 // cal_app.listAvailableDurationForStartTime(new Date().addDays(0).setTime(16,00,0,0), 'fgd');
-// console.log(cal_app.listEmptySlotsInDay(new Date().setDateWithSimpleFormat('10/8/2016'), 'qc'));
+// // console.log(cal_app.listEmptySlotsInDay(new Date().setDateWithSimpleFormat('10/8/2016'), 'qc'));
 
 // Register listeners
 slimbot.on('message', message => {
@@ -196,7 +203,7 @@ function checkCommandList(message) {
       let searchQuery = '@' + message.chat.username + ' (' + fullname + ')'
       checkUserBookings(message, searchQuery);
 
-    }else{
+    } else {
       return false;
     }
   } else {
@@ -218,6 +225,7 @@ function checkUserBookings(message, searchQuery) {
         } else {
           let count = 0;
           let msg = '';
+          console.log(bookings);
           for (let key in bookings) {
             count++;
             let booking = bookings[key];
@@ -226,7 +234,7 @@ function checkUserBookings(message, searchQuery) {
 
             msg += bookingsReplyBuilder(count, details[0], booking.location, booking.start.dateTime, booking.end.dateTime, details[1]);
             msg += '/deleteBooking@' + booking.id + '\n';
-            msg = msg.replace("_","-"); //escape _ cuz markdown cant handle it
+            msg = msg.replace("_", "-"); //escape _ cuz markdown cant handle it
           }
           var reply = 'You have the following bookings scheduled: \n' + msg;
           slimbot.sendMessage(message.chat.id, reply, optionalParams);
@@ -552,10 +560,9 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
   }
   var endTime = startDate.getISO8601TimeStamp();
 
-  cal_app.insertEvent(bookingSummary, startTime, endTime, room, "confirmed", "booked via butler")
+  cal_app.queueForInsert(bookingSummary, startTime, endTime, room, "confirmed", "booked via butler", username)
     .then(json => {
 
-      closeSession(userid);
       slimbot.editMessageText(userid, msgid, 'Done! Your room booking is confirmed!');
 
       var msg = `#Booking Summary\n----------------------------\nRoom: *${roomlist[room]}*\nDate: *${startDate.getFormattedDate()}*\nTime: *${new Date(json.start).getFormattedTime()} - ${new Date(json.end).getFormattedTime()}*\nBy: *${fullname}* (@${username})\nDescription: ${description}`;
@@ -565,6 +572,7 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
         msg = 'Check out this link for the overall room booking schedules: ' + json.htmlLink;
         slimbot.sendMessage(userid, msg);
       });
+      closeSession(userid);
 
     }).catch(err => {
       console.log('Error insertBookingIntoCalendar: ' + JSON.stringify(err));
