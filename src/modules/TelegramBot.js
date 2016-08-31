@@ -2,8 +2,8 @@
 
 require('./Date');
 const Slimbot = require('slimbot');
-const slimbot = new Slimbot(process.env['TELEGRAM_TOKEN']);
-console.log(process.env['TELEGRAM_TOKEN']);
+const slimbot = new Slimbot(process.env['TELEGRAM_TOKEN_TEST']);
+console.log(process.env['TELEGRAM_TOKEN_TEST']);
 let cal_app = require('./CalendarApp');
 let botName;
 
@@ -54,7 +54,7 @@ slimbot.on('inline_query', query => {
   var results = JSON.stringify([{
     'type': 'article',
     'id': 'help',
-    'title': 'Hey Butler! How do I book a room?',
+    'title': 'How to book ah?',
     'input_message_content': {
       'message_text': '/help',
       'disable_web_page_preview': true
@@ -176,7 +176,7 @@ function checkCommandList(message) {
     promptTodayOrDateOption(roomSelected, message);
 
   } else if (message.text == '/booked' && message.chat.type == 'group') {
-    var reply = 'Please check your bookings in a private chat with me :)';
+    var reply = 'Please check your bookings in a private chat with me 😉';
     slimbot.sendMessage(message.chat.id, reply);
 
   } else if (message.text == '/cancel') {
@@ -185,13 +185,13 @@ function checkCommandList(message) {
 
   } else if (message.text == `/help@${botName}` || message.text == '/help') {
     var optionalParams = { parse_mode: 'Markdown' };
-    slimbot.sendMessage(message.chat.id, `Hi there, start searching for rooms to book by typing *@${botName}* or \n*/cancel* during a booking - to cancel the current booking session`, optionalParams);
+    slimbot.sendMessage(message.chat.id, `Type:\n\n*@${botName}* if you want to book a room;\n\n*/booked* if you want to check your bookings;\n\n*/cancel* if you want to cancel while booking halfway.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`, optionalParams);
 
   } else if (message.chat.type == 'private') {
     var optionalParams = { parse_mode: 'Markdown' };
 
     if (message.text == '/start') {
-      var reply = `Hello there! To get started, type\n\n*@${botName}* to start booking from a list of rooms available or\n*/help* in a private chat - for more info on how to book a room or \n*/booked* in a private chat - for list of rooms you have booked or \n*/cancel* during a booking - to cancel the current booking session.`;
+      var reply = `Allo!💁 To get started, type:\n\n*@${botName}* to start booking from a list of rooms available;\n*/help* in a private chat - for more info on how to book a room;\n*/booked* in a private chat - for list of rooms you have booked;\n*/cancel* during a booking - to cancel the current booking session.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`;
       slimbot.sendMessage(message.chat.id, reply, optionalParams);
 
     } else if (message.text == '/help') {
@@ -219,7 +219,7 @@ function checkUserBookings(message, searchQuery) {
       (bookings) => {
 
         if (bookings == []) {
-          let reply = 'You have no upcoming room bookings.';
+          let reply = 'You don\'t have any upcoming room bookings leh 😧. You sure you got book or not?';
           slimbot.sendMessage(message.chat.id, reply, optionalParams);
 
         } else {
@@ -243,7 +243,7 @@ function checkUserBookings(message, searchQuery) {
 }
 
 function startSessionCountdown(userChatId, msgId, username) {
-  let sessionLength = 1000 * 60 * 5;
+  let sessionLength = 1000 * 30;
   terminateSession(userChatId, 'This booking session has been cancelled. \nPlease refer to the latest booking message.');
   console.log('Booking session started at ' + new Date() + ' by @' + username);
 
@@ -251,7 +251,7 @@ function startSessionCountdown(userChatId, msgId, username) {
     function() {
       console.log('Session expired for : ' + username);
 
-      let msg = "This booking session has expired. Please start over to book again.";
+      let msg = "Ehh you took too long to book lah. I wait until fed up! 😡😡😡\n\nTry booking again -____-";
       expireSession(userChatId, msgId, username, msg);
     }, sessionLength);
 
@@ -275,7 +275,7 @@ function terminateSession(userChatId, msg) {
   clearTimeout(sess.timer);
   delete activeUsers[userChatId];
 
-  let defaultMsg = 'This booking session has been cancelled.';
+  let defaultMsg = '😢 I just cancelled your booking... you want to try again?';
   if (msg == undefined) {
     msg = defaultMsg;
   }
@@ -391,7 +391,7 @@ function promptTimeslotSelection(query, room, startDate) {
     })
     .catch(err => {
       console.log('Error promptTimeslotSelection: ' + JSON.stringify(err));
-      slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Unfortunately I ran into some issues booking your room. Please try again.');
+      slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Oops sorry ah, I think something spoil aledi.. you don\'t mind try again later ok? 😅');
       throw new Error('Error promptTimeslotSelection: ' + JSON.stringify(err));
     });
 }
@@ -448,7 +448,7 @@ function promptDurationSelection(query, room, startDate, startTime) {
 
     }, function(err) {
       console.log('Error promptDurationSelection: ' + JSON.stringify(err));
-      slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Unfortunately I ran into some issues booking your room. Please try again.');
+      slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Oops sorry ah, I think something spoil aledi.. you don\'t mind try again later ok? 😅');
     });
 }
 
@@ -558,9 +558,9 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
   cal_app.queueForInsert(bookingSummary, startTime, endTime, room, "confirmed", "booked via butler", username)
     .then(json => {
 
-      slimbot.editMessageText(userid, msgid, 'Done! Your room booking is confirmed!');
+      slimbot.editMessageText(userid, msgid, 'Swee lah! Your room booking is confirmed! 👍🏻');
 
-      var msg = `#Booking Summary\n----------------------------\nRoom: *${roomlist[room]}*\nDate: *${startDate.getFormattedDate()}*\nTime: *${new Date(json.start).getFormattedTime()} - ${new Date(json.end).getFormattedTime()}*\nBy: *${fullname}* (@${username})\nDescription: ${description}`;
+      var msg = `#Booking confirmed ✔️\n----------------------------\nRoom: *${roomlist[room]}*\nDate: *${startDate.getFormattedDate()}*\nTime: *${new Date(json.start).getFormattedTime()} - ${new Date(json.end).getFormattedTime()}*\nBy: *${fullname}* (@${username})\nDescription: ${description}`;
       var optionalParams = { parse_mode: 'Markdown' };
 
       slimbot.sendMessage(userid, msg, optionalParams).then(message => {
@@ -571,7 +571,7 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
 
     }).catch(err => {
       console.log('Error insertBookingIntoCalendar: ' + JSON.stringify(err));
-      slimbot.editMessageText(userid, msgid, 'Oh paiseh, think your room kena snatched away by someone else. Sorry please try again.');
+      slimbot.editMessageText(userid, msgid, 'Oh no 😱, I think your room kena snatched away by someone else. Maybe next time you try faster hand faster leg ok?');
       throw err;
     });
 }
