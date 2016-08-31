@@ -28,6 +28,6 @@ References:
 ## Todo
 
 * Publish NPM package for node-google-calendar
-* Refine interaction for booking
+* REFACTOR!!!😱😱😱
 * Use Jasmine and Istanbul for testing
 * CodeClimate
