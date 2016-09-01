@@ -31,3 +31,5 @@ References:
 * REFACTOR!!!😱😱😱
 * Use Jasmine and Istanbul for testing
 * CodeClimate
+* Recurrent booking
+* /amend, /delete, /view
