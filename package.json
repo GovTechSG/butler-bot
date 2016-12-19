@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/edisonchee/butler-bot.git"
+    "url": "git@github.com:GovTechSG/butler-bot.git"
   },
   "main": "index.js",
   "keywords": [
@@ -38,7 +38,7 @@
     "mockery": "^2.0.0"
   },
   "bugs": {
-    "url": "https://github.com/edisonchee/butler-bot/issues"
+    "url": "https://github.com/GovTechSG/butler-bot/issues"
   },
-  "homepage": "https://github.com/edisonchee/butler-bot#readme"
+  "homepage": "https://github.com/GovTechSG/butler-bot#readme"
 }
