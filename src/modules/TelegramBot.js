@@ -1,13 +1,12 @@
 //TelegramBot
-
 require('./Date');
 const Slimbot = require('slimbot');
-const slimbot = new Slimbot(process.env['TELEGRAM_TOKEN_TEST']);
-console.log(process.env['TELEGRAM_TOKEN_TEST']);
+const slimbot = new Slimbot(process.env['SLIMBOT_TOKEN']);
 let cal_app = require('./CalendarApp');
 let botName;
 
 slimbot.getMe().then(update => {
+  console.log(update);
   botName = update.result.username;
 });
 

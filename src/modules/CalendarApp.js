@@ -1,14 +1,13 @@
 //cal-app.js - booking app specific calendar logic
 const CALENDAR_URL = require('../config/settings').calendarUrl;
 const CONFIG = require('../config/settings');
-const CalendarAPI = require('./CalendarAPI');
+const CalendarAPI = require('node-google-calendar');
 let cal = new CalendarAPI(CONFIG);
 let calendarIdList = CONFIG.calendarId;
 require('./Date');
 const Promise = require('bluebird');
 const EventEmitter = require('eventemitter3');
 var EE = new EventEmitter();
-
 
 let colourDict = { "fg": 1, "dr": 2, "q1": 3, "q2": 4, "qc": 5 };
 let RoomList = {
