@@ -27,9 +27,9 @@ References:
 
 ## Todo
 
-* Publish NPM package for node-google-calendar
 * REFACTOR!!!😱😱😱
-* Use Jasmine and Istanbul for testing
-* CodeClimate
-* Recurrent booking
-* /amend, /delete, /view
+* Use Jasmine and Istanbul for testing (Write test cases)
+* CodeClimate?
+* Recurrent booking?
+* Setup Webhook (Domain name, SSL Termination)
+* Update this Todo list
