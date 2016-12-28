@@ -173,28 +173,45 @@ function checkCommandList(message) {
   } else if (message.text == '/book_drone') {
     roomSelected = 'dr';
     promptTodayOrDateOption(roomSelected, message);
-
+  }
+    else if (message.text == '/book') {
+    let optionalParams = {
+      parse_mode: 'markdown',
+      reply_markup: JSON.stringify({
+        inline_keyboard: [[
+          { text: 'Focus Group Room', callback_data: JSON.stringify({ room: 'fg' }) },
+          { text: 'Drone Room', callback_data: JSON.stringify({ room: 'dr' }) }
+        ],[
+          { text: 'Queen Room 1', callback_data: JSON.stringify({ room: 'q1' }) },
+          { text: 'Queen Room 2', callback_data: JSON.stringify({ room: 'q2' }) }
+        ],[
+          { text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) }
+        ]
+        ]
+      })
+    };
+    slimbot.sendMessage(message.chat.id, 'Which room would you like to book?', optionalParams);
   } else if (message.text == '/booked' && message.chat.type == 'group') {
     var reply = 'Please check your bookings in a private chat with me 😉';
     slimbot.sendMessage(message.chat.id, reply);
 
-  } else if (message.text == '/cancel') {
-    console.log('/cancel last booking');
+  } else if (message.text == '/exit') {
+    console.log('/exit current booking');
     terminateSession(message.chat.id);
 
   } else if (message.text == `/help@${botName}` || message.text == '/help') {
     var optionalParams = { parse_mode: 'Markdown' };
-    slimbot.sendMessage(message.chat.id, `Type:\n\n*@${botName}* if you want to book a room;\n\n*/booked* if you want to check your bookings;\n\n*/cancel* if you want to cancel while booking halfway.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`, optionalParams);
+    slimbot.sendMessage(message.chat.id, `Type:\n\n*@${botName}* if you want to book a room;\n\n*/booked* if you want to check your bookings;\n\n*/exit* if you want to cancel while booking halfway.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`, optionalParams);
 
   } else if (message.chat.type == 'private') {
     var optionalParams = { parse_mode: 'Markdown' };
 
     if (message.text == '/start') {
-      var reply = `Allo!💁 To get started, type:\n\n*@${botName}* to start booking from a list of rooms available;\n*/help* in a private chat - for more info on how to book a room;\n*/booked* in a private chat - for list of rooms you have booked;\n*/cancel* during a booking - to cancel the current booking session.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`;
+      var reply = `Allo!💁 To get started, type:\n\n*@${botName}* to start booking from a list of rooms available;\n*/help* in a private chat - for more info on how to book a room;\n*/booked* in a private chat - for list of rooms you have booked;\n*/exit* during a booking - to cancel the current booking session.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`;
       slimbot.sendMessage(message.chat.id, reply, optionalParams);
 
     } else if (message.text == '/help') {
-      slimbot.sendMessage(message.chat.id, `Hi there, let me guide you through the steps to booking a meeting room?\n\nStart searching for rooms to book by typing *@${botName}*. \n/booked in a private chat - for list of rooms you have booked or \n/cancel during a booking - to cancel the current booking session.`, optionalParams);
+      slimbot.sendMessage(message.chat.id, `Hi there, let me guide you through the steps to booking a meeting room?\n\nStart searching for rooms to book by typing *@${botName}*. \n/booked in a private chat - for list of rooms you have booked or \n/exit during a booking - to cancel the current booking session.`, optionalParams);
 
     } else if (message.text == '/booked') {
 
@@ -575,7 +592,7 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
     });
 }
 
-//Cancel Booking
+//Exit Booking
 function replyCancelBookProcess(query) {
   var msg = 'Canceled your booking process. To check your current bookings type /booked.'
   slimbot.editMessageText(query.from.id, query.message.message_id, msg, optionalParams);
