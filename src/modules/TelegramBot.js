@@ -1,7 +1,7 @@
 //TelegramBot
 require('./Date');
 const Slimbot = require('slimbot');
-const slimbot = new Slimbot(process.env['SLIMBOT_TOKEN']);
+const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
 let cal_app = require('./CalendarApp');
 let botName;
 
