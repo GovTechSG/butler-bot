@@ -344,7 +344,7 @@ exports.queueForInsert = function(bookingSummary, startDateTimeStr, endDateTimeS
         console.log('booking success:' + resp.success);
         fulfill(resp.results);
       } else {
-        console.log('sorry cannot book');
+        console.log('sorry cannot book: ' + resp);
         reject();
       }
     }, {});

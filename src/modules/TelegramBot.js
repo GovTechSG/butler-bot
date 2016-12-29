@@ -2,6 +2,7 @@
 require('./Date');
 const Slimbot = require('slimbot');
 const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
+const paramBuilder = require('./OptParamBuilder');
 let cal_app = require('./CalendarApp');
 let botName;
 
@@ -22,9 +23,8 @@ let bookerQueue = {};
 let activeUsers = {};
 
 console.log('bot started on ' + new Date().getFormattedTime());
-
+// debug cal_app
 // cal_app.queueForInsert('bookingSummary', '2016-09-28T10:00:00+08:00', '2016-09-28T12:00:00+08:00', 'qc', 'confirmed', 'description', 'shekyh');
-
 // cal_app.queueForInsert('bookingSummary2', '2016-09-28T10:00:00+08:00', '2016-09-28T11:00:00+08:00', 'q1', 'confirmed', 'description', 'edi');
 // cal_app.queueForInsert('bookingSummary3', '2016-09-28T10:00:00+08:00', '2016-09-28T11:00:00+08:00', 'q1', 'confirmed', 'description', 'pax3')
 // ;
@@ -216,7 +216,7 @@ function checkCommandList(message) {
     } else if (message.text == '/booked') {
 
       let fullname = message.from.first_name + ' ' + message.from.last_name;
-      let searchQuery = '@' + message.chat.username + ' (' + fullname + ')'
+      let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
       checkUserBookings(message, searchQuery);
 
     } else {
@@ -237,7 +237,6 @@ function checkUserBookings(message, searchQuery) {
         if (bookings == []) {
           let reply = 'You don\'t have any upcoming room bookings leh 😧. You sure you got book or not?';
           slimbot.sendMessage(message.chat.id, reply, optionalParams);
-
         } else {
           let count = 0;
           let msg = '';
@@ -319,7 +318,7 @@ function clearUncompletedBookings(userChatId) {
 //Step 1 - Today or Date
 function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
   console.log('/' + roomSelectedId);
-  var optionalParams = getTodayOrDateOptions(roomSelectedId);
+  var optionalParams = paramBuilder.getTodayOrDateOptions(roomSelectedId);
   var msg = replyBuilder(roomlist[roomSelectedId]);
   if (hasPrevMsg == true) {
     slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams);
@@ -330,64 +329,10 @@ function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
   }
 }
 
-function getTodayOrDateOptions(roomSelected) {
-  return {
-    parse_mode: 'Markdown',
-    reply_markup: JSON.stringify({
-      inline_keyboard: [
-        [
-          { text: 'Today', callback_data: JSON.stringify({ date: 'pick_today', room: roomSelected }) },
-          { text: 'Pick a date', callback_data: JSON.stringify({ date: 'pick_date', room: roomSelected }) }
-        ]
-      ]
-    })
-  };
-}
-
 function promptDateSelection(query, room, startDate) {
   var msg = 'You have selected:\n' + '*' + roomlist[room] + '*' + '\n\nPlease select a date in ' + new Date().getCurrentMonthNamed() + ':';
-  var optionalParams = {
-    parse_mode: 'Markdown',
-    reply_markup: JSON.stringify({
-      inline_keyboard: constructDateOptions(new Date(), room)
-    })
-  };
 
-  slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams);
-}
-
-function constructDateOptions(date, room) {
-  const btnInRow = 5;
-  var count = 0;
-  var days = date.daysInMonth();
-  var daysLeft = days - date.getCurrentDay() + 1;
-  var btnArr = [],
-    row = [];
-
-  for (var i = 1; i <= daysLeft; i++) {
-    row.push({
-      text: (date.getCurrentDay()) + '',
-      callback_data: JSON.stringify({ date: date.getSimpleDate(), room: room })
-    });
-    date = date.addDays(1);
-    count++;
-    if (count > btnInRow) {
-      btnArr.push(row);
-      row = [];
-      count = 0;
-    }
-    if (i == daysLeft) {
-      btnArr.push(row);
-    }
-  }
-
-  //TODO: next month & prev month button
-  var back = [{
-    text: '<<Back',
-    callback_data: JSON.stringify({ room: room })
-  }];
-  btnArr.push(back);
-  return btnArr;
+  slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, paramBuilder.getDateSelection(room));
 }
 
 //Step 2 - Timeslot
@@ -396,51 +341,16 @@ function promptTimeslotSelection(query, room, startDate) {
 
   cal_app.listEmptySlotsInDay(startDateStr, room)
     .then(jsonArr => {
+      console.log("json: " + jsonArr);
       var msg = replyBuilder(roomlist[room], startDate);
-      var optionalParams = {
-        parse_mode: 'Markdown',
-        reply_markup: JSON.stringify({
-          inline_keyboard: constructTimeslotOptions(jsonArr, room, startDate)
-        })
-      };
-      slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams);
+      
+      slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, paramBuilder.getTimeslots(jsonArr,room, startDate));
     })
     .catch(err => {
       console.log('Error promptTimeslotSelection: ' + JSON.stringify(err));
       slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Oops sorry ah, I think something spoil aledi.. you don\'t mind try again later ok? 😅');
       throw new Error('Error promptTimeslotSelection: ' + JSON.stringify(err));
     });
-}
-
-function constructTimeslotOptions(availTimeJSON, room, date) {
-  const btnInRow = 2;
-  var count = 0;
-  var row = [],
-    items = [];
-
-  for (var i in availTimeJSON) {
-    var obj = {
-      text: i + '',
-      callback_data: JSON.stringify({ date: date.getSimpleDate(), time: availTimeJSON[i], room: room })
-    };
-    items.push(obj);
-    count++;
-
-    if (count >= btnInRow) {
-      row.push(items);
-      items = [];
-      count = 0;
-    }
-  }
-  if (count > 0) {
-    row.push(items);
-  }
-  var back = [{
-    text: '<<Back',
-    callback_data: JSON.stringify({ room: room })
-  }];
-  row.push(back);
-  return row;
 }
 
 //Step 3 - Duration
@@ -454,49 +364,12 @@ function promptDurationSelection(query, room, startDate, startTime) {
       //        promptTimeslotSelection(query, startDate, room);
       // }
       var msg = replyBuilder(roomlist[room], startDate, startTime);
-      var optionalParams = {
-        parse_mode: 'Markdown',
-        reply_markup: JSON.stringify({
-          inline_keyboard: constructDurationOptions(jsonArr, room, startDate, startTime)
-        })
-      };
-      slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams);
+      slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, paramBuilder.getDuration(jsonArr, room, startDate, startTime));
 
     }, function(err) {
       console.log('Error promptDurationSelection: ' + JSON.stringify(err));
       slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'Oops sorry ah, I think something spoil aledi.. you don\'t mind try again later ok? 😅');
     });
-}
-
-function constructDurationOptions(durationJSON, room, date, startTime) {
-  const btnInRow = 4;
-  var count = 0;
-  var row = [];
-  var items = [];
-
-  for (var i in durationJSON) {
-    var obj = {
-      text: durationJSON[i] + '',
-      callback_data: JSON.stringify({ date: date.getSimpleDate(), time: startTime, dur: i, room: room })
-    };
-    items.push(obj);
-    count++;
-
-    if (count >= btnInRow) {
-      row.push(items);
-      items = [];
-      count = 0;
-    }
-  }
-  if (count > 0) {
-    row.push(items);
-  }
-  var back = [{
-    text: '<< Back',
-    callback_data: JSON.stringify({ date: date.getSimpleDate(), room: room })
-  }];
-  row.push(back);
-  return row;
 }
 
 //Step 4 - Booking Description
@@ -507,18 +380,10 @@ function promptDescription(query, room, startDate, startTime, duration) {
   //     startTime + '* >> \n*' +
   //     cal_app.getDurationOptionNameWithId(duration) + '*\nPlease enter below and describe what you are booking the room for?';
 
-  var optionalParams = {
-    parse_mode: 'Markdown',
-    reply_markup: JSON.stringify({
-      inline_keyboard: constructBackOption(room, startDate, startTime, duration)
-    })
-  };
-  var bot_id;
-
-  slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams)
+  slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, paramBuilder.getBackButton(room, startDate, startTime, duration))
     .then(message => {
       console.log(message);
-      bot_id = message.result.chat.id;
+      let bot_id = message.result.chat.id;
       bookerQueue[query.from.id] = {
         id: bot_id,
         chatType: query.message.chat.type,
@@ -532,16 +397,6 @@ function promptDescription(query, room, startDate, startTime, duration) {
       };
       console.log(bookerQueue);
     });
-}
-
-function constructBackOption(room, date, startTime, duration) {
-  var row = [];
-  var back = [{
-    text: '<< Back',
-    callback_data: JSON.stringify({ room: room, date: date.getSimpleDate(), time: startTime })
-  }];
-  row.push(back);
-  return row;
 }
 
 //Step 5 - Confirm Booking Complete

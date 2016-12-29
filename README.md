@@ -25,11 +25,18 @@ References:
 * [Keeping a changelog](http://keepachangelog.com/)
 * [Semver](http://semver.org/)
 
+## Doing
+
+* Setup Webhook (Domain name, SSL Termination) - @edisonchee
+* /delete command to mirror /booked command with delete link - @alishiac
+* Fix session timeout issue - @yuhong90
+
 ## Todo
 
 * REFACTOR!!!😱😱😱
 * Use Jasmine and Istanbul for testing (Write test cases)
 * CodeClimate?
-* Recurrent booking?
-* Setup Webhook (Domain name, SSL Termination)
+* Html calendar page to display all calendar bookings
+* /view command for to show link for calendar listing
+* Job queue improvement
 * Update this Todo list
