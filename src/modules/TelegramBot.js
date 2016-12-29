@@ -39,7 +39,7 @@ slimbot.on('message', message => {
   let isCommand = checkCommandList(message);
   console.log('isCommand' + isCommand);
 
-  if (Object.keys(bookerQueue).length == 0) {
+  if (Object.keys(bookerQueue).length === 0) {
     return;
   }
 
@@ -132,7 +132,7 @@ Emitter.on("clearUserSession", function(event) {
 
 function clearUserSessionInfo(userChatId) {
   console.log('clear user session data for user: ' + userChatId + '(no of uncompleted bookings: ' + Object.keys(bookerQueue).length + ' )');
-  if (bookerQueue[userChatId] != undefined) {
+  if (bookerQueue[userChatId] !== undefined) {
     delete bookerQueue[userChatId];
   }
 }
@@ -141,27 +141,27 @@ function processCallBack(query) {
   var callback_data = JSON.parse(query.data);
   var daysInMonth = new Date().daysInMonth();
 
-  if (callback_data.date == undefined) {
+  if (callback_data.date === undefined) {
     promptTodayOrDateOption(callback_data.room, query, true);
 
   } else if (callback_data.date == 'pick_today') {
     promptTimeslotSelection(query, callback_data.room, new Date());
 
   } else if (callback_data.date == 'pick_date') {
-    if (callback_data.month == undefined) {
+    if (callback_data.month === undefined) {
       promptDateSelection(query, callback_data.room, new Date());
     } else {
       //TODO: show promptDateSelection with selected month
     }
   } else {
     //date selected
-    if (callback_data.time == undefined) {
+    if (callback_data.time === undefined) {
       promptTimeslotSelection(query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date));
 
-    } else if (callback_data.dur == undefined) {
+    } else if (callback_data.dur === undefined) {
       promptDurationSelection(query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date), callback_data.time);
 
-    } else if (callback_data.description == undefined) {
+    } else if (callback_data.description === undefined) {
       promptDescription(query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date), callback_data.time, callback_data.dur);
 
     }
@@ -211,7 +211,7 @@ function checkCommandList(message) {
     };
     slimbot.sendMessage(message.chat.id, 'Which room would you like to book?', optionalParams);
   } else if (message.text == '/booked' && message.chat.type == 'group') {
-    var reply = 'Please check your bookings in a private chat with me 😉';
+    let reply = 'Please check your bookings in a private chat with me 😉';
     slimbot.sendMessage(message.chat.id, reply);
 
   } else if (message.text == '/exit') {
@@ -219,21 +219,20 @@ function checkCommandList(message) {
     sessionMgr.terminateSession(message.chat.id);
 
   } else if (message.text == `/help@${botName}` || message.text == '/help') {
-    var optionalParams = { parse_mode: 'Markdown' };
+    let optionalParams = { parse_mode: 'Markdown' };
     slimbot.sendMessage(message.chat.id, `Type:\n\n*/book* if you want to book a room;\n\n*/booked* if you want to check your bookings;\n\n*/exit* if you want to cancel while booking halfway.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`, optionalParams);
 
   } else if (message.chat.type == 'private') {
-    var optionalParams = { parse_mode: 'Markdown' };
+    let optionalParams = { parse_mode: 'Markdown' };
 
     if (message.text == '/start') {
-      var reply = `Allo!💁 To get started, type:\n\n*/book* to start booking from a list of rooms available;\n*/help* in a private chat - for more info on how to book a room;\n*/booked* in a private chat - for list of rooms you have booked;\n*/exit* during a booking - to cancel the current booking session.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`;
+      let reply = `Allo!💁 To get started, type:\n\n*/book* to start booking from a list of rooms available;\n*/help* in a private chat - for more info on how to book a room;\n*/booked* in a private chat - for list of rooms you have booked;\n*/exit* during a booking - to cancel the current booking session.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`;
       slimbot.sendMessage(message.chat.id, reply, optionalParams);
 
     } else if (message.text == '/help') {
       slimbot.sendMessage(message.chat.id, `Hi there, let me guide you through the steps to booking a meeting room?\n\nStart searching for rooms to book by typing */book*. \n/booked in a private chat - for list of rooms you have booked or \n/exit during a booking - to cancel the current booking session.`, optionalParams);
 
     } else if (message.text == '/booked') {
-
       let fullname = message.from.first_name + ' ' + message.from.last_name;
       let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
       checkUserBookings(message, searchQuery);
@@ -281,7 +280,7 @@ function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
   console.log('/' + roomSelectedId);
   var optionalParams = paramBuilder.getTodayOrDateOptions(roomSelectedId);
   var msg = replyBuilder(roomlist[roomSelectedId]);
-  if (hasPrevMsg == true) {
+  if (hasPrevMsg) {
     slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams);
   } else {
     slimbot.sendMessage(query.chat.id, msg, optionalParams).then(message => {
@@ -362,7 +361,7 @@ function promptDescription(query, room, startDate, startTime, duration) {
 
 //Step 5 - Confirm Booking Complete
 function completeBooking(query) {
-  if (bookerQueue[query.from.id] == undefined) {
+  if (bookerQueue[query.from.id] === undefined) {
     return;
   }
   //TODO: input validation before sending to gcal. _ wouldnt work properly
@@ -410,7 +409,7 @@ function insertBookingIntoCalendar(userid, msgid, description, room, startDate, 
 
 //Exit Booking
 function replyCancelBookProcess(query) {
-  var msg = 'Canceled your booking process. To check your current bookings type /booked.'
+  var msg = 'Canceled your booking process. To check your current bookings type /booked.';
   slimbot.editMessageText(query.from.id, query.message.message_id, msg, optionalParams);
 }
 

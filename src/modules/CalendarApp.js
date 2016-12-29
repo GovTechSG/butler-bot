@@ -148,7 +148,7 @@ exports.listBookedEventsByRoom = function(startDateTime, endDateTime, query) {
           status: json[i].status
         };
         bookedEventsArray.push(event);
-      };
+      }
       return bookedEventsArray;
 
     }).catch(err => {

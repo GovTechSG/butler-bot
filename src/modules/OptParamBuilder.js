@@ -10,7 +10,7 @@ exports.getTodayOrDateOptions = function(roomSelectedId) {
       ]
     })
   };
-}
+};
 
 exports.getDateSelection = function(room) {
     return {
@@ -19,7 +19,7 @@ exports.getDateSelection = function(room) {
       inline_keyboard: constructDateOptions(new Date(), room)
     })
   };
-}
+};
 
 exports.getTimeslots = function(jsonArr, room, startDate){
     return {
@@ -27,7 +27,7 @@ exports.getTimeslots = function(jsonArr, room, startDate){
         reply_markup: JSON.stringify({
           inline_keyboard: constructTimeslotOptions(jsonArr, room, startDate)
     })};
-}
+};
 
 exports.getDuration = function(jsonArr, room, startDate, startTime){
      return {
@@ -36,7 +36,7 @@ exports.getDuration = function(jsonArr, room, startDate, startTime){
           inline_keyboard: constructDurationOptions(jsonArr, room, startDate, startTime)
         })
       };
-}
+};
 
 exports.getBackButton = function(room, startDate, startTime, duration){
 return   {
@@ -44,8 +44,8 @@ return   {
     reply_markup: JSON.stringify({
       inline_keyboard: constructBackOption(room, startDate, startTime, duration)
     })
-  }
-}
+  };
+};
 
 function constructBackOption(room, date, startTime, duration) {
   var row = [];
