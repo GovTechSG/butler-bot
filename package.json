@@ -19,11 +19,12 @@
     "booking"
   ],
   "engines": {
-    "node": "7.2.1"
+    "node": "^7.3.1"
   },
   "license": "MIT",
   "scripts": {
-    "start": "pm2 start src/index.js --watch"
+    "start": "node build",
+    "build": "babel -w src -d build --copy-files"
   },
   "dependencies": {
     "bluebird": "^3.4.7",
@@ -33,8 +34,9 @@
     "slimbot": "^0.5.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-preset-env": "^1.1.4",
     "eslint": "^3.12.2",
-    "pm2": "^2.2.3",
     "mockery": "^2.0.0"
   },
   "bugs": {
