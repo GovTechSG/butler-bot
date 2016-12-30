@@ -1,4 +1,4 @@
-exports.getTodayOrDateOptions = function(roomSelectedId) {
+export function getTodayOrDateOptions(roomSelectedId) {
   return {
     parse_mode: 'Markdown',
     reply_markup: JSON.stringify({
@@ -12,7 +12,7 @@ exports.getTodayOrDateOptions = function(roomSelectedId) {
   };
 };
 
-exports.getDateSelection = function(room) {
+export function getDateSelection(room) {
     return {
     parse_mode: 'Markdown',
     reply_markup: JSON.stringify({
@@ -21,7 +21,7 @@ exports.getDateSelection = function(room) {
   };
 };
 
-exports.getTimeslots = function(jsonArr, room, startDate){
+export function getTimeslots(jsonArr, room, startDate){
     return {
         parse_mode: 'Markdown',
         reply_markup: JSON.stringify({
@@ -29,7 +29,7 @@ exports.getTimeslots = function(jsonArr, room, startDate){
     })};
 };
 
-exports.getDuration = function(jsonArr, room, startDate, startTime){
+export function getDuration(jsonArr, room, startDate, startTime){
      return {
         parse_mode: 'Markdown',
         reply_markup: JSON.stringify({
@@ -38,8 +38,8 @@ exports.getDuration = function(jsonArr, room, startDate, startTime){
       };
 };
 
-exports.getBackButton = function(room, startDate, startTime, duration){
-return   {
+export function getBackButton(room, startDate, startTime, duration){
+  return {
     parse_mode: 'Markdown',
     reply_markup: JSON.stringify({
       inline_keyboard: constructBackOption(room, startDate, startTime, duration)
@@ -48,8 +48,8 @@ return   {
 };
 
 function constructBackOption(room, date, startTime, duration) {
-  var row = [];
-  var back = [{
+  let row = [];
+  let back = [{
     text: '<< Back',
     callback_data: JSON.stringify({ room: room, date: date.getSimpleDate(), time: startTime })
   }];
@@ -59,12 +59,12 @@ function constructBackOption(room, date, startTime, duration) {
 
 function constructTimeslotOptions(availTimeJSON, room, date) {
   const btnInRow = 2;
-  var count = 0;
-  var row = [],
+  let count = 0;
+  let row = [],
     items = [];
 
-  for (var i in availTimeJSON) {
-    var obj = {
+  for (let i in availTimeJSON) {
+    let obj = {
       text: i + '',
       callback_data: JSON.stringify({ date: date.getSimpleDate(), time: availTimeJSON[i], room: room })
     };
@@ -80,7 +80,7 @@ function constructTimeslotOptions(availTimeJSON, room, date) {
   if (count > 0) {
     row.push(items);
   }
-  var back = [{
+  let back = [{
     text: '<<Back',
     callback_data: JSON.stringify({ room: room })
   }];
@@ -90,12 +90,12 @@ function constructTimeslotOptions(availTimeJSON, room, date) {
 
 function constructDurationOptions(durationJSON, room, date, startTime) {
   const btnInRow = 4;
-  var count = 0;
-  var row = [];
-  var items = [];
+  let count = 0;
+  let row = [];
+  let items = [];
 
-  for (var i in durationJSON) {
-    var obj = {
+  for (let i in durationJSON) {
+    let obj = {
       text: durationJSON[i] + '',
       callback_data: JSON.stringify({ date: date.getSimpleDate(), time: startTime, dur: i, room: room })
     };
@@ -111,7 +111,7 @@ function constructDurationOptions(durationJSON, room, date, startTime) {
   if (count > 0) {
     row.push(items);
   }
-  var back = [{
+  let back = [{
     text: '<< Back',
     callback_data: JSON.stringify({ date: date.getSimpleDate(), room: room })
   }];
@@ -121,13 +121,13 @@ function constructDurationOptions(durationJSON, room, date, startTime) {
 
 function constructDateOptions(date, room) {
   const btnInRow = 5;
-  var count = 0;
-  var days = date.daysInMonth();
-  var daysLeft = days - date.getCurrentDay() + 1;
-  var btnArr = [],
+  let count = 0;
+  let days = date.daysInMonth();
+  let daysLeft = days - date.getCurrentDay() + 1;
+  let btnArr = [],
     row = [];
 
-  for (var i = 1; i <= daysLeft; i++) {
+  for (let i = 1; i <= daysLeft; i++) {
     row.push({
       text: (date.getCurrentDay()) + '',
       callback_data: JSON.stringify({ date: date.getSimpleDate(), room: room })
@@ -145,7 +145,7 @@ function constructDateOptions(date, room) {
   }
 
   //TODO: next month & prev month button
-  var back = [{
+  let back = [{
     text: '<<Back',
     callback_data: JSON.stringify({ room: room })
   }];

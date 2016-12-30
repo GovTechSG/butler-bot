@@ -23,8 +23,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "node build",
-    "build": "babel -w src -d build --copy-files"
+    "start": "babel-node src",
+    "build": "babel src -d build --copy-files"
   },
   "dependencies": {
     "bluebird": "^3.4.7",

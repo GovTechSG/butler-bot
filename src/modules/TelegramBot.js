@@ -1,12 +1,13 @@
 //TelegramBot
-require('./Date');
-const Slimbot = require('slimbot');
+import './Date';
+import Slimbot from 'slimbot';
+import * as ParamBuilder from './OptParamBuilder';
+import { SessionMgr } from './SessionManagement';
+import * as ReplyBuilder from './ReplyBuilder';
+import { MESSAGES } from './Messages';
+import EventEmitter from 'eventemitter3';
+
 const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
-const paramBuilder = require('./OptParamBuilder');
-const sessionMgr = require('./SessionManagement');
-const replyBuilder = require('./ReplyBuilder');
-const Text = require('./Messages');
-const EventEmitter = require('eventemitter3');
 let Emitter = new EventEmitter();
 let cal_app = require('./CalendarApp');
 let botName;
@@ -121,7 +122,7 @@ slimbot.on('callback_query', query => {
 });
 
 //SessionManager listener
-sessionMgr.setupEventEmitter(Emitter);
+SessionMgr.setupEventEmitter(Emitter);
 
 Emitter.on("sessionStateChange", function(event) {
   slimbot.editMessageText(event.userChatId, event.msgId, event.msg);
@@ -211,23 +212,23 @@ function checkCommandList(message) {
         ]
       })
     };
-    slimbot.sendMessage(message.chat.id, Text.book, optionalParams);
+    slimbot.sendMessage(message.chat.id, MESSAGES.book, optionalParams);
   } else if (message.text == '/booked' && message.chat.type == 'group') {
-    slimbot.sendMessage(message.chat.id, Text.private);
+    slimbot.sendMessage(message.chat.id, MESSAGES.private);
 
   } else if (message.text == '/exit') {
     console.log('/exit current booking');
-    sessionMgr.terminateSession(message.chat.id);
+    SessionMgr.terminateSession(message.chat.id);
 
   } else if (message.text == `/help@${botName}` || message.text == '/help') {
-    slimbot.sendMessage(message.chat.id, Text.help, { parse_mode: 'Markdown' });
+    slimbot.sendMessage(message.chat.id, MESSAGES.help, { parse_mode: 'Markdown' });
 
   } else if (message.chat.type == 'private') {
     if (message.text == '/start') {
-      slimbot.sendMessage(message.chat.id, Text.start, { parse_mode: 'Markdown' });
+      slimbot.sendMessage(message.chat.id, MESSAGES.start, { parse_mode: 'Markdown' });
 
     } else if (message.text == '/help') {
-      slimbot.sendMessage(message.chat.id, Text.help, { parse_mode: 'Markdown' });
+      slimbot.sendMessage(message.chat.id, MESSAGES.help, { parse_mode: 'Markdown' });
 
     } else if (message.text == '/booked') {
       let fullname = message.from.first_name + ' ' + message.from.last_name;
@@ -248,7 +249,7 @@ function checkUserBookings(message, searchQuery) {
   cal_app.listBookedEventsByUser(new Date(), searchQuery)
   .then(bookings => {
     if (!bookings.length) {
-      slimbot.sendMessage(message.chat.id, Text.noBooking, { parse_mode: 'Markdown' });
+      slimbot.sendMessage(message.chat.id, MESSAGES.noBooking, { parse_mode: 'Markdown' });
     } else {
       let count = 0;
       let msg = '';
@@ -272,14 +273,14 @@ function checkUserBookings(message, searchQuery) {
 //Step 1 - Today or Date
 function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
   console.log('/' + roomSelectedId);
-  let optionalParams = paramBuilder.getTodayOrDateOptions(roomSelectedId);
-  let msg = replyBuilder.askForDate(roomlist[roomSelectedId]);
+  let optionalParams = ParamBuilder.getTodayOrDateOptions(roomSelectedId);
+  let msg = ReplyBuilder.askForDate(roomlist[roomSelectedId]);
   if (hasPrevMsg) {
     slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams);
   } else {
     slimbot.sendMessage(query.chat.id, msg, optionalParams)
     .then(message => {
-      sessionMgr.startSessionCountdown(message.result.chat.id, message.result.message_id, message.result.chat.username);
+      SessionMgr.startSessionCountdown(message.result.chat.id, message.result.message_id, message.result.chat.username);
     });
   }
 }
@@ -287,7 +288,7 @@ function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
 function promptDateSelection(query, room, startDate) {
   let msg = 'You have selected:\n' + '*' + roomlist[room] + '*' + '\n\nPlease select a date in ' + new Date().getCurrentMonthNamed() + ':';
 
-  slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, paramBuilder.getDateSelection(room));
+  slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getDateSelection(room));
 }
 
 //Step 2 - Timeslot
@@ -297,13 +298,13 @@ function promptTimeslotSelection(query, room, startDate) {
   cal_app.listEmptySlotsInDay(startDateStr, room)
   .then(jsonArr => {
     console.log("json: " + jsonArr);
-    let msg = replyBuilder.askForTime(roomlist[room], startDate);
+    let msg = ReplyBuilder.askForTime(roomlist[room], startDate);
 
-    slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, paramBuilder.getTimeslots(jsonArr,room, startDate));
+    slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getTimeslots(jsonArr,room, startDate));
   })
   .catch(err => {
     console.log('Error promptTimeslotSelection: ' + JSON.stringify(err));
-    slimbot.editMessageText(query.message.chat.id, query.message.message_id, Text.error);
+    slimbot.editMessageText(query.message.chat.id, query.message.message_id, MESSAGES.error);
     throw new Error('Error promptTimeslotSelection: ' + JSON.stringify(err));
   });
 }
@@ -317,24 +318,24 @@ function promptDurationSelection(query, room, startDate, startTime) {
     //    slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'I think someone just booked the timeslot following this. Please pick another starttime.');
     //        promptTimeslotSelection(query, startDate, room);
     // }
-    let msg = replyBuilder.askForDuration(roomlist[room], startDate, startTime);
-    slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, paramBuilder.getDuration(jsonArr, room, startDate, startTime));
+    let msg = ReplyBuilder.askForDuration(roomlist[room], startDate, startTime);
+    slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getDuration(jsonArr, room, startDate, startTime));
 
   }, function(err) {
     console.log('Error promptDurationSelection: ' + JSON.stringify(err));
-    slimbot.editMessageText(query.message.chat.id, query.message.message_id, Text.error);
+    slimbot.editMessageText(query.message.chat.id, query.message.message_id, MESSAGES.error);
   });
 }
 
 //Step 4 - Booking Description
 function promptDescription(query, room, startDate, startTime, duration) {
-  let msg = replyBuilder.askForDescription(roomlist[room], startDate, startTime, cal_app.getDurationOptionNameWithId(duration));
+  let msg = ReplyBuilder.askForDescription(roomlist[room], startDate, startTime, cal_app.getDurationOptionNameWithId(duration));
   // var msg = 'You have selected:\n*' + roomlist[room] + '* >> *' +
   //     startDate.getFormattedDate() + '* >> *' +
   //     startTime + '* >> \n*' +
   //     cal_app.getDurationOptionNameWithId(duration) + '*\nPlease enter below and describe what you are booking the room for?';
 
-  slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, paramBuilder.getBackButton(room, startDate, startTime, duration))
+  slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getBackButton(room, startDate, startTime, duration))
     .then(message => {
       console.log(message);
       let bot_id = message.result.chat.id;
@@ -382,26 +383,26 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
 
   cal_app.queueForInsert(bookingSummary, startTime, endTime, room, "confirmed", "booked via butler", userName)
     .then(json => {
-      slimbot.editMessageText(userId, msgId, Text.confirm);
-      let msg = replyBuilder.bookingConfirmed(roomlist[room], startDate.getFormattedDate(), new Date(json.start).getFormattedTime(), new Date(json.end).getFormattedTime(), fullName, userName, description);
+      slimbot.editMessageText(userId, msgId, MESSAGES.confirm);
+      let msg = ReplyBuilder.bookingConfirmed(roomlist[room], startDate.getFormattedDate(), new Date(json.start).getFormattedTime(), new Date(json.end).getFormattedTime(), fullName, userName, description);
 
       slimbot.sendMessage(userId, msg, { parse_mode: 'Markdown' })
       .then(message => {
         msg = 'Check out this link for the overall room booking schedules: ' + json.htmlLink;
         slimbot.sendMessage(userId, msg);
       });
-      sessionMgr.closeSession(userId);
+      SessionMgr.closeSession(userId);
 
     }).catch(err => {
       console.log('Error insertBookingIntoCalendar: ' + JSON.stringify(err));
-      slimbot.editMessageText(userId, msgId, Text.tooLate);
+      slimbot.editMessageText(userId, msgId, MESSAGES.tooLate);
       throw err;
     });
 }
 
 //Exit Booking
 function replyCancelBookProcess(query) {
-  slimbot.editMessageText(query.from.id, query.message.message_id, Text.canceled, optionalParams);
+  slimbot.editMessageText(query.from.id, query.message.message_id, MESSAGES.canceled, optionalParams);
 }
 
 function bookingsReplyBuilder(number, summary, room, startDate, endDate, user) {
