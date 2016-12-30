@@ -402,7 +402,7 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
 
 //Exit Booking
 function replyCancelBookProcess(query) {
-  slimbot.editMessageText(query.from.id, query.message.message_id, MESSAGES.canceled, optionalParams);
+  slimbot.editMessageText(query.from.id, query.message.message_id, MESSAGES.canceled);
 }
 
 function bookingsReplyBuilder(number, summary, room, startDate, endDate, user) {
