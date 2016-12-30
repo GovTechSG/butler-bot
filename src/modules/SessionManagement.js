@@ -6,11 +6,11 @@ let activeUsers = {};       //stores userId, lastMsgId, username, timer
 let Emitter;
 
 //TODO: fix session renew + starting point + timeout
-function setupEventEmitter(botEventEmitter) {
+export function setupEventEmitter(botEventEmitter) {
     Emitter = botEventEmitter;
 };
 
-function startSessionCountdown(userChatId, msgId, username) {
+export function startSessionCountdown(userChatId, msgId, username) {
     console.log('Booking session started at ' + new Date() + ' by @' + username);
 
     this.terminateSession(userChatId, SESSION_OUTDATED_MSG);
@@ -24,7 +24,7 @@ function startSessionCountdown(userChatId, msgId, username) {
     activeUsers[userChatId] = { userChatId: userChatId, msgId: msgId, username: username, timer: timer };
 };
 
-function terminateSession(userChatId, msg) {
+export function terminateSession(userChatId, msg) {
     if (activeUsers[userChatId] === undefined) {
         return;
     }
@@ -40,7 +40,7 @@ function terminateSession(userChatId, msg) {
     expireSession(userChatId, sessObj.msgId, sessObj.username, msg);
 };
 
-function closeSession(userChatId) {
+export function closeSession(userChatId) {
     if (activeUsers[userChatId] === undefined) {
         return;
     }
@@ -65,12 +65,3 @@ function popUserInfoFromSession(userChatId) {
 function updateBotMsg(userChatId, msgId, msg) {
     Emitter.emit('sessionStateChange', { userChatId, msgId, msg });
 }
-
-const SessionMgr = {
-    setupEventEmitter: setupEventEmitter,
-    startSessionCountdown: startSessionCountdown,
-    terminateSession: terminateSession,
-    closeSession: closeSession
-}
-
-export { SessionMgr };

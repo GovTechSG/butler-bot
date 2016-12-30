@@ -19,7 +19,7 @@
     "booking"
   ],
   "engines": {
-    "node": "^7.3.1"
+    "node": "^7.3.0"
   },
   "license": "MIT",
   "scripts": {

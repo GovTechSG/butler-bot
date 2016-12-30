@@ -1,11 +1,11 @@
 //TelegramBot
 import './Date';
 import Slimbot from 'slimbot';
-import * as ParamBuilder from './OptParamBuilder';
-import { SessionMgr } from './SessionManagement';
+import EventEmitter from 'eventemitter3';
+import * as ParamBuilder from './ParamBuilder';
+import * as SessionMgr from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import { MESSAGES } from './Messages';
-import EventEmitter from 'eventemitter3';
 
 const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
 let Emitter = new EventEmitter();
@@ -410,4 +410,4 @@ function bookingsReplyBuilder(number, summary, room, startDate, endDate, user) {
   return reply;
 }
 
-module.exports = slimbot;
+export { slimbot };
