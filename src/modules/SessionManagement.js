@@ -13,16 +13,30 @@ export function setupEventEmitter(botEventEmitter) {
 export function startSessionCountdown(userChatId, msgId, username) {
     console.log('Booking session started at ' + new Date() + ' by @' + username);
 
-    this.terminateSession(userChatId, SESSION_OUTDATED_MSG);
+    this.terminateSession(userChatId, SESSION_OUTDATED_MSG);    //terminate prev session; if any
 
     let timer = setTimeout(
         function () {
             console.log('Session expired for : @' + username);
-            expireSession(userChatId, msgId, username, SESSION_EXPIRY_MSG);
+            notifyUserAndClearUserData(userChatId, msgId, username, SESSION_EXPIRY_MSG);
         }, sessionLength);
 
     activeUsers[userChatId] = { userChatId: userChatId, msgId: msgId, username: username, timer: timer };
 };
+
+export function extendSession(userChatId, msgId) {
+    let sessObj = activeUsers[userChatId];
+    console.log('Session extended by @' + sessObj.username);
+
+    clearTimeout(sessObj.timer);
+    sessObj.timer = setTimeout(
+        function () {
+            console.log('Session expired for : @' + sessObj.username);
+            notifyUserAndClearUserData(userChatId, msgId, sessObj.username, SESSION_EXPIRY_MSG);
+        }, sessionLength);
+
+    activeUsers[userChatId] = sessObj;
+}
 
 export function terminateSession(userChatId, msg) {
     if (activeUsers[userChatId] === undefined) {
@@ -30,17 +44,17 @@ export function terminateSession(userChatId, msg) {
     }
 
     let sessObj = activeUsers[userChatId];
-    console.log('Session cancelled by @' + sessObj.username);
+    console.log('Session terminated by @' + sessObj.username);
     clearTimeout(sessObj.timer);
     delete activeUsers[userChatId];
 
     if (msg === undefined) {
         msg = SESSION_TERMINATED_DEFAULT_MSG;
     }
-    expireSession(userChatId, sessObj.msgId, sessObj.username, msg);
+    notifyUserAndClearUserData(userChatId, sessObj.msgId, sessObj.username, msg);
 };
 
-export function closeSession(userChatId) {
+export function endSession(userChatId) {
     if (activeUsers[userChatId] === undefined) {
         return;
     }
@@ -51,7 +65,7 @@ export function closeSession(userChatId) {
     popUserInfoFromSession(userChatId);
 };
 
-function expireSession(userChatId, msgId, username, msg) {
+function notifyUserAndClearUserData(userChatId, msgId, username, msg) {
     if (userChatId !== undefined && msgId !== undefined) {
         updateBotMsg(userChatId, msgId, msg);
     }
