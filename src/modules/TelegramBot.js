@@ -194,28 +194,10 @@ function checkCommandList(message) {
   } else if (message.text == '/book_drone') {
     roomSelected = 'dr';
     promptTodayOrDateOption(roomSelected, message);
-  }
-  else if (message.text == '/book') {
-    let optionalParams = {
-      parse_mode: 'markdown',
-      reply_markup: JSON.stringify({
-        inline_keyboard: [[
-          { text: 'Focus Group Room', callback_data: JSON.stringify({ room: 'fg' }) },
-          { text: 'Drone Room', callback_data: JSON.stringify({ room: 'dr' }) }
-        ], [
-          { text: 'Queen Room 1', callback_data: JSON.stringify({ room: 'q1' }) },
-          { text: 'Queen Room 2', callback_data: JSON.stringify({ room: 'q2' }) }
-        ], [
-          { text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) }
-        ]
-        ]
-      })
-    };
-    slimbot.sendMessage(message.chat.id, MESSAGES.book, optionalParams)
-      .then(sentMsg => {
-        SessionMgr.startSessionCountdown(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
-      });;
-    
+
+  } else if (message.text == '/book') {
+    promptRoomSelection(message);
+
   } else if (message.text == '/booked' && message.chat.type == 'group') {
     slimbot.sendMessage(message.chat.id, MESSAGES.private);
 
@@ -238,10 +220,10 @@ function checkCommandList(message) {
       let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
       checkUserBookings(message, searchQuery);
 
-    } else {
+    } else {  //ignore non-commands in private chat
       return false;
     }
-  } else {
+  } else {   //ignore non-commands
     return false;
   }
   return true;
@@ -270,6 +252,28 @@ function checkUserBookings(message, searchQuery) {
         var reply = 'You have the following bookings scheduled: \n' + msg;
         slimbot.sendMessage(message.chat.id, reply, { parse_mode: 'Markdown' });
       }
+    });
+}
+
+function promptRoomSelection(message) {
+  let optionalParams = {
+    parse_mode: 'markdown',
+    reply_markup: JSON.stringify({
+      inline_keyboard: [[
+        { text: 'Focus Group Room', callback_data: JSON.stringify({ room: 'fg' }) },
+        { text: 'Drone Room', callback_data: JSON.stringify({ room: 'dr' }) }
+      ], [
+        { text: 'Queen Room 1', callback_data: JSON.stringify({ room: 'q1' }) },
+        { text: 'Queen Room 2', callback_data: JSON.stringify({ room: 'q2' }) }
+      ], [
+        { text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) }
+      ]
+      ]
+    })
+  };
+  slimbot.sendMessage(message.chat.id, MESSAGES.book, optionalParams)
+    .then(sentMsg => {
+      SessionMgr.startSessionCountdown(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
     });
 }
 
