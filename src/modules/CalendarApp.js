@@ -95,7 +95,8 @@ export function listBookedEventsByUser(startDateTime, user) {
             location: json[i].location,
             start: json[i].start,
             end: json[i].end,
-            status: json[i].status
+            status: json[i].status,
+            room: room
           };
           eventsInCalendar.push(event);
           bookedEventsArray.push(event);
@@ -515,6 +516,7 @@ export function deleteEvent(eventId, room) {
   let calendarId = calendarIdList[room];
   return cal.deleteEvent(calendarId, eventId)
     .catch(err => {
+      console.log('Error deleting Event');
       throw new Error("deleteEvent: " + err);
     });
 };

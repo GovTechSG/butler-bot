@@ -189,10 +189,12 @@ function checkCommandList(message) {
   } else if (message.text == '/book') {
     promptRoomSelection(message);
 
-  } else if (message.text == '/booked' && message.chat.type == 'group') {
+  } else if (message.text == '/booked' && message.chat.type == 'group' || message.text == '/delete' && message.chat.type == 'group') {
     slimbot.sendMessage(message.chat.id, MESSAGES.private);
 
   } else if (message.text == '/exit') {
+
+
     console.log('/exit current booking');
     SessionMgr.terminateSession(message.chat.id);
 
@@ -211,6 +213,24 @@ function checkCommandList(message) {
       let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
       checkUserBookings(message, searchQuery);
 
+    } else if (message.text == '/delete') {
+      let fullname = message.from.first_name + ' ' + message.from.last_name;
+      let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+      checkUserBookings(message, searchQuery, true);
+
+    } else if (new RegExp(/\/deleteBooking[a-z0-9]+@/, 'i').test(message.text)) {
+      let roomId = message.text.substring(message.text.indexOf('g') + 1, message.text.indexOf('@'));
+      let bookId = message.text.substring(message.text.indexOf('@') + 1);
+      
+      cal_app.deleteEvent(bookId, roomId).then(function () {
+        slimbot.sendMessage(message.chat.id, MESSAGES.delete, { parse_mode: 'Markdown' });
+        let fullname = message.from.first_name + ' ' + message.from.last_name;
+        let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+        checkUserBookings(message, searchQuery);
+      }).catch(err => {
+        slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
+      });
+
     } else {  //ignore non-commands in private chat
       return false;
     }
@@ -221,7 +241,7 @@ function checkCommandList(message) {
 }
 
 //booked command
-function checkUserBookings(message, searchQuery) {
+function checkUserBookings(message, searchQuery, isDelete) {
   cal_app.listBookedEventsByUser(new Date(), searchQuery)
     .then(bookings => {
       if (!bookings.length) {
@@ -237,7 +257,9 @@ function checkUserBookings(message, searchQuery) {
           let details = booking.summary.split(' by ');
 
           msg += bookingsReplyBuilder(count, details[0], booking.location, booking.start.dateTime, booking.end.dateTime, details[1]);
-          msg += '/deleteBooking@' + booking.id + '\n';
+          if (isDelete !== undefined) {
+            msg += '\nClick on the following command to delete your booking: \n' + '/deleteBooking' + booking.room + '@' + booking.id + '\n';
+          }
           msg = msg.replace("_", "-"); //escape _ cuz markdown cant handle it
         }
         var reply = 'You have the following bookings scheduled: \n' + msg;
