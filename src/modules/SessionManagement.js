@@ -1,40 +1,26 @@
-const SESSION_EXPIRY_MSG = 'Ehh you took too long to book lah. I wait until fed up! 😡😡😡\n\nTry booking again -____-';
-const SESSION_TERMINATED_DEFAULT_MSG = '😢 I just cancelled your booking... you want to try again?';
-const SESSION_OUTDATED_MSG = 'This booking session has been cancelled. \nPlease refer to the latest booking message.';
+import { MESSAGES } from './Messages';
 const sessionLength = 1000 * 30;
 let activeUsers = {};       //stores userId, lastMsgId, username, timer
 let Emitter;
 
-//TODO: fix session renew + starting point + timeout
 export function setupEventEmitter(botEventEmitter) {
     Emitter = botEventEmitter;
 };
 
 export function startSessionCountdown(userChatId, msgId, username) {
-    console.log('Booking session started at ' + new Date() + ' by @' + username);
+    this.terminateSession(userChatId, MESSAGES.session_outdated);    //terminate prev session; if any
+    console.log('[Session Started] at ' + new Date() + ' by @' + username);
 
-    this.terminateSession(userChatId, SESSION_OUTDATED_MSG);    //terminate prev session; if any
-
-    let timer = setTimeout(
-        function () {
-            console.log('Session expired for : @' + username);
-            notifyUserAndClearUserData(userChatId, msgId, username, SESSION_EXPIRY_MSG);
-        }, sessionLength);
-
+    let timer = setCountdownTimer(userChatId, msgId, username);
     activeUsers[userChatId] = { userChatId: userChatId, msgId: msgId, username: username, timer: timer };
 };
 
 export function extendSession(userChatId, msgId) {
     let sessObj = activeUsers[userChatId];
-    console.log('Session extended by @' + sessObj.username);
+    console.log('[Session Extended] by @' + sessObj.username);
 
     clearTimeout(sessObj.timer);
-    sessObj.timer = setTimeout(
-        function () {
-            console.log('Session expired for : @' + sessObj.username);
-            notifyUserAndClearUserData(userChatId, msgId, sessObj.username, SESSION_EXPIRY_MSG);
-        }, sessionLength);
-
+    sessObj.timer = setCountdownTimer(userChatId, msgId, sessObj.username);
     activeUsers[userChatId] = sessObj;
 }
 
@@ -44,12 +30,12 @@ export function terminateSession(userChatId, msg) {
     }
 
     let sessObj = activeUsers[userChatId];
-    console.log('Session terminated by @' + sessObj.username);
+    console.log('[Session Terminated] by @' + sessObj.username);
     clearTimeout(sessObj.timer);
     delete activeUsers[userChatId];
 
     if (msg === undefined) {
-        msg = SESSION_TERMINATED_DEFAULT_MSG;
+        msg = MESSAGE.session_terminated;
     }
     notifyUserAndClearUserData(userChatId, sessObj.msgId, sessObj.username, msg);
 };
@@ -64,6 +50,14 @@ export function endSession(userChatId) {
     delete activeUsers[userChatId];
     popUserInfoFromSession(userChatId);
 };
+
+function setCountdownTimer(userChatId, msgId, username){
+    return setTimeout(
+        function () {
+            console.log('[Session Expired] for : @' + username);
+            notifyUserAndClearUserData(userChatId, msgId, username, MESSAGES.session_expired);
+        }, sessionLength);
+}
 
 function notifyUserAndClearUserData(userChatId, msgId, username, msg) {
     if (userChatId !== undefined && msgId !== undefined) {

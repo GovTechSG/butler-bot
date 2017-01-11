@@ -7,7 +7,10 @@ const MESSAGES = {
   confirm: `Swee lah! Your room booking is confirmed! 👍🏻`,
   tooLate: `Oh no 😱, I think your room kena snatched away by someone else. Maybe next time you try faster hand faster leg ok?`,
   private: `Please check your bookings in a private chat with me 😉`,
-  canceled: `Canceled your booking process. To check your current bookings type /booked.`
+  canceled: `Canceled your booking process. To check your current bookings type /booked.`,
+  session_expired: 'Ehh you took too long to book lah. I wait until fed up! 😡😡😡\n\nTry booking again -____-',
+  session_terminated: '😢 I just cancelled your booking... you want to try again?',
+  session_outdated: 'This booking session has been cancelled. \nPlease refer to the latest booking message.'
 };
 
 export { MESSAGES };
