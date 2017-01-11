@@ -40,7 +40,7 @@ export function terminateSession(userChatId, msg) {
     notifyUserAndClearUserData(userChatId, sessObj.msgId, sessObj.username, msg);
 };
 
-export function endSession(userChatId) {
+export function endSession(userChatId) {    //used when booking completes
     if (activeUsers[userChatId] === undefined) {
         return;
     }
