@@ -14,7 +14,7 @@ let colourDict = { "fg": 1, "dr": 2, "q1": 3, "q2": 4, "qc": 5 };
 let RoomList = {
   queen1: { id: 'q1', name: 'Queen 1' },
   queen2: { id: 'q2', name: 'Queen 2' },
-  queenC: { id: 'qc', name: 'Queen (Combined)' },
+  queenC: { id: 'qc', name: 'Queen (Combined)', children: ['q1', 'q2'] },
   drone: { id: 'dr', name: 'Drone' },
   fgd: { id: 'fg', name: 'Focus Group Discussion Room' }
 };
@@ -96,6 +96,7 @@ export function listBookedEventsByUser(startDateTime, user) {
             start: json[i].start,
             end: json[i].end,
             status: json[i].status,
+            description: json[i].description,
             room: room
           };
           eventsInCalendar.push(event);
@@ -121,6 +122,7 @@ export function listBookedEventsByUser(startDateTime, user) {
         if (bookedRoomName == RoomList.queenC.name) {
           if (evnt.location == RoomList.queen1.name) {
             evnt.location = RoomList.queenC.name;
+            evnt.room = RoomList.queenC.id;
           } else {
             delete bookedEventsArray[key];
           }
@@ -131,15 +133,12 @@ export function listBookedEventsByUser(startDateTime, user) {
 };
 
 export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
-  console.log('listBookedEventsByRoom: ' + query);
   let bookedEventsArray = [];
   let calendarId = calendarIdList[query];
   let roomName = getRoomNameFromId(query);
 
   return cal.listEvents(calendarId, startDateTime, endDateTime, roomName)
     .then(json => {
-      // console.log('listevent: ' + calendarId + ' ' + startDateTime + ' ' + endDateTime + ' ' + query);
-
       for (let i = 0; i < json.length; i++) {
         let event = {
           id: json[i].id,
@@ -154,6 +153,7 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
       return bookedEventsArray;
 
     }).catch(err => {
+      console.log(err);
       throw err;
     });
 };
@@ -161,17 +161,16 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
 export function handleListingForTwoCalendars(date, endDate, roomId) {
   return Promise.join(
     listBookedEventsByRoom(date, endDate, RoomList.queen1.id)
-    .then(jsonArr => {
-      return jsonArr;
-    }),
+      .then(jsonArr => {
+        return jsonArr;
+      }),
 
     listBookedEventsByRoom(date, endDate, RoomList.queen2.id)
-    .then(jsonArr => {
-      return jsonArr;
-    }),
+      .then(jsonArr => {
+        return jsonArr;
+      }),
 
     (timeslotQueen1, timeslotQueen2) => {
-      console.log('----------------');
       return timeslotQueen1.concat(timeslotQueen2);
     }
   ).catch(err => {
@@ -185,7 +184,6 @@ function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
     let endTime = new Date(roomBusyTimeslot[key].end.dateTime);
 
     let count = countSlotsWithinTimeframe(startTime, endTime);
-    console.log('busy: ' + count + ' slots @ ' + startTime);
     for (let x = 0; x < count; x++) {
       delete timeslotDict[getTimeslotName(startTime)];
     }
@@ -255,7 +253,7 @@ export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
 };
 
 function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
-  console.log('filterDuration');
+  console.log('filterDurationSlots');
 
   let maxDurationBlocksAllowed = 8;
   let closestEventBlocksAway = 99;
@@ -274,14 +272,13 @@ function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
     return durOptions;
   }
 
-  for (event in roomBusyTimeslot) {
+  for (let event in roomBusyTimeslot) {
     let setOf30minsBlocks = new Date(startDatetimeStr).getMinuteDiff(new Date(roomBusyTimeslot[event].start.dateTime)) / 30;
     if (setOf30minsBlocks < closestEventBlocksAway) {
       closestEventBlocksAway = setOf30minsBlocks;
     }
   }
 
-  console.log('closestEventBlocksAway = ' + closestEventBlocksAway);
   if (closestEventBlocksAway > maxDurationBlocksAllowed) {
     closestEventBlocksAway = maxDurationBlocksAllowed;
   }
@@ -291,38 +288,33 @@ function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
       delete durOptions[x];
     }
   }
-  console.log(durOptions);
   return durOptions;
 }
 
 export function insertEventForCombinedRoom(room1Details, room2Details, username) {
-  return Promise.join(
-    insertEvent(room1Details.bookingSummary, room1Details.startDateTime, room1Details.endDateTime,
-      room1Details.location, room1Details.status, room1Details.description, username)
-    .then(results => {
-      return results;
-    }),
-    insertEvent(room2Details.bookingSummary, room2Details.startDateTime, room2Details.endDateTime,
-      room2Details.location, room2Details.status, room2Details.description, username)
-    .then(results => {
-      return results;
-    }),
-    (resultsRoom1, resultsRoom2) => {
-      let results = {
-        'summary': resultsRoom1.summary,
-        'location': resultsRoom1.location + '&' + resultsRoom2.location,
-        'status': resultsRoom1.status,
-        'htmlLink': CONFIG.calendarUrl,
-        'start': new Date(resultsRoom1.start),
-        'end': new Date(resultsRoom1.end),
-        'created': new Date(resultsRoom1.created).getISO8601TimeStamp()
-      };
-      return results;
-      })
-    .catch(err => {
+
+  return insertEvent(room2Details.bookingSummary, room2Details.startDateTime, room2Details.endDateTime,
+    room2Details.location, room2Details.status, room2Details.description, username)
+    .then(resultsRoom2 => {
+
+      room1Details.description += '@' + resultsRoom2.id;
+      return insertEvent(room1Details.bookingSummary, room1Details.startDateTime, room1Details.endDateTime,
+        room1Details.location, room1Details.status, room1Details.description, username)
+        .then(resultsRoom1 => {
+          let results = {
+            'summary': resultsRoom1.summary,
+            'location': resultsRoom1.location + '&' + resultsRoom2.location,
+            'status': resultsRoom1.status,
+            'htmlLink': CONFIG.calendarUrl,
+            'start': new Date(resultsRoom1.start),
+            'end': new Date(resultsRoom1.end),
+            'created': new Date(resultsRoom1.created).getISO8601TimeStamp()
+          };
+          return results;
+        });
+    }).catch(err => {
       throw new Error("insertEventForCombinedRoom: " + err);
-    }
-  );
+    });
 }
 
 export function queueForInsert(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username) {
@@ -339,14 +331,11 @@ export function queueForInsert(bookingSummary, startDateTimeStr, endDateTimeStr,
   };
 
   bookingQueue.push(booking);
-  console.log('queueForInsert');
-  return new Promise(function(fulfill, reject) {
-    EE.once('booked' + username + bookTime, function(resp) {
+  return new Promise(function (fulfill, reject) {
+    EE.once('booked' + username + bookTime, function (resp) {
       if (resp.success) {
-        console.log('booking success:' + resp.success);
         fulfill(resp.results);
       } else {
-        console.log('sorry cannot book: ' + resp);
         reject();
       }
     }, {});
@@ -387,9 +376,9 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
     let room = getRoomNameFromId(location);
     return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, getColourForRoom(location))
       .then(resp => {
-
         let json = resp.body;
         let results = {
+          'id': json.id,
           'summary': json.summary,
           'location': json.location,
           'status': json.status,
@@ -414,7 +403,7 @@ function waitForTurnToBook(username, bookTime) {
     let booking = bookingQueue[0];
     handleBookingProcess(booking);
   } else {
-    setTimeout(function() {
+    setTimeout(function () {
       waitForTurnToBook(username, bookTime);
     }, 3000);
   }
@@ -425,7 +414,7 @@ function checkBookingTurn(username, bookTime) {
   console.log('checking turn: ' + firstItemInQueue.username + ' == ' + username);
   if (firstItemInQueue.username == username && firstItemInQueue.bookTime == bookTime) {
     //current booking's turn
-    console.log('turn for ' + username);
+    console.log('turn for ' + username + ' to insert');
     return true;
   } else {
     //not current booking's turn yet
@@ -434,18 +423,17 @@ function checkBookingTurn(username, bookTime) {
 }
 
 function handleBookingProcess(booking) {
-  console.log('handleBookingProcess');
   checkTimeslotFree(booking.startDateTime, booking.endDateTime, booking.location)
     .then(isSlotFree => {
       if (isSlotFree) {
 
         insertEvent(booking.bookingSummary, booking.startDateTime, booking.endDateTime,
-            booking.location, booking.status, booking.description, booking.username)
-        .then(results => {
+          booking.location, booking.status, booking.description, booking.username)
+          .then(results => {
 
-          bookingQueue.shift();
-          EE.emit('booked' + booking.username + booking.bookTime, { success: true, results: results });
-        });
+            bookingQueue.shift();
+            EE.emit('booked' + booking.username + booking.bookTime, { success: true, results: results });
+          });
 
       } else {
 
@@ -467,17 +455,17 @@ function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
 
     promiseList.push(
       cal.checkBusyPeriod(calendarId, startDateTimeStr, endDateTimeStr)
-      .then(json => {
-        if (json != undefined && json.length > 0) {
-          statusList.push(false);
-          return false;
-        } else {
-          statusList.push(true);
-          return true;
-        }
-      }).catch(err => {
-        throw new Error("checkJointRoomFree: " + err);
-      })
+        .then(json => {
+          if (json != undefined && json.length > 0) {
+            statusList.push(false);
+            return false;
+          } else {
+            statusList.push(true);
+            return true;
+          }
+        }).catch(err => {
+          throw new Error("checkJointRoomFree: " + err);
+        })
     );
   }
 
@@ -500,7 +488,7 @@ export function checkTimeslotFree(startDateTimeStr, endDateTimeStr, room) {
   } else {
     let calendarId = calendarIdList[room];
     return cal.checkBusyPeriod(calendarId, startDateTimeStr, endDateTimeStr)
-      .then(function(eventsJson) {
+      .then(function (eventsJson) {
         if (eventsJson != undefined && eventsJson.length > 0) {
           return false;
         } else {
@@ -516,7 +504,27 @@ export function deleteEvent(eventId, room) {
   let calendarId = calendarIdList[room];
   return cal.deleteEvent(calendarId, eventId)
     .catch(err => {
-      console.log('Error deleting Event');
       throw new Error("deleteEvent: " + err);
     });
-};
+}
+
+export function deleteEvents(eventIdArray, roomId) {
+  let calendarListToDelete = [];
+  let eventList = [];
+  if (roomId === RoomList.queenC.id) {
+    for (let index in RoomList.queenC.children) {
+      let childRoom = RoomList.queenC.children[index];
+      calendarListToDelete.push(calendarIdList[childRoom]);
+    }
+  }
+  for (let index in calendarListToDelete) {
+    let calendarId = calendarListToDelete[index];
+    console.log('deleting ' + calendarId + ' | ' + eventIdArray[index]);
+    eventList.push(cal.deleteEvent(calendarId, eventIdArray[index])
+    );
+  }
+  return Promise.all(eventList).catch(err => {
+    console.log('Error deleting Event' + err);
+    throw new Error("deleteEvent: " + err);
+  });
+}

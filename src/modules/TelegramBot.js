@@ -218,11 +218,12 @@ function checkCommandList(message) {
       let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
       checkUserBookings(message, searchQuery, true);
 
-    } else if (new RegExp(/\/deleteBooking[a-z0-9]+@/, 'i').test(message.text)) {
-      let roomId = message.text.substring(message.text.indexOf('g') + 1, message.text.indexOf('@'));
-      let bookId = message.text.substring(message.text.indexOf('@') + 1);
-      
-      cal_app.deleteEvent(bookId, roomId).then(function () {
+    } else if (new RegExp(/\/deleteBookingqc[a-z0-9]+@/, 'i').test(message.text)) {
+      let roomId = 'qc';
+      let event2Id = message.text.substring(message.text.indexOf('c') + 1, message.text.indexOf('@'));
+      let event1Id = message.text.substring(message.text.indexOf('@') + 1);
+
+      cal_app.deleteEvents([event1Id, event2Id], roomId).then(function () {
         slimbot.sendMessage(message.chat.id, MESSAGES.delete, { parse_mode: 'Markdown' });
         let fullname = message.from.first_name + ' ' + message.from.last_name;
         let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
@@ -231,6 +232,18 @@ function checkCommandList(message) {
         slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
       });
 
+    } else if (new RegExp(/\/deleteBooking[a-z0-9]+@/, 'i').test(message.text)) {
+      let roomId = message.text.substring(message.text.indexOf('g') + 1, message.text.indexOf('@'));
+      let bookId = message.text.substring(message.text.indexOf('@') + 1);
+
+      cal_app.deleteEvent(bookId, roomId).then(function () {
+        slimbot.sendMessage(message.chat.id, MESSAGES.delete, { parse_mode: 'Markdown' });
+        let fullname = message.from.first_name + ' ' + message.from.last_name;
+        let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+        checkUserBookings(message, searchQuery);
+      }).catch(err => {
+        slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
+      });
     } else {  //ignore non-commands in private chat
       return false;
     }
@@ -240,16 +253,20 @@ function checkCommandList(message) {
   return true;
 }
 
+
 //booked command
 function checkUserBookings(message, searchQuery, isDelete) {
   cal_app.listBookedEventsByUser(new Date(), searchQuery)
     .then(bookings => {
       if (!bookings.length) {
-        slimbot.sendMessage(message.chat.id, MESSAGES.noBooking, { parse_mode: 'Markdown' });
+        let msg = MESSAGES.noBooking;
+        if (isDelete !== undefined) {
+          msg = MESSAGES.noBookingAfterDelete;
+        }
+        slimbot.sendMessage(message.chat.id, msg, { parse_mode: 'Markdown' });
       } else {
         let count = 0;
         let msg = '';
-        console.log(bookings);
         for (let key in bookings) {
           count++;
           let booking = bookings[key];
@@ -258,11 +275,16 @@ function checkUserBookings(message, searchQuery, isDelete) {
 
           msg += bookingsReplyBuilder(count, details[0], booking.location, booking.start.dateTime, booking.end.dateTime, details[1]);
           if (isDelete !== undefined) {
-            msg += '\nClick on the following command to delete your booking: \n' + '/deleteBooking' + booking.room + '@' + booking.id + '\n';
+            let aryDesc = booking.description.split('@');
+            let room2Id = '';
+            if (aryDesc.length > 1) {
+              room2Id = aryDesc[1];
+            }
+            msg += `${MESSAGES.deleteInstruction}/\deleteBooking${booking.room}${room2Id}@${booking.id}\n`;
           }
           msg = msg.replace("_", "-"); //escape _ cuz markdown cant handle it
         }
-        var reply = 'You have the following bookings scheduled: \n' + msg;
+        var reply = MESSAGES.listBooking + msg;
         slimbot.sendMessage(message.chat.id, reply, { parse_mode: 'Markdown' });
       }
     });
