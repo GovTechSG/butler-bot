@@ -519,7 +519,6 @@ export function deleteEvents(eventIdArray, roomId) {
   }
   for (let index in calendarListToDelete) {
     let calendarId = calendarListToDelete[index];
-    console.log('deleting ' + calendarId + ' | ' + eventIdArray[index]);
     eventList.push(cal.deleteEvent(calendarId, eventIdArray[index])
     );
   }

@@ -33,7 +33,6 @@ console.log('bot started on ' + new Date().getFormattedTime());
 slimbot.on('message', message => {
   console.log('message');
   let isCommand = checkCommandList(message);
-  console.log('isCommand' + isCommand);
 
   if (Object.keys(bookerList).length === 0) {
     return;
@@ -193,8 +192,6 @@ function checkCommandList(message) {
     slimbot.sendMessage(message.chat.id, MESSAGES.private);
 
   } else if (message.text == '/exit') {
-
-
     console.log('/exit current booking');
     SessionMgr.terminateSession(message.chat.id);
 
@@ -211,12 +208,12 @@ function checkCommandList(message) {
     } else if (message.text == '/booked') {
       let fullname = message.from.first_name + ' ' + message.from.last_name;
       let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
-      checkUserBookings(message, searchQuery);
+      checkUserBookings(message, searchQuery, MESSAGES.noBooking);
 
     } else if (message.text == '/delete') {
       let fullname = message.from.first_name + ' ' + message.from.last_name;
       let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
-      checkUserBookings(message, searchQuery, true);
+      checkUserBookings(message, searchQuery, MESSAGES.noBooking, true);
 
     } else if (new RegExp(/\/deleteBookingqc[a-z0-9]+@/, 'i').test(message.text)) {
       let roomId = 'qc';
@@ -227,7 +224,7 @@ function checkCommandList(message) {
         slimbot.sendMessage(message.chat.id, MESSAGES.delete, { parse_mode: 'Markdown' });
         let fullname = message.from.first_name + ' ' + message.from.last_name;
         let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
-        checkUserBookings(message, searchQuery);
+        checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete);
       }).catch(err => {
         slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
       });
@@ -240,7 +237,7 @@ function checkCommandList(message) {
         slimbot.sendMessage(message.chat.id, MESSAGES.delete, { parse_mode: 'Markdown' });
         let fullname = message.from.first_name + ' ' + message.from.last_name;
         let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
-        checkUserBookings(message, searchQuery);
+        checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete);
       }).catch(err => {
         slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
       });
@@ -253,17 +250,12 @@ function checkCommandList(message) {
   return true;
 }
 
-
 //booked command
-function checkUserBookings(message, searchQuery, isDelete) {
+function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
   cal_app.listBookedEventsByUser(new Date(), searchQuery)
     .then(bookings => {
       if (!bookings.length) {
-        let msg = MESSAGES.noBooking;
-        if (isDelete !== undefined) {
-          msg = MESSAGES.noBookingAfterDelete;
-        }
-        slimbot.sendMessage(message.chat.id, msg, { parse_mode: 'Markdown' });
+        slimbot.sendMessage(message.chat.id, replyText, { parse_mode: 'Markdown' });
       } else {
         let count = 0;
         let msg = '';
