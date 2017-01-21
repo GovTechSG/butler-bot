@@ -328,7 +328,12 @@ function promptDateSelection(query, room, startDate) {
 
 //Step 2 - Timeslot
 function promptTimeslotSelection(query, room, startDate) {
-  let startDateStr = startDate.getISO8601DateWithDefinedTime(8, 0, 0, 0);
+  let startDateStr;
+  if (startDate.isDateToday()) {
+    startDateStr = startDate.getISO8601TimeStamp();
+  } else {
+    startDateStr = startDate.getISO8601DateWithDefinedTime(8, 0, 0, 0);
+  }
 
   cal_app.listEmptySlotsInDay(startDateStr, room)
     .then(jsonArr => {
