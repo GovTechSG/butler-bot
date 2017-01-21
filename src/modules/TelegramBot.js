@@ -12,11 +12,7 @@ let Emitter = new EventEmitter();
 let cal_app = require('./CalendarApp');
 let botName;
 
-slimbot.getMe().then(update => {
-  console.log(update);
-  botName = update.result.username;
-});
-
+let bookerList = {};
 let roomlist = {
   'q1': 'Queen 1',
   'q2': 'Queen 2',
@@ -26,9 +22,12 @@ let roomlist = {
   'bb': 'Bumblebee'
 };
 
-let bookerList = {};
+slimbot.getMe().then(update => {
+  console.log('bot started on ' + new Date().getFormattedTime());
+  console.log(update);
+  botName = update.result.username;
+});
 
-console.log('bot started on ' + new Date().getFormattedTime());
 
 // Register listeners
 slimbot.on('message', message => {
@@ -220,29 +219,13 @@ function checkCommandList(message) {
       let roomId = 'qc';
       let event2Id = message.text.substring(message.text.indexOf('c') + 1, message.text.indexOf('@'));
       let event1Id = message.text.substring(message.text.indexOf('@') + 1);
-
       deleteBookings([event1Id, event2Id], roomId, message);
-      // cal_app.deleteEvents([event1Id, event2Id], roomId).then(function () {
-      //   slimbot.sendMessage(message.chat.id, MESSAGES.delete, { parse_mode: 'Markdown' });
-      //   let fullname = message.from.first_name + ' ' + message.from.last_name;
-      //   let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
-      //   checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete);
-      // }).catch(err => {
-      //   slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
-      // });
 
     } else if (new RegExp(/\/deleteBooking[a-z0-9]+@/, 'i').test(message.text)) {
       let roomId = message.text.substring(message.text.indexOf('g') + 1, message.text.indexOf('@'));
       let bookId = message.text.substring(message.text.indexOf('@') + 1);
       deleteBookings([bookId], roomId, message);
-      // cal_app.deleteEvent([bookId], roomId).then(function () {
-      //   slimbot.sendMessage(message.chat.id, MESSAGES.delete, { parse_mode: 'Markdown' });
-      //   let fullname = message.from.first_name + ' ' + message.from.last_name;
-      //   let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
-      //   checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete);
-      // }).catch(err => {
-      //   slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
-      // });
+
     } else {  //ignore non-commands in private chat
       return false;
     }
@@ -268,7 +251,7 @@ function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
           let details = booking.summary.split(' by ');
 
           msg += bookingsReplyBuilder(count, details[0], booking.location, booking.start.dateTime, booking.end.dateTime, details[1]);
-          if (isDelete !== undefined) {
+          if (undefined !== isDelete) {
             let aryDesc = booking.description.split('@');
             let room2Id = '';
             if (aryDesc.length > 1) {
@@ -372,10 +355,8 @@ function promptDurationSelection(query, room, startDate, startTime) {
 //Step 4 - Booking Description
 function promptDescription(query, room, startDate, startTime, duration) {
   let msg = ReplyBuilder.askForDescription(roomlist[room], startDate, startTime, cal_app.getDurationOptionNameWithId(duration));
-  console.log('description: ' + JSON.stringify(query));
   slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getBackButton(room, startDate, startTime, duration))
     .then(message => {
-      console.log(message);
       let bot_id = message.result.chat.id;
       bookerList[query.from.id] = {
         id: bot_id,

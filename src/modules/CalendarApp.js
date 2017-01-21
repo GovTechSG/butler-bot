@@ -502,14 +502,6 @@ export function checkTimeslotFree(startDateTimeStr, endDateTimeStr, room) {
   }
 };
 
-// export function deleteEvent(eventId, room) {
-//   let calendarId = calendarIdList[room];
-//   return cal.deleteEvent(calendarId, eventId)
-//     .catch(err => {
-//       throw new Error("deleteEvent: " + err);
-//     });
-// }
-
 export function deleteEvents(eventIdArray, roomId) {
   let calendarIdListToDelete = [];
   let eventList = [];
