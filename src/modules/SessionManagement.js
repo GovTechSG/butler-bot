@@ -1,5 +1,5 @@
 import { MESSAGES } from './Messages';
-const sessionLength = 1000 * 30;
+const sessionLength = 1000 * 60;
 let activeUsers = {};       //stores userId, lastMsgId, username, timer
 let Emitter;
 

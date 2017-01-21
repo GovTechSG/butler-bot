@@ -81,9 +81,17 @@ slimbot.on('inline_query', query => {
   }, {
     'type': 'article',
     'id': 'dr',
-    'title': 'Drone',
+    'title': 'Drone Room',
     'input_message_content': {
       'message_text': '/book_drone',
+      'disable_web_page_preview': true
+    }
+  }, {
+    'type': 'article',
+    'id': 'bb',
+    'title': 'Bumblebee Room',
+    'input_message_content': {
+      'message_text': '/book_bumblebee',
       'disable_web_page_preview': true
     }
   }, {
@@ -183,6 +191,10 @@ function checkCommandList(message) {
 
   } else if (message.text == '/book_drone') {
     roomSelected = 'dr';
+    promptTodayOrDateOption(roomSelected, message);
+
+  } else if (message.text == '/book_bumblebee') {
+    roomSelected = 'bb';
     promptTodayOrDateOption(roomSelected, message);
 
   } else if (message.text == '/book') {
