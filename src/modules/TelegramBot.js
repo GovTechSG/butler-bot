@@ -22,7 +22,8 @@ let roomlist = {
   'q2': 'Queen 2',
   'qc': 'Queen (Combined)',
   'dr': 'Drone',
-  'fg': 'Focus Group Discussion Room'
+  'fg': 'Focus Group Discussion Room',
+  'bb': 'Bumblebee'
 };
 
 let bookerList = {};
@@ -220,27 +221,28 @@ function checkCommandList(message) {
       let event2Id = message.text.substring(message.text.indexOf('c') + 1, message.text.indexOf('@'));
       let event1Id = message.text.substring(message.text.indexOf('@') + 1);
 
-      cal_app.deleteEvents([event1Id, event2Id], roomId).then(function () {
-        slimbot.sendMessage(message.chat.id, MESSAGES.delete, { parse_mode: 'Markdown' });
-        let fullname = message.from.first_name + ' ' + message.from.last_name;
-        let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
-        checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete);
-      }).catch(err => {
-        slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
-      });
+      deleteBookings([event1Id, event2Id], roomId, message);
+      // cal_app.deleteEvents([event1Id, event2Id], roomId).then(function () {
+      //   slimbot.sendMessage(message.chat.id, MESSAGES.delete, { parse_mode: 'Markdown' });
+      //   let fullname = message.from.first_name + ' ' + message.from.last_name;
+      //   let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+      //   checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete);
+      // }).catch(err => {
+      //   slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
+      // });
 
     } else if (new RegExp(/\/deleteBooking[a-z0-9]+@/, 'i').test(message.text)) {
       let roomId = message.text.substring(message.text.indexOf('g') + 1, message.text.indexOf('@'));
       let bookId = message.text.substring(message.text.indexOf('@') + 1);
-
-      cal_app.deleteEvent(bookId, roomId).then(function () {
-        slimbot.sendMessage(message.chat.id, MESSAGES.delete, { parse_mode: 'Markdown' });
-        let fullname = message.from.first_name + ' ' + message.from.last_name;
-        let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
-        checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete);
-      }).catch(err => {
-        slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
-      });
+      deleteBookings([bookId], roomId, message);
+      // cal_app.deleteEvent([bookId], roomId).then(function () {
+      //   slimbot.sendMessage(message.chat.id, MESSAGES.delete, { parse_mode: 'Markdown' });
+      //   let fullname = message.from.first_name + ' ' + message.from.last_name;
+      //   let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+      //   checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete);
+      // }).catch(err => {
+      //   slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
+      // });
     } else {  //ignore non-commands in private chat
       return false;
     }
@@ -293,7 +295,8 @@ function promptRoomSelection(message) {
         { text: 'Queen Room 1', callback_data: JSON.stringify({ room: 'q1' }) },
         { text: 'Queen Room 2', callback_data: JSON.stringify({ room: 'q2' }) }
       ], [
-        { text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) }
+        { text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) },
+        { text: 'Bumblebee Room', callback_data: JSON.stringify({ room: 'bb' }) }
       ]
       ]
     })
@@ -434,6 +437,18 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
       slimbot.editMessageText(userId, msgId, MESSAGES.tooLate);
       throw err;
     });
+}
+
+function deleteBookings(eventsToDeleteArray, roomId, message) {
+  cal_app.deleteEvents(eventsToDeleteArray, roomId).then(function () {
+    let deletedFromRoom = roomlist[roomId];
+    slimbot.sendMessage(message.chat.id, MESSAGES.delete + ' for ' + deletedFromRoom + '.', { parse_mode: 'Markdown' });
+    let fullname = message.from.first_name + ' ' + message.from.last_name;
+    let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+    checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete, true);
+  }).catch(err => {
+    slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
+  });
 }
 
 //Exit Booking

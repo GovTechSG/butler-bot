@@ -10,13 +10,14 @@ let calendarIdList = CONFIG.calendarId;
 
 let EE = new EventEmitter();
 
-let colourDict = { "fg": 1, "dr": 2, "q1": 3, "q2": 4, "qc": 5 };
+let colourDict = { "fg": 1, "dr": 2, "q1": 3, "q2": 4, "qc": 5, "bb": 6 };
 let RoomList = {
   queen1: { id: 'q1', name: 'Queen 1' },
   queen2: { id: 'q2', name: 'Queen 2' },
   queenC: { id: 'qc', name: 'Queen (Combined)', children: ['q1', 'q2'] },
   drone: { id: 'dr', name: 'Drone' },
-  fgd: { id: 'fg', name: 'Focus Group Discussion Room' }
+  fgd: { id: 'fg', name: 'Focus Group Discussion Room' },
+  bb: { id: 'bb', name: 'Bumblebee' }
 };
 
 let jointRoomList = {
@@ -347,7 +348,6 @@ export function queueForInsert(bookingSummary, startDateTimeStr, endDateTimeStr,
   });
 }
 
-
 export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username) {
   console.log('insert: ' + location);
 
@@ -502,25 +502,27 @@ export function checkTimeslotFree(startDateTimeStr, endDateTimeStr, room) {
   }
 };
 
-export function deleteEvent(eventId, room) {
-  let calendarId = calendarIdList[room];
-  return cal.deleteEvent(calendarId, eventId)
-    .catch(err => {
-      throw new Error("deleteEvent: " + err);
-    });
-}
+// export function deleteEvent(eventId, room) {
+//   let calendarId = calendarIdList[room];
+//   return cal.deleteEvent(calendarId, eventId)
+//     .catch(err => {
+//       throw new Error("deleteEvent: " + err);
+//     });
+// }
 
 export function deleteEvents(eventIdArray, roomId) {
-  let calendarListToDelete = [];
+  let calendarIdListToDelete = [];
   let eventList = [];
-  if (roomId === RoomList.queenC.id) {
+  if (RoomList.queenC.id === roomId) {
     for (let index in RoomList.queenC.children) {
       let childRoom = RoomList.queenC.children[index];
-      calendarListToDelete.push(calendarIdList[childRoom]);
+      calendarIdListToDelete.push(calendarIdList[childRoom]);
     }
+  } else {
+    calendarIdListToDelete.push(calendarIdList[roomId]);
   }
-  for (let index in calendarListToDelete) {
-    let calendarId = calendarListToDelete[index];
+  for (let index in calendarIdListToDelete) {
+    let calendarId = calendarIdListToDelete[index];
     eventList.push(cal.deleteEvent(calendarId, eventIdArray[index])
     );
   }
