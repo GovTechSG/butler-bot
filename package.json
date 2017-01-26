@@ -30,6 +30,7 @@
     "bluebird": "^3.4.7",
     "google-oauth-jwt": "^0.2.0",
     "node-google-calendar": "^0.1.4",
+    "restify": "^4.3.0",
     "slimbot": "^0.5.5",
     "uuid": "^3.0.1"
   },
