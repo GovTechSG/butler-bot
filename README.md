@@ -25,11 +25,26 @@ References:
 * [Keeping a changelog](http://keepachangelog.com/)
 * [Semver](http://semver.org/)
 
+## Doing
+
+* Setup Webhook (Domain name, SSL Termination) - @edisonchee
+* Use Jasmine and Istanbul for testing (Write test cases)
+
 ## Todo
 
-* Publish NPM package for node-google-calendar
 * REFACTOR!!!😱😱😱
-* Use Jasmine and Istanbul for testing
-* CodeClimate
-* Recurrent booking
-* /amend, /delete, /view
+* CodeClimate?
+* Html calendar page to display all calendar bookings
+* /view command for to show link for calendar listing
+* Booking insert job queue improvement
+* Update this Todo list
+
+## Done
+
+* Store room bookings with google calendar
+* /book or @swee_zhar_bot command to initiate room booking 
+* /help command for instructions
+* /booked command to check user's upcoming bookings
+* /exit command to terminate current booking process
+* /delete command to mirror /booked command with delete link 
+* Booking Session timeout after being inactive

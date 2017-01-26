@@ -1,3 +1,3 @@
-const ButlerBot = require('./modules/TelegramBot');
+import { slimbot as ButlerBot } from './modules/TelegramBot';
 
 ButlerBot.startPolling();

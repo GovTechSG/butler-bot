@@ -39,3 +39,5 @@ Thumbs.db
 
 node_modules
 src/config/**/*
+build/
+yarn-error.log
