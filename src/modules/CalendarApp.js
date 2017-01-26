@@ -4,8 +4,83 @@ import CalendarAPI from 'node-google-calendar';
 import './Date';
 import Promise from 'bluebird';
 import EventEmitter from 'eventemitter3';
+import { default as uuid } from 'uuid';
+import { default as restify } from 'restify';
 
-let cal = new CalendarAPI(CONFIG);
+const requestWithJWT = Promise.promisify(require('google-oauth-jwt').requestWithJWT());
+const cal = new CalendarAPI(CONFIG);
+const jwt = {
+    email: CONFIG.serviceAcctId,
+    keyFile: CONFIG.keyFile,
+    scopes: ['https://www.googleapis.com/auth/calendar']
+};
+let syncToken;
+let channelToken = uuid();
+let eventUpdates;
+
+server.use(restify.bodyParser());
+
+server.post('/gcal/events', (req, res) => {
+  console.log(req);
+  if (req.headers['x-goog-channel-token'] === channelToken) {
+    requestWithJWT({
+      uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.fg}/events`,
+      jwt: jwt,
+      qs: {
+        syncToken: syncToken
+      }
+    })
+    .then(resp => {
+      console.log(resp.nextSyncToken);
+      syncToken = resp.nextPageToken || resp.nextSyncToken;
+      eventUpdates = resp.items;
+      console.log(`Event updates: ${eventUpdates}`);
+    });
+  }
+  res.send(204);
+});
+
+server.get('/', (req, res) => {
+    console.log(req);
+    res.send(204);
+});
+
+server.listen(7777, () => {
+    console.log(`${server.name} listening at ${server.url}`);
+});
+
+// setup channel for push notifications
+
+requestWithJWT({
+  method: 'POST',
+  uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.fg}/events/watch`,
+  jwt: jwt,
+  body: {
+    id: uuid(),
+    type: 'web_hook',
+    address: CONFIG.webhook,
+    token: channelToken
+  },
+  json: true
+})
+  .then(resp => {
+    console.log(resp.body);
+  })
+  .catch(err => {
+    throw new Error(err);
+  });
+
+// perform initial full sync to get nextSyncToken
+
+requestWithJWT({
+  uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.fg}/events`,
+  jwt: jwt
+})
+  .then(resp => {
+    console.log(resp.nextSyncToken);
+    syncToken = resp.nextPageToken || resp.nextSyncToken;
+  });
+
 let calendarIdList = CONFIG.calendarId;
 
 let EE = new EventEmitter();
