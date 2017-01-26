@@ -25,7 +25,7 @@ server.post('/gcal/events', (req, res) => {
     if (req.headers['x-goog-channel-token'] === channelToken) {
         console.log('POST received');
         requestWithJWT({
-            uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.fg}/events`,
+            uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.primary}/events`,
             jwt: jwt,
             qs: {
                 syncToken: syncToken
@@ -55,7 +55,7 @@ server.listen(7777, () => {
 
 requestWithJWT({
     method: 'POST',
-    uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.fg}/events/watch`,
+    uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.primary}/events/watch`,
     jwt: jwt,
     body: {
         id: uuid(),
@@ -75,7 +75,7 @@ requestWithJWT({
 // perform initial full sync to get nextSyncToken
 
 requestWithJWT({
-    uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.fg}/events`,
+    uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.primary}/events`,
     jwt: jwt
 })
     .then(resp => {
