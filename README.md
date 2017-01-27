@@ -37,6 +37,7 @@ References:
 * Html calendar page to display all calendar bookings
 * /view command for to show link for calendar listing
 * Booking insert job queue improvement
+* Authenticate to only allow hive users to book
 * Update this Todo list
 
 ## Done

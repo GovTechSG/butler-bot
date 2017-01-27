@@ -252,7 +252,7 @@ function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
   cal_app.listBookedEventsByUser(new Date(), searchQuery)
     .then(bookings => {
       if (!bookings.length) {
-        slimbot.sendMessage(message.chat.id, replyText, { parse_mode: 'Markdown' });
+        slimbot.sendMessage(message.chat.id, NoBookingReplyText, { parse_mode: 'Markdown' });
       } else {
         let count = 0;
         let msg = '';
