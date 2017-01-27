@@ -25,15 +25,8 @@ References:
 * [Keeping a changelog](http://keepachangelog.com/)
 * [Semver](http://semver.org/)
 
-## Doing
-
-* Setup Webhook (Domain name, SSL Termination) - @edisonchee
-* Use Jasmine and Istanbul for testing (Write test cases)
-
 ## Todo
 
-* REFACTOR!!!😱😱😱
-* CodeClimate?
 * Html calendar page to display all calendar bookings
 * /view command for to show link for calendar listing
 * Booking insert job queue improvement
@@ -49,3 +42,4 @@ References:
 * /exit command to terminate current booking process
 * /delete command to mirror /booked command with delete link 
 * Booking Session timeout after being inactive
+* launch?
