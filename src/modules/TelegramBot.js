@@ -178,7 +178,10 @@ function checkCommandList(message) {
     throw new Error('Unauthenticated access');
   }
 
-  if (message.text == '/book_fgd') {
+  if (message.text == '/view') {
+    slimbot.sendMessage(message.chat.id,  'Check out this link for the overall room booking schedules: ' + 'https://sgtravelbot.com');
+
+  } else if (message.text == '/book_fgd') {
     roomSelected = 'fg';
     promptTodayOrDateOption(roomSelected, message);
 
