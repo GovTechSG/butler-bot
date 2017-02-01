@@ -425,7 +425,7 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
 
       slimbot.sendMessage(userId, msg, { parse_mode: 'Markdown' })
         .then(message => {
-          msg = 'Check out this link for the overall room booking schedules: ' + json.htmlLink;
+          msg = 'Check out this link for the overall room booking schedules: ' + 'https://sgtravelbot.com';
           slimbot.sendMessage(userId, msg);
         });
       SessionMgr.endSession(userId);
