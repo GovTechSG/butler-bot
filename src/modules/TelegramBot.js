@@ -6,6 +6,7 @@ import * as ParamBuilder from './ParamBuilder';
 import * as SessionMgr from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import { MESSAGES } from './Messages';
+import USERS from '../data/users';
 
 const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
 let Emitter = new EventEmitter();
@@ -172,6 +173,10 @@ function processCallBack(query) {
 function checkCommandList(message) {
   let roomSelected, optionalParams;
   console.log(message);
+  if (!USERS.hasOwnProperty(message.from.username)) {
+    slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
+    throw new Error('Unauthenticated access');
+  }
 
   if (message.text == '/book_fgd') {
     roomSelected = 'fg';

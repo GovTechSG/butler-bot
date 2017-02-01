@@ -15,7 +15,8 @@ const MESSAGES = {
   canceled: `Canceled your booking process. To check your current bookings type /booked.`,
   session_expired: 'Ehh you took too long to book lah. I wait until fed up! 😡😡😡\n\nTry booking again -____-',
   session_terminated: '😢 I just cancelled your booking... you want to try again?',
-  session_outdated: 'This booking session has been cancelled. \nPlease refer to the latest booking message.'
+  session_outdated: 'This booking session has been cancelled. \nPlease refer to the latest booking message.',
+  unauthenticated: 'You are not authenticated to use this bot yet.'
 };
 
 export { MESSAGES };
