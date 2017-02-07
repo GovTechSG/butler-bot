@@ -42,3 +42,4 @@ src/config/**/*
 build/
 yarn-error.log
 .idea
+data/
