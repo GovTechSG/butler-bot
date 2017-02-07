@@ -420,16 +420,16 @@ function completeBooking(query) {
 }
 
 function insertBookingIntoCalendar(userId, msgId, description, room, startDate, timeSlot, duration, userName, fullName) {
-  redis.exists(message.from.username, function(err, reply) {
+  redis.exists(userName, function(err, reply) {
     if (err) {
       throw new Error('unable to save to redis');
     }
     if (reply === 1) {
-      redis.HINCRBY(message.from.username);
+      redis.HINCRBY(userName);
     } else {
-      redis.HSET(message.from.username, 1);
+      redis.HSET(userName, 1);
     }
-  };
+  });
 
   let bookingSummary = '[' + roomlist[room] + '] ' + description + ' by @' + userName + ' (' + fullName + ')';
   console.log(bookingSummary);
