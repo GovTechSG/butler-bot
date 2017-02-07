@@ -234,12 +234,12 @@ function checkCommandList(message) {
 
     } else if (message.text == '/booked') {
       let fullname = message.from.first_name + ' ' + message.from.last_name;
-      let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+      let searchQuery = '@' + message.chat.username;
       checkUserBookings(message, searchQuery, MESSAGES.noBooking);
 
     } else if (message.text == '/delete') {
       let fullname = message.from.first_name + ' ' + message.from.last_name;
-      let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+      let searchQuery = '@' + message.chat.username;
       checkUserBookings(message, searchQuery, MESSAGES.noBooking, true);
 
     } else if (new RegExp(/\/deleteBookingqc[a-z0-9]+@/, 'i').test(message.text)) {
@@ -465,7 +465,7 @@ function deleteBookings(eventsToDeleteArray, roomId, message) {
     let deletedFromRoom = roomlist[roomId];
     slimbot.sendMessage(message.chat.id, MESSAGES.delete + ' for ' + deletedFromRoom + '.', { parse_mode: 'Markdown' });
     let fullname = message.from.first_name + ' ' + message.from.last_name;
-    let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+    let searchQuery = '@' + message.chat.username;
     checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete, true);
   }).catch(err => {
     slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
