@@ -7,13 +7,13 @@ import * as SessionMgr from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import { MESSAGES } from './Messages';
 import USERS from '../data/users';
-import { default as Redis } from 'ioredis';
+// import { default as Redis } from 'ioredis';
 
-const redis = new Redis(6379); // default redis port
+// const redis = new Redis(6379); // default redis port
 
-redis.on('connect', () => {
-  console.log('Connected to redis');
-});
+// redis.on('connect', () => {
+//   console.log('Connected to redis');
+// });
 
 const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
 let Emitter = new EventEmitter();
@@ -275,16 +275,21 @@ function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
           count++;
           let booking = bookings[key];
           msg += '-------------------------------\n';
+          console.log(booking.summary);
           let details = booking.summary.split(' by ');
 
           msg += bookingsReplyBuilder(count, details[0], booking.location, booking.start.dateTime, booking.end.dateTime, details[1]);
           if (undefined !== isDelete) {
-            let aryDesc = booking.description.split('@');
-            let room2Id = '';
-            if (aryDesc.length > 1) {
-              room2Id = aryDesc[1];
+            if (!booking.isByMe) {
+              msg += `This room is not booked by you. Please contact @chanyan or @Doriskeith for more information.`;
+            } else {
+              let aryDesc = booking.description.split('@');
+              let room2Id = '';
+              if (aryDesc.length > 1) {
+                room2Id = aryDesc[1];
+              }
+              msg += `${MESSAGES.deleteInstruction}/\deleteBooking${booking.room}${room2Id}@${booking.id}\n`;
             }
-            msg += `${MESSAGES.deleteInstruction}/\deleteBooking${booking.room}${room2Id}@${booking.id}\n`;
           }
           msg = msg.replace("_", "-"); //escape _ cuz markdown cant handle it
         }
@@ -420,21 +425,20 @@ function completeBooking(query) {
 }
 
 function insertBookingIntoCalendar(userId, msgId, description, room, startDate, timeSlot, duration, userName, fullName) {
-  redis.exists(userName, function(err, reply) {
-    if (err) {
-      throw new Error('unable to save to redis');
-    }
-    if (reply === 1) {
-      redis.hincrby(userName, 'bookings', 1).then(reply => {
-        console.log(`Total number of bookings for ${userName}: ${reply}`);
-      });
-    } else {
-      redis.hmset(userName, { bookings: 1 });
-    }
-  });
+  // redis.exists(userName, function(err, reply) {
+  //   if (err) {
+  //     throw new Error('unable to save to redis');
+  //   }
+  //   if (reply === 1) {
+  //     redis.hincrby(userName, 'bookings', 1).then(reply => {
+  //       console.log(`Total number of bookings for ${userName}: ${reply}`);
+  //     });
+  //   } else {
+  //     redis.hmset(userName, { bookings: 1 });
+  //   }
+  // });
 
-  let bookingSummary = '[' + roomlist[room] + '] ' + description + ' by @' + userName + ' (' + fullName + ')';
-  console.log(bookingSummary);
+  let bookingSummary = description + ' by @' + userName + ' (' + fullName + ')';
   let startTime = startDate.getISO8601DateWithDefinedTimeString(timeSlot);
   for (let i = 0; i < duration; i++) {
     startDate.addMinutes(30);
