@@ -143,15 +143,13 @@ export function listBookedEventsByUser(startDateTime, user) {
 export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
     let bookedEventsArray = [];
     let calendarId = calendarIdList[query];
-    let roomName = getRoomNameFromId(query);
 
-    return cal.listEvents(calendarId, startDateTime, endDateTime, roomName)
+    return cal.listEvents(calendarId, startDateTime, endDateTime)
         .then(json => {
             for (let i = 0; i < json.length; i++) {
                 let event = {
                     id: json[i].id,
                     summary: json[i].summary,
-                    location: json[i].location,
                     start: json[i].start,
                     end: json[i].end,
                     status: json[i].status
