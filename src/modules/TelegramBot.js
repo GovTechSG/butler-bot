@@ -7,13 +7,13 @@ import * as SessionMgr from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import { MESSAGES } from './Messages';
 import USERS from '../data/users';
-// import { default as Redis } from 'ioredis';
+import { default as Redis } from 'ioredis';
 
-// const redis = new Redis(6379); // default redis port
+const redis = new Redis(6379); // default redis port
 
-// redis.on('connect', () => {
-//   console.log('Connected to redis');
-// });
+redis.on('connect', () => {
+  console.log('Connected to redis');
+});
 
 const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
 let Emitter = new EventEmitter();
