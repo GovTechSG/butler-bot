@@ -29,6 +29,7 @@
   "dependencies": {
     "bluebird": "^3.4.7",
     "google-oauth-jwt": "^0.2.0",
+    "ioredis": "^2.5.0",
     "node-google-calendar": "^0.1.4",
     "slimbot": "^0.5.5"
   },
