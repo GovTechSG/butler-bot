@@ -16,7 +16,8 @@ const MESSAGES = {
   session_expired: 'Ehh you took too long to book lah. I wait until fed up! 😡😡😡\n\nTry booking again -____-',
   session_terminated: '😢 I just cancelled your booking... you want to try again?',
   session_outdated: 'This booking session has been cancelled. \nPlease refer to the latest booking message.',
-  unauthenticated: 'You are not authenticated to use this bot yet.'
+  unauthenticated: 'You are not authenticated to use this bot yet.',
+  notBookedByMe: '\nThis room is not booked by you. Please contact @chanyan or @Doriskeith for more information.\n'
 };
 
 export { MESSAGES };
