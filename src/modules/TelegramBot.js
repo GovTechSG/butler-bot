@@ -15,8 +15,8 @@ let botName;
 
 let bookerList = {};
 let roomlist = {
-  'q1': 'Queen 1',
-  'q2': 'Queen 2',
+  'q1': 'Queen (Video)',
+  'q2': 'Queen (Projector)',
   'qc': 'Queen (Combined)',
   'dr': 'Drone',
   'fg': 'Focus Group Discussion Room',
@@ -66,7 +66,7 @@ slimbot.on('inline_query', query => {
   }, {
     'type': 'article',
     'id': 'q1',
-    'title': 'Queen 1',
+    'title': 'Queen (Video)',
     'input_message_content': {
       'message_text': '/book_queen_1',
       'disable_web_page_preview': true
@@ -74,7 +74,7 @@ slimbot.on('inline_query', query => {
   }, {
     'type': 'article',
     'id': 'q2',
-    'title': 'Queen 2',
+    'title': 'Queen (Projector)',
     'input_message_content': {
       'message_text': '/book_queen_2',
       'disable_web_page_preview': true

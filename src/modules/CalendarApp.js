@@ -13,8 +13,8 @@ let EE = new EventEmitter();
 
 let colourDict = { "fg": 1, "dr": 2, "q1": 3, "q2": 4, "qc": 5, "bb": 6 };
 let RoomList = {
-    queen1: { id: 'q1', name: 'Queen 1' },
-    queen2: { id: 'q2', name: 'Queen 2' },
+    queen1: { id: 'q1', name: 'Queen (Video)' },
+    queen2: { id: 'q2', name: 'Queen (Projector)' },
     queenC: { id: 'qc', name: 'Queen (Combined)', children: ['q1', 'q2'] },
     drone: { id: 'dr', name: 'Drone' },
     fgd: { id: 'fg', name: 'Focus Group Discussion Room' },
