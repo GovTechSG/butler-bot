@@ -425,18 +425,18 @@ function completeBooking(query) {
 }
 
 function insertBookingIntoCalendar(userId, msgId, description, room, startDate, timeSlot, duration, userName, fullName) {
-  // redis.exists(userName, function(err, reply) {
-  //   if (err) {
-  //     throw new Error('unable to save to redis');
-  //   }
-  //   if (reply === 1) {
-  //     redis.hincrby(userName, 'bookings', 1).then(reply => {
-  //       console.log(`Total number of bookings for ${userName}: ${reply}`);
-  //     });
-  //   } else {
-  //     redis.hmset(userName, { bookings: 1 });
-  //   }
-  // });
+  redis.exists(userName, function(err, reply) {
+    if (err) {
+      throw new Error('unable to save to redis');
+    }
+    if (reply === 1) {
+      redis.hincrby(userName, 'bookings', 1).then(reply => {
+        console.log(`Total number of bookings for ${userName}: ${reply}`);
+      });
+    } else {
+      redis.hmset(userName, { bookings: 1 });
+    }
+  });
 
   let bookingSummary = description + ' by @' + userName + ' (' + fullName + ')';
   let startTime = startDate.getISO8601DateWithDefinedTimeString(timeSlot);

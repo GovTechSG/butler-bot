@@ -97,6 +97,7 @@ export function listBookedEventsByUser(startDateTime, user) {
             .then(json => {
                 let eventsInCalendar = [];
                 for (let i = 0; i < json.length; i++) {
+                    if (json[i].description === undefined ) json[i].description = "";
                     let event = {
                         id: json[i].id,
                         summary: json[i].summary,
@@ -108,7 +109,6 @@ export function listBookedEventsByUser(startDateTime, user) {
                         room: room,
                         isByMe: json[i].description.indexOf('booked via butler') !== -1
                     };
-                    console.log(event.summary);
                     eventsInCalendar.push(event);
                     bookedEventsArray.push(event);
                 }
