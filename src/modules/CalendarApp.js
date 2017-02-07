@@ -150,6 +150,7 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
                 let event = {
                     id: json[i].id,
                     summary: json[i].summary,
+                    location: json[i].location,
                     start: json[i].start,
                     end: json[i].end,
                     status: json[i].status
