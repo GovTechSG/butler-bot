@@ -4,85 +4,8 @@ import CalendarAPI from 'node-google-calendar';
 import './Date';
 import Promise from 'bluebird';
 import EventEmitter from 'eventemitter3';
-import { default as uuid } from 'uuid';
-import { default as restify } from 'restify';
 
-const server = restify.createServer();
-const requestWithJWT = Promise.promisify(require('google-oauth-jwt').requestWithJWT());
 const cal = new CalendarAPI(CONFIG);
-const jwt = {
-    email: CONFIG.serviceAcctId,
-    keyFile: CONFIG.keyFile,
-    scopes: ['https://www.googleapis.com/auth/calendar']
-};
-let syncToken;
-let channelToken = uuid();
-let eventUpdates;
-
-server.use(restify.bodyParser());
-
-server.post('/gcal/events', (req, res) => {
-    if (req.headers['x-goog-channel-token'] === channelToken) {
-        console.log('POST received');
-        requestWithJWT({
-            uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.primary}/events`,
-            jwt: jwt,
-            qs: {
-                syncToken: syncToken
-            }
-        })
-            .then(resp => {
-                let body = JSON.parse(resp.body);
-                syncToken = body.nextPageToken || body.nextSyncToken;
-                console.log("From server, syncToken: " + syncToken);
-                eventUpdates = JSON.stringify(body.items);
-                console.log(`Event updates: ${eventUpdates}`);
-            });
-    }
-    res.send(204);
-});
-
-server.get('/', (req, res) => {
-    console.log(req);
-    res.send(204);
-});
-
-server.listen(7777, () => {
-    console.log(`${server.name} listening at ${server.url}`);
-});
-
-// setup channel for push notifications
-
-requestWithJWT({
-    method: 'POST',
-    uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.primary}/events/watch`,
-    jwt: jwt,
-    body: {
-        id: uuid(),
-        type: 'web_hook',
-        address: CONFIG.webhook,
-        token: channelToken
-    },
-    json: true
-})
-    .then(resp => {
-        console.log('Notification channel successfully setup');
-    })
-    .catch(err => {
-        throw new Error(err);
-    });
-
-// perform initial full sync to get nextSyncToken
-
-requestWithJWT({
-    uri: `https://www.googleapis.com/calendar/v3/calendars/${CONFIG.calendarId.primary}/events`,
-    jwt: jwt
-})
-    .then(resp => {
-        let body = JSON.parse(resp.body);
-        syncToken = body.nextPageToken || body.nextSyncToken;
-        console.log(syncToken);
-    });
 
 let calendarIdList = CONFIG.calendarId;
 
@@ -90,8 +13,8 @@ let EE = new EventEmitter();
 
 let colourDict = { "fg": 1, "dr": 2, "q1": 3, "q2": 4, "qc": 5, "bb": 6 };
 let RoomList = {
-    queen1: { id: 'q1', name: 'Queen 1' },
-    queen2: { id: 'q2', name: 'Queen 2' },
+    queen1: { id: 'q1', name: 'Queen (Video)' },
+    queen2: { id: 'q2', name: 'Queen (Projector)' },
     queenC: { id: 'qc', name: 'Queen (Combined)', children: ['q1', 'q2'] },
     drone: { id: 'dr', name: 'Drone' },
     fgd: { id: 'fg', name: 'Focus Group Discussion Room' },
@@ -220,9 +143,8 @@ export function listBookedEventsByUser(startDateTime, user) {
 export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
     let bookedEventsArray = [];
     let calendarId = calendarIdList[query];
-    let roomName = getRoomNameFromId(query);
 
-    return cal.listEvents(calendarId, startDateTime, endDateTime, roomName)
+    return cal.listEvents(calendarId, startDateTime, endDateTime)
         .then(json => {
             for (let i = 0; i < json.length; i++) {
                 let event = {

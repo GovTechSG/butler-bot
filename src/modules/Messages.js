@@ -1,6 +1,6 @@
 const MESSAGES = {
-  start: `Allo!💁 To get started, type:\n\n*/book* to start booking from a list of rooms available;\n*/help* in a private chat - for more info on how to book a room;\n*/booked* in a private chat - for list of rooms you have booked;\n*/exit* during a booking - to cancel the current booking session.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`,
-  help: `Type:\n\n*/book* if you want to book a room;\n\n*/booked* if you want to check your bookings;\n\n*/exit* if you want to cancel while booking halfway.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`,
+  start: `Allo!💁 To get started, type:\n\n*/help* in a private chat - for more info on how to book a room;\n*/book* to start booking from a list of rooms available;\n*/exit* terminate current booking process;\n*/booked* in a private chat - for list of rooms you have booked;\n*/delete* in a private chat - delete a booking;\n*/view* see all bookings in hive.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`,
+  help: `Type:\n\n*/book* to start booking from a list of rooms available;\n*/exit* terminate current booking process;\n*/booked* in a private chat - for list of rooms you have booked;\n*/delete* in a private chat - delete a booking;\n*/view* see all bookings in hive.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`,
   book: `Which room would you like to book?`,
   delete: `You have successfully deleted your booking`,
   deleteErr: `Oops, I think something went wrong while deleting your booking.`,
@@ -15,7 +15,8 @@ const MESSAGES = {
   canceled: `Canceled your booking process. To check your current bookings type /booked.`,
   session_expired: 'Ehh you took too long to book lah. I wait until fed up! 😡😡😡\n\nTry booking again -____-',
   session_terminated: '😢 I just cancelled your booking... you want to try again?',
-  session_outdated: 'This booking session has been cancelled. \nPlease refer to the latest booking message.'
+  session_outdated: 'This booking session has been cancelled. \nPlease refer to the latest booking message.',
+  unauthenticated: 'You are not authenticated to use this bot yet.'
 };
 
 export { MESSAGES };

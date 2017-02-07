@@ -27,19 +27,18 @@ References:
 
 ## Todo
 
-* Html calendar page to display all calendar bookings
-* /view command for to show link for calendar listing
 * Booking insert job queue improvement
-* Authenticate to only allow hive users to book
-* Update this Todo list
+* Authenticate to only allow hive users to book (temporary workaround for now)
+* Update command list with BotFather
 
 ## Done
 
 * Store room bookings with google calendar
-* /book or @swee_zhar_bot command to initiate room booking 
+* /book or @swee_zhar_bot command to initiate room booking
 * /help command for instructions
 * /booked command to check user's upcoming bookings
 * /exit command to terminate current booking process
-* /delete command to mirror /booked command with delete link 
+* /delete command to mirror /booked command with delete link
 * Booking Session timeout after being inactive
-* launch?
+* Html calendar page to display all calendar bookings
+* /view command for to show link for calendar listing

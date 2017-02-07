@@ -35,7 +35,7 @@ export function terminateSession(userChatId, msg) {
     delete activeUsers[userChatId];
 
     if (msg === undefined) {
-        msg = MESSAGE.session_terminated;
+        msg = MESSAGES.session_terminated;
     }
     notifyUserAndClearUserData(userChatId, sessObj.msgId, sessObj.username, msg);
 };

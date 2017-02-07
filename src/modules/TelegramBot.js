@@ -6,6 +6,14 @@ import * as ParamBuilder from './ParamBuilder';
 import * as SessionMgr from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import { MESSAGES } from './Messages';
+import USERS from '../data/users';
+import { default as Redis } from 'ioredis';
+
+const redis = new Redis(6379); // default redis port
+
+redis.on('connect', () => {
+  console.log('Connected to redis');
+});
 
 const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
 let Emitter = new EventEmitter();
@@ -14,8 +22,8 @@ let botName;
 
 let bookerList = {};
 let roomlist = {
-  'q1': 'Queen 1',
-  'q2': 'Queen 2',
+  'q1': 'Queen (Video)',
+  'q2': 'Queen (Projector)',
   'qc': 'Queen (Combined)',
   'dr': 'Drone',
   'fg': 'Focus Group Discussion Room',
@@ -65,17 +73,17 @@ slimbot.on('inline_query', query => {
   }, {
     'type': 'article',
     'id': 'q1',
-    'title': 'Queen 1',
+    'title': 'Queen (Video)',
     'input_message_content': {
-      'message_text': '/book_queen_1',
+      'message_text': '/book_queen_video',
       'disable_web_page_preview': true
     }
   }, {
     'type': 'article',
     'id': 'q2',
-    'title': 'Queen 2',
+    'title': 'Queen (Projector)',
     'input_message_content': {
-      'message_text': '/book_queen_2',
+      'message_text': '/book_queen_projector',
       'disable_web_page_preview': true
     }
   }, {
@@ -172,16 +180,23 @@ function processCallBack(query) {
 function checkCommandList(message) {
   let roomSelected, optionalParams;
   console.log(message);
+  if (!USERS.hasOwnProperty(message.from.username)) {
+    slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
+    throw new Error('Unauthenticated access');
+  }
 
-  if (message.text == '/book_fgd') {
+  if (message.text == '/view') {
+    slimbot.sendMessage(message.chat.id,  'Check out this link for the overall room booking schedules: ' + 'https://sgtravelbot.com');
+
+  } else if (message.text == '/book_fgd') {
     roomSelected = 'fg';
     promptTodayOrDateOption(roomSelected, message);
 
-  } else if (message.text == '/book_queen_1') {
+  } else if (message.text == '/book_queen_video') {
     roomSelected = 'q1';
     promptTodayOrDateOption(roomSelected, message);
 
-  } else if (message.text == '/book_queen_2') {
+  } else if (message.text == '/book_queen_projector') {
     roomSelected = 'q2';
     promptTodayOrDateOption(roomSelected, message);
 
@@ -287,8 +302,8 @@ function promptRoomSelection(message) {
         { text: 'Focus Group Room', callback_data: JSON.stringify({ room: 'fg' }) },
         { text: 'Drone Room', callback_data: JSON.stringify({ room: 'dr' }) }
       ], [
-        { text: 'Queen Room 1', callback_data: JSON.stringify({ room: 'q1' }) },
-        { text: 'Queen Room 2', callback_data: JSON.stringify({ room: 'q2' }) }
+        { text: 'Queen (Video)', callback_data: JSON.stringify({ room: 'q1' }) },
+        { text: 'Queen (Projector)', callback_data: JSON.stringify({ room: 'q2' }) }
       ], [
         { text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) },
         { text: 'Bumblebee Room', callback_data: JSON.stringify({ room: 'bb' }) }
@@ -405,6 +420,19 @@ function completeBooking(query) {
 }
 
 function insertBookingIntoCalendar(userId, msgId, description, room, startDate, timeSlot, duration, userName, fullName) {
+  redis.exists(userName, function(err, reply) {
+    if (err) {
+      throw new Error('unable to save to redis');
+    }
+    if (reply === 1) {
+      redis.hincrby(userName, 'bookings', 1).then(reply => {
+        console.log(`Total number of bookings for ${userName}: ${reply}`);
+      });
+    } else {
+      redis.hmset(userName, { bookings: 1 });
+    }
+  });
+
   let bookingSummary = '[' + roomlist[room] + '] ' + description + ' by @' + userName + ' (' + fullName + ')';
   console.log(bookingSummary);
   let startTime = startDate.getISO8601DateWithDefinedTimeString(timeSlot);

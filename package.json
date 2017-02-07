@@ -19,7 +19,7 @@
     "booking"
   ],
   "engines": {
-    "node": "^7.4.0"
+    "node": "^7.5.0"
   },
   "license": "MIT",
   "scripts": {
@@ -29,10 +29,9 @@
   "dependencies": {
     "bluebird": "^3.4.7",
     "google-oauth-jwt": "^0.2.0",
+    "ioredis": "^2.5.0",
     "node-google-calendar": "^0.1.4",
-    "restify": "^4.3.0",
-    "slimbot": "^0.5.5",
-    "uuid": "^3.0.1"
+    "slimbot": "^0.5.5"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
