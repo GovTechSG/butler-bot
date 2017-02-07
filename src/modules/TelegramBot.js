@@ -7,13 +7,13 @@ import * as SessionMgr from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import { MESSAGES } from './Messages';
 import USERS from '../data/users';
-import { default as Redis } from 'ioredis';
+// import { default as Redis } from 'ioredis';
 
-const redis = new Redis(6379); // default redis port
+// const redis = new Redis(6379); // default redis port
 
-redis.on('connect', () => {
-  console.log('Connected to redis');
-});
+// redis.on('connect', () => {
+//   console.log('Connected to redis');
+// });
 
 const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
 let Emitter = new EventEmitter();
@@ -234,12 +234,12 @@ function checkCommandList(message) {
 
     } else if (message.text == '/booked') {
       let fullname = message.from.first_name + ' ' + message.from.last_name;
-      let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+      let searchQuery = '@' + message.chat.username;
       checkUserBookings(message, searchQuery, MESSAGES.noBooking);
 
     } else if (message.text == '/delete') {
       let fullname = message.from.first_name + ' ' + message.from.last_name;
-      let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+      let searchQuery = '@' + message.chat.username;
       checkUserBookings(message, searchQuery, MESSAGES.noBooking, true);
 
     } else if (new RegExp(/\/deleteBookingqc[a-z0-9]+@/, 'i').test(message.text)) {
@@ -275,16 +275,21 @@ function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
           count++;
           let booking = bookings[key];
           msg += '-------------------------------\n';
+          console.log(booking.summary);
           let details = booking.summary.split(' by ');
 
           msg += bookingsReplyBuilder(count, details[0], booking.location, booking.start.dateTime, booking.end.dateTime, details[1]);
           if (undefined !== isDelete) {
-            let aryDesc = booking.description.split('@');
-            let room2Id = '';
-            if (aryDesc.length > 1) {
-              room2Id = aryDesc[1];
+            if (!booking.isByMe) {
+              msg += `This room is not booked by you. Please contact @chanyan or @Doriskeith for more information.`;
+            } else {
+              let aryDesc = booking.description.split('@');
+              let room2Id = '';
+              if (aryDesc.length > 1) {
+                room2Id = aryDesc[1];
+              }
+              msg += `${MESSAGES.deleteInstruction}/\deleteBooking${booking.room}${room2Id}@${booking.id}\n`;
             }
-            msg += `${MESSAGES.deleteInstruction}/\deleteBooking${booking.room}${room2Id}@${booking.id}\n`;
           }
           msg = msg.replace("_", "-"); //escape _ cuz markdown cant handle it
         }
@@ -433,8 +438,7 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
     }
   });
 
-  let bookingSummary = '[' + roomlist[room] + '] ' + description + ' by @' + userName + ' (' + fullName + ')';
-  console.log(bookingSummary);
+  let bookingSummary = description + ' by @' + userName + ' (' + fullName + ')';
   let startTime = startDate.getISO8601DateWithDefinedTimeString(timeSlot);
   for (let i = 0; i < duration; i++) {
     startDate.addMinutes(30);
@@ -465,7 +469,7 @@ function deleteBookings(eventsToDeleteArray, roomId, message) {
     let deletedFromRoom = roomlist[roomId];
     slimbot.sendMessage(message.chat.id, MESSAGES.delete + ' for ' + deletedFromRoom + '.', { parse_mode: 'Markdown' });
     let fullname = message.from.first_name + ' ' + message.from.last_name;
-    let searchQuery = '@' + message.chat.username + ' (' + fullname + ')';
+    let searchQuery = '@' + message.chat.username;
     checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete, true);
   }).catch(err => {
     slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });

@@ -97,6 +97,7 @@ export function listBookedEventsByUser(startDateTime, user) {
             .then(json => {
                 let eventsInCalendar = [];
                 for (let i = 0; i < json.length; i++) {
+                    if (json[i].description === undefined ) json[i].description = "";
                     let event = {
                         id: json[i].id,
                         summary: json[i].summary,
@@ -105,7 +106,8 @@ export function listBookedEventsByUser(startDateTime, user) {
                         end: json[i].end,
                         status: json[i].status,
                         description: json[i].description,
-                        room: room
+                        room: room,
+                        isByMe: json[i].description.indexOf('booked via butler') !== -1
                     };
                     eventsInCalendar.push(event);
                     bookedEventsArray.push(event);
@@ -123,13 +125,12 @@ export function listBookedEventsByUser(startDateTime, user) {
 
             for (let key in bookedEventsArray) {
                 let evnt = bookedEventsArray[key];
-                let bookingDescription = evnt.summary.slice(evnt.summary.indexOf("]") + 2);
-                let bookedRoomName = evnt.summary.slice(1, evnt.summary.indexOf("]"));
+                let bookingDescription = evnt.summary;
+                let bookedRoomName = evnt.location;
                 evnt.summary = bookingDescription;
 
                 if (bookedRoomName == RoomList.queenC.name) {
-                    if (evnt.location == RoomList.queen1.name) {
-                        evnt.location = RoomList.queenC.name;
+                    if (evnt.description.indexOf('@') >= 0) {
                         evnt.room = RoomList.queenC.id;
                     } else {
                         delete bookedEventsArray[key];
@@ -377,6 +378,9 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
 
         let calendarId = calendarIdList[location];
         let room = getRoomNameFromId(location);
+        if (room === RoomList.queen1.name || room === RoomList.queen2.name ){
+            room = RoomList.queenC.name;
+        }
         return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, getColourForRoom(location))
             .then(resp => {
                 let json = resp.body;
