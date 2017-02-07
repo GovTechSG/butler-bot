@@ -68,7 +68,7 @@ slimbot.on('inline_query', query => {
     'id': 'q1',
     'title': 'Queen (Video)',
     'input_message_content': {
-      'message_text': '/book_queen_1',
+      'message_text': '/book_queen_video',
       'disable_web_page_preview': true
     }
   }, {
@@ -76,7 +76,7 @@ slimbot.on('inline_query', query => {
     'id': 'q2',
     'title': 'Queen (Projector)',
     'input_message_content': {
-      'message_text': '/book_queen_2',
+      'message_text': '/book_queen_projector',
       'disable_web_page_preview': true
     }
   }, {
@@ -185,11 +185,11 @@ function checkCommandList(message) {
     roomSelected = 'fg';
     promptTodayOrDateOption(roomSelected, message);
 
-  } else if (message.text == '/book_queen_1') {
+  } else if (message.text == '/book_queen_video') {
     roomSelected = 'q1';
     promptTodayOrDateOption(roomSelected, message);
 
-  } else if (message.text == '/book_queen_2') {
+  } else if (message.text == '/book_queen_projector') {
     roomSelected = 'q2';
     promptTodayOrDateOption(roomSelected, message);
 
@@ -295,8 +295,8 @@ function promptRoomSelection(message) {
         { text: 'Focus Group Room', callback_data: JSON.stringify({ room: 'fg' }) },
         { text: 'Drone Room', callback_data: JSON.stringify({ room: 'dr' }) }
       ], [
-        { text: 'Queen Room 1', callback_data: JSON.stringify({ room: 'q1' }) },
-        { text: 'Queen Room 2', callback_data: JSON.stringify({ room: 'q2' }) }
+        { text: 'Queen (Video)', callback_data: JSON.stringify({ room: 'q1' }) },
+        { text: 'Queen (Projector)', callback_data: JSON.stringify({ room: 'q2' }) }
       ], [
         { text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) },
         { text: 'Bumblebee Room', callback_data: JSON.stringify({ room: 'bb' }) }
