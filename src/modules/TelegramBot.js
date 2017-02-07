@@ -425,9 +425,11 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
       throw new Error('unable to save to redis');
     }
     if (reply === 1) {
-      redis.HINCRBY(userName);
+      redis.hincrby(userName.bookings).then(reply => {
+        console.log(`Total number of bookings for ${userName}: ${reply}`);
+      });
     } else {
-      redis.HSET(userName, 1);
+      redis.hmset(userName, { bookings: 1 });
     }
   });
 
