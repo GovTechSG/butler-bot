@@ -10,11 +10,11 @@ import USERS from '../data/users';
 import { default as Redis } from 'ioredis';
 import { default as Chrono } from 'chrono-node';
 
-const redis = new Redis(6379); // default redis port
+// const redis = new Redis(6379); // default redis port
 
-redis.on('connect', () => {
-  console.log('Connected to redis');
-});
+// redis.on('connect', () => {
+//   console.log('Connected to redis');
+// });
 
 const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
 let Emitter = new EventEmitter();
@@ -190,7 +190,12 @@ function checkCommandList(message) {
     slimbot.sendMessage(message.chat.id,  'Check out this link for the overall room booking schedules: ' + 'https://sgtravelbot.com');
 
   } else if (message.text == '/book_any' || message.text == '/any') {
-    askForDate(message);
+    slimbot.sendMessage(message.chat.id, 'Swee, I like your style. When do you need a room?')
+    .then(() => {
+      slimbot.on('message', message => {
+        anyRoom(message);
+      });
+    });
 
   } else if (message.text == '/book_fgd') {
     roomSelected = 'fg';
@@ -429,18 +434,18 @@ function completeBooking(query) {
 }
 
 function insertBookingIntoCalendar(userId, msgId, description, room, startDate, timeSlot, duration, userName, fullName) {
-  redis.exists(userName, function(err, reply) {
-    if (err) {
-      throw new Error('unable to save to redis');
-    }
-    if (reply === 1) {
-      redis.hincrby(userName, 'bookings', 1).then(reply => {
-        console.log(`Total number of bookings for ${userName}: ${reply}`);
-      });
-    } else {
-      redis.hmset(userName, { bookings: 1 });
-    }
-  });
+  // redis.exists(userName, function(err, reply) {
+  //   if (err) {
+  //     throw new Error('unable to save to redis');
+  //   }
+  //   if (reply === 1) {
+  //     redis.hincrby(userName, 'bookings', 1).then(reply => {
+  //       console.log(`Total number of bookings for ${userName}: ${reply}`);
+  //     });
+  //   } else {
+  //     redis.hmset(userName, { bookings: 1 });
+  //   }
+  // });
 
   let bookingSummary = description + ' by @' + userName + ' (' + fullName + ')';
   let startTime = startDate.getISO8601DateWithDefinedTimeString(timeSlot);
@@ -492,7 +497,7 @@ function bookingsReplyBuilder(number, summary, room, startDate, endDate, user) {
 
 // Free-text flow
 
-function askForDate(message) {
+function anyRoom(message) {
   let results = new Chrono.parse(message.text);
   results[0].start.assign('timezoneOffset', 480);
   let startDateObj = results[0].start.date();
@@ -504,10 +509,30 @@ function askForDate(message) {
     endDateObj = results[0].start.date().addMinutes(60);
   }
   // look up lowest-priority cal for available slot
-  cal_app.checkTimeslotFree(startDateObj, endDateObj, dr)
-  .then(boolean => {
-    if (!boolean) {
-      // room is free?
+  let rooms = ['q1','q2','qc','dr','fg','bb'];
+  checkRoomFreeAtTimeslot(message, startDateObj, endDateObj, rooms);
+}
+
+function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms){
+  if (!rooms.length) return false;
+  return cal_app.checkTimeslotFree(startDate, endDate, rooms[0])
+  .then(roomFree => {
+    if (roomFree) {
+      let dur = startDate.getUTCSeconds() - endDate.getUTCSeconds();
+      let optionalParams = {
+        parse_mode: 'markdown',
+        reply_markup: JSON.stringify({
+          inline_keyboard: [[
+            { text: 'Yes', callback_data: JSON.stringify({ date: startDate, time: startDate.getTime(), dur: dur }) },
+            { text: 'No', callback_data: JSON.stringify({ exit: true }) }
+          ]]
+        })
+      };
+      slimbot.sendMessage(message.chat.id, `Steady, *${roomlist[rooms[0]]}* is available! Would you like to book it?`, optionalParams);
+    } else {
+      console.log(`${rooms[0]} is not free, trying next room`);
+      rooms.shift();
+      checkRoomFreeAtTimeslot(message, startDate, endDate, rooms);
     }
   });
 }
