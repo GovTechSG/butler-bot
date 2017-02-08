@@ -190,12 +190,7 @@ function checkCommandList(message) {
     slimbot.sendMessage(message.chat.id,  'Check out this link for the overall room booking schedules: ' + 'https://sgtravelbot.com');
 
   } else if (message.text == '/book_any' || message.text == '/any') {
-    slimbot.sendMessage(message.chat.id, 'Swee, I like your style. When do you need a room?')
-    .then(() => {
-      slimbot.on('message', message => {
-        anyRoom(message);
-      });
-    });
+    askAny(message);
 
   } else if (message.text == '/book_fgd') {
     roomSelected = 'fg';
@@ -496,25 +491,34 @@ function bookingsReplyBuilder(number, summary, room, startDate, endDate, user) {
 }
 
 // Free-text flow
+function askAny(message) {
+  slimbot.sendMessage(message.chat.id, `Swee, I like your style 😘 When do you need a room?\n\n_e.g._\n_today 3pm to 4pm_\n_tomorrow 1pm to 3pm_\n_this friday 9am to 10am_`, { parse_mode: 'markdown' })
+  .then(message => {
+    slimbot.on('message', message => {
+      anyRoom(message);
+    })
+  });
+}
 
 function anyRoom(message) {
   let results = new Chrono.parse(message.text);
-  results[0].start.assign('timezoneOffset', 480);
-  let startDateObj = results[0].start.date();
-  let endDateObj;
-  if (results[0].end) {
-    results[0].end.assign('timezoneOffset', 480);
-    endDateObj = results[0].end.date();
-  } else {
-    endDateObj = results[0].start.date().addMinutes(60);
+  if (!results.length || results[0].end === undefined || results[0].start === undefined) {
+    slimbot.sendMessage(message.chat.id, `I don't really understand what you're saying leh. Can try again?`, { parse_mode: 'markdown' });
+    return;
   }
-  // look up lowest-priority cal for available slot
+  slimbot.sendMessage(message.chat.id, `Ok wait ah let me check...`);
+  results[0].start.assign('timezoneOffset', 480);
+  results[0].end.assign('timezoneOffset', 480);
+  // // look up lowest-priority cal for available slot
   let rooms = ['q1','q2','qc','dr','fg','bb'];
-  checkRoomFreeAtTimeslot(message, startDateObj, endDateObj, rooms);
+  checkRoomFreeAtTimeslot(message, results[0].start.date(), results[0].end.date(), rooms);
 }
 
 function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms){
-  if (!rooms.length) return false;
+  if (!rooms.length) {
+    slimbot.sendMessage(message.chat.id, `Sorry leh, don't have any room at all. Why don't you look at the calendar and see which timeslot is free?\n\n[Click here to view calendar](https://sgtravelbot.com)`, { parse_mode: 'markdown' });
+    return;
+  };
   return cal_app.checkTimeslotFree(startDate, endDate, rooms[0])
   .then(roomFree => {
     if (roomFree) {
@@ -523,7 +527,7 @@ function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms){
         parse_mode: 'markdown',
         reply_markup: JSON.stringify({
           inline_keyboard: [[
-            { text: 'Yes', callback_data: JSON.stringify({ date: startDate, time: startDate.getTime(), dur: dur }) },
+            { text: 'Yes', callback_data: JSON.stringify({ room: rooms[0], date: startDate }) },
             { text: 'No', callback_data: JSON.stringify({ exit: true }) }
           ]]
         })
