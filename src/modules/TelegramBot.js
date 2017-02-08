@@ -8,6 +8,7 @@ import * as ReplyBuilder from './ReplyBuilder';
 import { MESSAGES } from './Messages';
 import USERS from '../data/users';
 import { default as Redis } from 'ioredis';
+import { default as Chrono } from 'chrono-node';
 
 const redis = new Redis(6379); // default redis port
 
@@ -187,6 +188,9 @@ function checkCommandList(message) {
 
   if (message.text == '/view') {
     slimbot.sendMessage(message.chat.id,  'Check out this link for the overall room booking schedules: ' + 'https://sgtravelbot.com');
+
+  } else if (message.text == '/book_any' || message.text == '/any') {
+    askForDate(message);
 
   } else if (message.text == '/book_fgd') {
     roomSelected = 'fg';
@@ -484,6 +488,28 @@ function replyCancelBookProcess(query) {
 function bookingsReplyBuilder(number, summary, room, startDate, endDate, user) {
   let reply = `Booking ${number}:\nRoom: *${room}*\nDate: *${new Date(startDate).getFormattedDate()}*\nTime: *${new Date(startDate).getFormattedTime()} - ${new Date(endDate).getFormattedTime()}*\nBy: *${user}*\nDescription: ${summary}\n`;
   return reply;
+}
+
+// Free-text flow
+
+function askForDate(message) {
+  let results = new Chrono.parse(message.text);
+  results[0].start.assign('timezoneOffset', 480);
+  let startDateObj = results[0].start.date();
+  let endDateObj;
+  if (results[0].end) {
+    results[0].end.assign('timezoneOffset', 480);
+    endDateObj = results[0].end.date();
+  } else {
+    endDateObj = results[0].start.date().addMinutes(60);
+  }
+  // look up lowest-priority cal for available slot
+  cal_app.checkTimeslotFree(startDateObj, endDateObj, dr)
+  .then(boolean => {
+    if (!boolean) {
+      // room is free?
+    }
+  });
 }
 
 export { slimbot };
