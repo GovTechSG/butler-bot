@@ -17,7 +17,7 @@ let RoomList = {
     queen2: { id: 'q2', name: 'Queen (Projector)' },
     queenC: { id: 'qc', name: 'Queen (Combined)', children: ['q1', 'q2'] },
     drone: { id: 'dr', name: 'Drone' },
-    fgd: { id: 'fg', name: 'Focus Group Discussion Room' },
+    fgd: { id: 'fg', name: 'Focus Group Discussion' },
     bb: { id: 'bb', name: 'Bumblebee' }
 };
 
@@ -97,7 +97,7 @@ export function listBookedEventsByUser(startDateTime, user) {
             .then(json => {
                 let eventsInCalendar = [];
                 for (let i = 0; i < json.length; i++) {
-                    if (json[i].description === undefined ) json[i].description = "";
+                    if (json[i].description === undefined) json[i].description = "";
                     let event = {
                         id: json[i].id,
                         summary: json[i].summary,
@@ -378,7 +378,7 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
 
         let calendarId = calendarIdList[location];
         let room = getRoomNameFromId(location);
-        if (room === RoomList.queen1.name || room === RoomList.queen2.name ){
+        if (room === RoomList.queen1.name || room === RoomList.queen2.name) {
             room = RoomList.queenC.name;
         }
         return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, getColourForRoom(location))
@@ -470,8 +470,8 @@ function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
                         return true;
                     }
                 }).catch(err => {
-                throw new Error("checkJointRoomFree: " + err);
-            })
+                    throw new Error("checkJointRoomFree: " + err);
+                })
         );
     }
 

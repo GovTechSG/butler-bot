@@ -27,9 +27,10 @@ let roomlist = {
   'q2': 'Queen (Projector)',
   'qc': 'Queen (Combined)',
   'dr': 'Drone',
-  'fg': 'Focus Group Discussion Room',
+  'fg': 'Focus Group Discussion',
   'bb': 'Bumblebee'
 };
+let anyBookList = {};
 
 slimbot.getMe().then(update => {
   console.log('bot started on ' + new Date().getFormattedTime());
@@ -42,6 +43,14 @@ slimbot.getMe().then(update => {
 slimbot.on('message', message => {
   console.log('message');
   let isCommand = checkCommandList(message);
+
+
+  console.log(anyBookList);
+  if (!isCommand && anyBookList[message.chat.username] !== undefined) {
+    console.log('found any step');
+    anyRoom(message);
+  }
+
 
   if (Object.keys(bookerList).length === 0) {
     return;
@@ -90,7 +99,7 @@ slimbot.on('inline_query', query => {
   }, {
     'type': 'article',
     'id': 'dr',
-    'title': 'Drone Room',
+    'title': 'Drone',
     'input_message_content': {
       'message_text': '/book_drone',
       'disable_web_page_preview': true
@@ -98,7 +107,7 @@ slimbot.on('inline_query', query => {
   }, {
     'type': 'article',
     'id': 'bb',
-    'title': 'Bumblebee Room',
+    'title': 'Bumblebee',
     'input_message_content': {
       'message_text': '/book_bumblebee',
       'disable_web_page_preview': true
@@ -106,7 +115,7 @@ slimbot.on('inline_query', query => {
   }, {
     'type': 'article',
     'id': 'fg',
-    'title': 'Focus Group Room',
+    'title': 'Focus Group Discussion',
     'input_message_content': {
       'message_text': '/book_fgd',
       'disable_web_page_preview': true
@@ -187,7 +196,7 @@ function checkCommandList(message) {
   }
 
   if (message.text == '/view') {
-    slimbot.sendMessage(message.chat.id,  'Check out this link for the overall room booking schedules: ' + 'https://sgtravelbot.com');
+    slimbot.sendMessage(message.chat.id, 'Check out this link for the overall room booking schedules: ' + 'https://sgtravelbot.com');
 
   } else if (message.text == '/book_any' || message.text == '/any') {
     askAny(message);
@@ -492,12 +501,13 @@ function bookingsReplyBuilder(number, summary, room, startDate, endDate, user) {
 
 // Free-text flow
 function askAny(message) {
+
   slimbot.sendMessage(message.chat.id, `Swee, I like your style 😘 When do you need a room?\n\n_e.g._\n_today 3pm to 4pm_\n_tomorrow 1pm to 3pm_\n_this friday 9am to 10am_`, { parse_mode: 'markdown' })
-  .then(message => {
-    slimbot.on('message', message => {
-      anyRoom(message);
-    })
-  });
+    .then(sentMsg => {
+      SessionMgr.startSessionCountdown(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
+      console.log(message.chat.username);
+      anyBookList[message.chat.username] = {};
+    });
 }
 
 function anyRoom(message) {
@@ -506,39 +516,48 @@ function anyRoom(message) {
     slimbot.sendMessage(message.chat.id, `I don't really understand what you're saying leh. Can try again?`, { parse_mode: 'markdown' });
     return;
   }
-  slimbot.sendMessage(message.chat.id, `Ok wait ah let me check...`);
   results[0].start.assign('timezoneOffset', 480);
   results[0].end.assign('timezoneOffset', 480);
+
+  slimbot.sendMessage(message.chat.id, ReplyBuilder.checkAnyRoom(), { parse_mode: 'markdown' });
+
   // // look up lowest-priority cal for available slot
-  let rooms = ['q1','q2','qc','dr','fg','bb'];
+  let rooms = ['bb', 'dr', 'fg', 'q1', 'q2', 'qc'];
   checkRoomFreeAtTimeslot(message, results[0].start.date(), results[0].end.date(), rooms);
 }
 
-function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms){
+function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms) {
   if (!rooms.length) {
     slimbot.sendMessage(message.chat.id, `Sorry leh, don't have any room at all. Why don't you look at the calendar and see which timeslot is free?\n\n[Click here to view calendar](https://sgtravelbot.com)`, { parse_mode: 'markdown' });
     return;
   };
   return cal_app.checkTimeslotFree(startDate, endDate, rooms[0])
-  .then(roomFree => {
-    if (roomFree) {
-      let dur = startDate.getUTCSeconds() - endDate.getUTCSeconds();
-      let optionalParams = {
-        parse_mode: 'markdown',
-        reply_markup: JSON.stringify({
-          inline_keyboard: [[
-            { text: 'Yes', callback_data: JSON.stringify({ room: rooms[0], date: startDate }) },
-            { text: 'No', callback_data: JSON.stringify({ exit: true }) }
-          ]]
-        })
-      };
-      slimbot.sendMessage(message.chat.id, `Steady, *${roomlist[rooms[0]]}* is available! Would you like to book it?`, optionalParams);
-    } else {
-      console.log(`${rooms[0]} is not free, trying next room`);
-      rooms.shift();
-      checkRoomFreeAtTimeslot(message, startDate, endDate, rooms);
-    }
-  });
+    .then(roomFree => {
+      if (roomFree) {
+        let dur = startDate.getUTCSeconds() - endDate.getUTCSeconds();
+        let optionalParams = {
+          parse_mode: 'markdown',
+          reply_markup: JSON.stringify({
+            inline_keyboard: [[
+              { text: 'Yes', callback_data: JSON.stringify({ room: rooms[0], date: startDate }) },
+              { text: 'No', callback_data: JSON.stringify({ exit: true }) }
+            ]]
+          })
+        };
+        console.log(roomlist[rooms[0]]);
+        slimbot.sendMessage(message.chat.id, ReplyBuilder.confirmAnyRoom(startDate.getFormattedDate(),
+          startDate.getFormattedTime(), endDate.getFormattedTime(), startDate.getMinuteDiff(endDate), roomlist[rooms[0]]), optionalParams)
+          .then(sentMsg => {
+            console.log('sentmsg');
+            console.log(sentMsg);
+            SessionMgr.extendSession(sentMsg.from.id, sentMsg.message_id);
+          });
+      } else {
+        console.log(`${rooms[0]} is not free, trying next room`);
+        rooms.shift();
+        checkRoomFreeAtTimeslot(message, startDate, endDate, rooms);
+      }
+    });
 }
 
 export { slimbot };

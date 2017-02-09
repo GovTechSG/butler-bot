@@ -29,3 +29,12 @@ export function askForDescription(room, date, time, duration) {
 export function bookingConfirmed(room, date, startTime, endTime, fullName, userName, description) {
   return `#Booking confirmed ✔️\n----------------------------\nRoom: *${room}*\nDate: *${date}*\nTime: *${startTime} - ${endTime}*\nBy: *${fullName}* (@${userName})\nDescription: ${description}`
 }
+
+export function checkAnyRoom(){
+  return `Ok wait ah let me check...`;
+}
+
+export function confirmAnyRoom(date, startTime, endTime, duration, room){
+  return `Steady, confirm *${date}* *${startTime} - ${endTime} (${duration} mins)*?\n` +
+  `The *${room}* room is available! Would you like to book it?`;
+}
