@@ -157,6 +157,9 @@ function clearUserSessionInfo(userChatId) {
 }
 
 function processCallBack(query) {
+  if (query.data !== undefined && query.data.trim() === '') {
+    return;
+  }
   let callback_data = JSON.parse(query.data);
   let daysInMonth = new Date().daysInMonth();
 
@@ -352,7 +355,7 @@ function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
 }
 
 function promptDateSelection(query, room, startDate) {
-  let msg = 'You have selected:\n' + '*' + roomlist[room] + '*' + '\n\nPlease select a date in ' + new Date().getCurrentMonthNamed() + ':';
+  let msg = 'You have selected:\n' + '*' + roomlist[room] + '*' + '\n\nPlease select a date in the upcoming month:';
   slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getDateSelection(room));
   SessionMgr.extendSession(query.message.chat.id, query.message.message_id);
 }
