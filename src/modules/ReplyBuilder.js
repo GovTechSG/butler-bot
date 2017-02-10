@@ -10,6 +10,14 @@ export function askForTime(room, date) {
   return `Booking Details (_Step 2 of 4_)\n----------------------------------------\nRoom: *${room}*\nDate: *${formattedDate}*\n\nPlease select a time for this booking:`;
 }
 
+export function informNoTimeslot(room, date) {
+  let formattedDate = date.getFormattedDate();
+  if (date.getSimpleDate() === new Date().getSimpleDate()) {
+    formattedDate += ' (Today)';
+  }
+  return `Booking Details (_Step 2 of 4_)\n----------------------------------------\nRoom: *${room}*\nDate: *${formattedDate}*\n\nThere are no more slots available your requested date. \nPlease try another room.`;
+}
+
 export function askForDuration(room, date, time) {
   let formattedDate = date.getFormattedDate();
   if (date.getSimpleDate() === new Date().getSimpleDate()) {

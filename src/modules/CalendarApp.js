@@ -49,10 +49,13 @@ function getRoomNameFromId(id) {
 export function setupTimeArray(datetimeStr) {
     let earliestSlotToday = new Date(datetimeStr).setTime(8, 0, 0, 0);
     let startTime = new Date(datetimeStr);
+    let endTime = new Date(datetimeStr).setTime(21, 0, 0, 0);
+
     if (!startTime.isDateToday() || startTime < earliestSlotToday) {
         startTime = earliestSlotToday;
+    } else if (startTime.isDateToday() && startTime > endTime) {
+        return {};
     }
-    let endTime = new Date(datetimeStr).setTime(21, 0, 0, 0);
     let timeStart = startTime.roundupToNearestHalfHour();
 
     let numOfSlots = Math.round(startTime.getMinuteDiff(endTime) / 30);
@@ -187,6 +190,10 @@ export function handleListingForTwoCalendars(date, endDate, roomId) {
 };
 
 function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
+    if (timeslotDict === {}) {
+        return timeslotDict;
+    }
+
     for (let key in roomBusyTimeslot) {
         let startTime = new Date(roomBusyTimeslot[key].start.dateTime);
         let endTime = new Date(roomBusyTimeslot[key].end.dateTime);
@@ -198,7 +205,6 @@ function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
     }
     return timeslotDict;
 }
-
 //assumes booking for max length of a day
 export function listEmptySlotsInDay(date, roomId) {
     let endDate = new Date(date).addDays(1).getISO8601TimeStamp();

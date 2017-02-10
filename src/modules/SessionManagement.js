@@ -21,6 +21,7 @@ export function extendSession(userChatId, msgId) {
 
     clearTimeout(sessObj.timer);
     sessObj.timer = setCountdownTimer(userChatId, msgId, sessObj.username);
+    sessObj.msgId = msgId;
     activeUsers[userChatId] = sessObj;
 }
 
@@ -51,7 +52,7 @@ export function endSession(userChatId) {    //used when booking completes
     popUserInfoFromSession(userChatId);
 };
 
-function setCountdownTimer(userChatId, msgId, username){
+function setCountdownTimer(userChatId, msgId, username) {
     return setTimeout(
         function () {
             console.log('[Session Expired] for : @' + username);

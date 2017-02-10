@@ -368,8 +368,13 @@ function promptTimeslotSelection(query, room, startDate) {
 
   cal_app.listEmptySlotsInDay(startDateStr, room)
     .then(jsonArr => {
-      let msg = ReplyBuilder.askForTime(roomlist[room], startDate);
 
+      let msg;
+      if (Object.keys(jsonArr).length === 0) {
+        msg = ReplyBuilder.informNoTimeslot(roomlist[room], startDate);
+      } else {
+        msg = ReplyBuilder.askForTime(roomlist[room], startDate);
+      }
       slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getTimeslots(jsonArr, room, startDate));
       SessionMgr.extendSession(query.message.chat.id, query.message.message_id);
     })
@@ -550,7 +555,7 @@ function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms) {
           .then(sentMsg => {
             console.log('sentmsg');
             console.log(sentMsg);
-            SessionMgr.extendSession(sentMsg.from.id, sentMsg.message_id);
+            SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id);
           });
       } else {
         console.log(`${rooms[0]} is not free, trying next room`);
