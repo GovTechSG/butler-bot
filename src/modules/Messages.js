@@ -1,6 +1,6 @@
 const MESSAGES = {
   start: `Allo!💁 To get started, type:\n\n*/help* in a private chat - for more info on how to book a room;\n*/book* to start booking from a list of rooms available;\n*/exit* terminate current booking process;\n*/booked* in a private chat - for list of rooms you have booked;\n*/delete* in a private chat - delete a booking;\n*/view* see all bookings in hive.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`,
-  help: `Type:\n\n*/book* to start booking from a list of rooms available;\n*/exit* terminate current booking process;\n*/booked* in a private chat - for list of rooms you have booked;\n*/delete* in a private chat - delete a booking;\n*/view* see all bookings in hive.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Vivieane thank you velly much 😛`,
+  help: `Type:\n\n*/book* to start booking from a list of rooms available;\n*/exit* terminate current booking process;\n*/booked* in a private chat - for list of rooms you have booked;\n*/delete* in a private chat - delete a booking;\n*/view* see all bookings in hive.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Viviean thank you velly much 😛`,
   book: `Which room would you like to book?`,
   delete: `You have successfully deleted your booking`,
   deleteErr: `Oops, I think something went wrong while deleting your booking.`,

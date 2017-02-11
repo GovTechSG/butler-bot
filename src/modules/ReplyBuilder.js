@@ -38,11 +38,21 @@ export function bookingConfirmed(room, date, startTime, endTime, fullName, userN
   return `#Booking confirmed ✔️\n----------------------------\nRoom: *${room}*\nDate: *${date}*\nTime: *${startTime} - ${endTime}*\nBy: *${fullName}* (@${userName})\nDescription: ${description}`
 }
 
-export function checkAnyRoom(){
+export function checkAnyRoom() {
   return `Ok wait ah let me check...`;
 }
 
-export function confirmAnyRoom(date, startTime, endTime, duration, room){
+export function confirmAnyRoom(date, startTime, endTime, duration, room) {
   return `Steady, confirm *${date}* *${startTime} - ${endTime} (${duration} mins)*?\n` +
-  `The *${room}* room is available! Would you like to book it?`;
+    `The *${room}* room is available! Would you like to book it?`;
+}
+
+export function rejectAnyRoomForLongBooking(date, startTime, endTime, duration) {
+  return `Okay, did you want to book *${date}* *${startTime} - ${endTime} (${duration} mins)*?\n\n` +
+    `You can only book up to a maximum of 4 hours at one go. Give others a chance to use the rooms too. Please try again.`;
+}
+
+export function rejectAnyRoomForWrongDatetime(date, startTime, endTime, duration) {
+  return `Okay, did you want to book *${date}* *${startTime} - ${endTime} (${duration} mins)*?\n\n` +
+    `You cannot make room booking for the past. Please try again.`;
 }

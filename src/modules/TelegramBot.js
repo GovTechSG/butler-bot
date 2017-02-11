@@ -43,14 +43,10 @@ slimbot.getMe().then(update => {
 slimbot.on('message', message => {
   console.log('message');
   let isCommand = checkCommandList(message);
-
-
-  console.log(anyBookList);
+  
   if (!isCommand && anyBookList[message.chat.username] !== undefined) {
-    console.log('found any step');
     anyRoom(message);
   }
-
 
   if (Object.keys(bookerList).length === 0) {
     return;
@@ -161,9 +157,13 @@ function processCallBack(query) {
     return;
   }
   let callback_data = JSON.parse(query.data);
-  let daysInMonth = new Date().daysInMonth();
 
-  if (callback_data.date === undefined) {
+  if (callback_data.exit !== undefined) {
+    console.log('callback exit: userid-' + callback_data.exit);
+    SessionMgr.terminateSession(callback_data.exit);
+    delete anyBookList[callback_data.username];
+
+  } else if (callback_data.date === undefined) {
     promptTodayOrDateOption(callback_data.room, query, true);
 
   } else if (callback_data.date == 'pick_today') {
@@ -477,7 +477,7 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
           slimbot.sendMessage(userId, msg);
         });
       SessionMgr.endSession(userId);
-
+      delete anyBookList[userName];
     }).catch(err => {
       console.log('Error insertBookingIntoCalendar: ' + JSON.stringify(err));
       slimbot.editMessageText(userId, msgId, MESSAGES.tooLate);
@@ -513,12 +513,12 @@ function askAny(message) {
   slimbot.sendMessage(message.chat.id, `Swee, I like your style 😘 When do you need a room?\n\n_e.g._\n_today 3pm to 4pm_\n_tomorrow 1pm to 3pm_\n_this friday 9am to 10am_`, { parse_mode: 'markdown' })
     .then(sentMsg => {
       SessionMgr.startSessionCountdown(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
-      console.log(message.chat.username);
       anyBookList[message.chat.username] = {};
     });
 }
 
 function anyRoom(message) {
+
   let results = new Chrono.parse(message.text);
   if (!results.length || results[0].end === undefined || results[0].start === undefined) {
     slimbot.sendMessage(message.chat.id, `I don't really understand what you're saying leh. Can try again?`, { parse_mode: 'markdown' });
@@ -526,6 +526,25 @@ function anyRoom(message) {
   }
   results[0].start.assign('timezoneOffset', 480);
   results[0].end.assign('timezoneOffset', 480);
+
+  let startTime = results[0].start.date();
+  let endTime = results[0].end.date();
+
+  if (startTime <= new Date() || endTime <= startTime) {
+    slimbot.sendMessage(message.chat.id, ReplyBuilder.rejectAnyRoomForWrongDatetime(startTime.getFormattedDate(),
+      startTime.getFormattedTime(), endTime.getFormattedTime(), startTime.getMinuteDiff(endTime)),
+      { parse_mode: 'markdown' });
+    return;
+  }
+
+  let maxBookingDurationSlotsAllowed = 8;
+  let numOfSlotsBooked = Math.round(startTime.getMinuteDiff(endTime) / 30);
+  if (numOfSlotsBooked > maxBookingDurationSlotsAllowed) {
+    slimbot.sendMessage(message.chat.id, ReplyBuilder.rejectAnyRoomForLongBooking(startTime.getFormattedDate(),
+      startTime.getFormattedTime(), endTime.getFormattedTime(), startTime.getMinuteDiff(endTime)),
+      { parse_mode: 'markdown' });
+    return;
+  }
 
   slimbot.sendMessage(message.chat.id, ReplyBuilder.checkAnyRoom(), { parse_mode: 'markdown' });
 
@@ -542,22 +561,23 @@ function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms) {
   return cal_app.checkTimeslotFree(startDate, endDate, rooms[0])
     .then(roomFree => {
       if (roomFree) {
-        let dur = startDate.getUTCSeconds() - endDate.getUTCSeconds();
+        let numOfSlots = Math.round(startDate.getMinuteDiff(endDate) / 30);
+
         let optionalParams = {
           parse_mode: 'markdown',
           reply_markup: JSON.stringify({
             inline_keyboard: [[
-              { text: 'Yes', callback_data: JSON.stringify({ room: rooms[0], date: startDate }) },
-              { text: 'No', callback_data: JSON.stringify({ exit: true }) }
+              { text: 'Yes', callback_data: JSON.stringify({ date: startDate.getSimpleDate(), time: startDate.getFormattedTime(), dur: numOfSlots + "", room: rooms[0] }) },
+              { text: 'No', callback_data: JSON.stringify({ exit: message.chat.id + "", username: message.chat.username }) }
             ]]
           })
         };
-        console.log(roomlist[rooms[0]]);
+
+        delete anyBookList[message.chat.username];
+
         slimbot.sendMessage(message.chat.id, ReplyBuilder.confirmAnyRoom(startDate.getFormattedDate(),
           startDate.getFormattedTime(), endDate.getFormattedTime(), startDate.getMinuteDiff(endDate), roomlist[rooms[0]]), optionalParams)
           .then(sentMsg => {
-            console.log('sentmsg');
-            console.log(sentMsg);
             SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id);
           });
       } else {
@@ -567,5 +587,4 @@ function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms) {
       }
     });
 }
-
 export { slimbot };
