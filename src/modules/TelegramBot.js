@@ -10,11 +10,11 @@ import USERS from '../data/users';
 import { default as Redis } from 'ioredis';
 import { default as Chrono } from 'chrono-node';
 
-// const redis = new Redis(6379); // default redis port
+const redis = new Redis(6379); // default redis port
 
-// redis.on('connect', () => {
-//   console.log('Connected to redis');
-// });
+redis.on('connect', () => {
+  console.log('Connected to redis');
+});
 
 const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
 let Emitter = new EventEmitter();
@@ -163,7 +163,6 @@ function processCallBack(query) {
   let callback_data = JSON.parse(query.data);
 
   if (callback_data.exit !== undefined) {
-    console.log('callback exit: userid-' + callback_data.exit);
     SessionMgr.terminateSession(callback_data.exit);
 
   } else if (callback_data.date === undefined) {
@@ -395,10 +394,6 @@ function promptTimeslotSelection(query, room, startDate) {
 function promptDurationSelection(query, room, startDate, startTime) {
   cal_app.listAvailableDurationForStartTime(startDate.getISO8601DateWithDefinedTimeString(startTime), room)
     .then(function (jsonArr) {
-      //    if (Object.keys(jsonArr).length == 0){
-      //    slimbot.editMessageText(query.message.chat.id, query.message.message_id, 'I think someone just booked the timeslot following this. Please pick another starttime.');
-      //        promptTimeslotSelection(query, startDate, room);
-      // }
       let msg = ReplyBuilder.askForDuration(roomlist[room], startDate, startTime);
       slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getDuration(jsonArr, room, startDate, startTime));
       SessionMgr.extendSession(query.message.chat.id, query.message.message_id);
@@ -449,18 +444,18 @@ function completeBooking(query) {
 }
 
 function insertBookingIntoCalendar(userId, msgId, description, room, startDate, timeSlot, duration, userName, fullName) {
-  // redis.exists(userName, function(err, reply) {
-  //   if (err) {
-  //     throw new Error('unable to save to redis');
-  //   }
-  //   if (reply === 1) {
-  //     redis.hincrby(userName, 'bookings', 1).then(reply => {
-  //       console.log(`Total number of bookings for ${userName}: ${reply}`);
-  //     });
-  //   } else {
-  //     redis.hmset(userName, { bookings: 1 });
-  //   }
-  // });
+  redis.exists(userName, function(err, reply) {
+    if (err) {
+      throw new Error('unable to save to redis');
+    }
+    if (reply === 1) {
+      redis.hincrby(userName, 'bookings', 1).then(reply => {
+        console.log(`Total number of bookings for ${userName}: ${reply}`);
+      });
+    } else {
+      redis.hmset(userName, { bookings: 1 });
+    }
+  });
 
   let bookingSummary = description + ' by @' + userName + ' (' + fullName + ')';
   let startTime = startDate.getISO8601DateWithDefinedTimeString(timeSlot);
