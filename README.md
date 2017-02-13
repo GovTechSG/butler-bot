@@ -29,9 +29,8 @@ References:
 
 * Booking insert job queue improvement
 * Authenticate to only allow hive users to book (temporary workaround for now)
-* Update command list with BotFather
 
-## Done
+## V0.1.1
 
 * Store room bookings with google calendar
 * /book or @swee_zhar_bot command to initiate room booking
@@ -42,3 +41,4 @@ References:
 * Booking Session timeout after being inactive
 * Html calendar page to display all calendar bookings
 * /view command for to show link for calendar listing
+* /any command for easy booking of any meeting room at given date & time
