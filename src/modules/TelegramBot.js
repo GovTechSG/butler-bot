@@ -9,6 +9,8 @@ import { MESSAGES } from './Messages';
 import USERS from '../data/users';
 import { default as Redis } from 'ioredis';
 import { default as Chrono } from 'chrono-node';
+import dotenv from 'dotenv';
+dotenv.load();
 
 const redis = new Redis(6379); // default redis port
 

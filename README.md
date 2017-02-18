@@ -8,10 +8,20 @@ Grab dependencies
 npm i
 ```
 
+Run your own Redis Server
+``` bash
+# if you have docker installed
+docker run -p '6379:6379' redis
+```
+
 Run the bot
 ```javascript
 npm start
 ```
+
+## Configuration
+* Copy [.sample-env](.sample-env) to `.env` and replace with your own env variables
+* Add sample users data in [sample-users.js](src/data/sample-users.js)
 
 ## Contributing
 

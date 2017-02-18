@@ -1,0 +1,5 @@
+TELEGRAM_BOT_TOKEN=sample_bot_token
+SERVICE_ACCT_ID=sample
+CALENDAR_ID=sample
+CALENDAR_URL=sample
+GOOGLE_KEYFILE_PATH=sample
