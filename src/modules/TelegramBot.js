@@ -131,7 +131,6 @@ slimbot.on('chosen_inline_result', query => {
 });
 
 slimbot.on('callback_query', query => {
-  console.log('callback');
   processCallBack(query);
 });
 

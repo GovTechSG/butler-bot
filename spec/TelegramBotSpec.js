@@ -24,6 +24,10 @@ describe('Telegram Bot', () => {
       };
     });
 
+
+    mockery.registerMock('../data/users', {
+      'algae': '12365781'
+    });
     cal_app = {
       listEmptySlotsInDay: stub().returns(Promise.resolve([]))
     };
