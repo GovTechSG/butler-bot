@@ -24,7 +24,9 @@
   "license": "MIT",
   "scripts": {
     "start": "babel-node src",
-    "build": "babel src -d build --copy-files"
+    "build": "babel src -d build --copy-files",
+    "test": "mocha spec --compilers=js:babel-register",
+    "cov": "nyc mocha spec --compilers=js:babel-register"
   },
   "dependencies": {
     "bluebird": "^3.4.7",
@@ -39,8 +41,19 @@
     "babel-cli": "^6.22.2",
     "babel-preset-env": "^1.1.8",
     "babel-register": "^6.22.0",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
     "eslint": "^3.14.1",
-    "mockery": "^2.0.0"
+    "mockery": "^2.0.0",
+    "nyc": "^10.1.2",
+    "sinon": "^1.17.7",
+    "sinon-chai": "^2.8.0"
+  },
+  "nyc": {
+    "exclude": [
+      "src/config",
+      "src/data"
+    ]
   },
   "bugs": {
     "url": "https://github.com/GovTechSG/butler-bot/issues"
