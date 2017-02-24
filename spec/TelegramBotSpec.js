@@ -1,6 +1,13 @@
-const Bluebird = require('bluebird');
+import chai, { expect } from "chai";
+import { spy, stub } from 'sinon';
+import sinonChai from 'sinon-chai';
+chai.use(sinonChai);
+import Promise from 'bluebird';
+
 const mockery = require('mockery');
-let telegramBot;
+let butlerBot;
+let cal_app = {};
+let reply_builder = {};
 
 describe('Telegram Bot', () => {
 
@@ -11,16 +18,30 @@ describe('Telegram Bot', () => {
       useCleanCache: true
     });
 
-    mockery.registerMock('request-promise', options => {
-      let response = {
-        statusCode: 200,
-        body: '{ result: test }',
-        options: options
-      }
-      return Bluebird.resolve(response);
+    mockery.registerMock('ioredis', () => {
+      return {
+        on: (name, callback) => {}
+      };
     });
 
-    telegramBot = require('../src/modules/TelegramBot');
+
+    mockery.registerMock('../data/users', {
+      'algae': '12365781'
+    });
+    cal_app = {
+      listEmptySlotsInDay: stub().returns(Promise.resolve([]))
+    };
+    reply_builder = {
+      informNoTimeslot: stub().returns('no_room')
+    };
+    mockery.registerMock('./CalendarApp', cal_app);
+    mockery.registerMock('./ReplyBuilder', reply_builder);
+    mockery.registerMock('./SessionManagement', {
+      extendSession: spy(),
+      setupEventEmitter: spy()
+    });
+
+    butlerBot = require('../src/modules/TelegramBot').slimbot;
   });
 
   afterEach(() => {
@@ -28,22 +49,26 @@ describe('Telegram Bot', () => {
     mockery.deregisterAll();
   });
 
-  describe('Core', () => {
+  describe('#promptTimeslotSelection', () => {
+    let query;
 
     beforeEach(() => {
-      let message = {
-        text: 'mock data',
-        chat: {
-          type: 'private'
+      query = {
+        data: '{"date": "pick_today", "room": "bee"}',
+        message: {
+          chat: {
+            id: 1
+          }
         }
       };
-      let checkCommandList = () => {};
-      checkCommandList = jasmine.createSpy('checkCommandList');
     });
 
-    it('should call checkCommandList() when messages are received', (message) => {
-      telegramBot.emit('message', message);
-      expect(checkCommandList).toHaveBeenCalled();
+    it('should call cal app with startDate and room', () => {
+      butlerBot.emit('callback_query', query);
+
+      expect(cal_app.listEmptySlotsInDay).to.have.been
+      .calledWith(new Date().getISO8601TimeStamp(), 'bee');
     });
+
   });
 });
