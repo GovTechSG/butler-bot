@@ -42,3 +42,5 @@ src/data/users.js
 build/
 yarn-error.log
 .idea
+*.pem
+src/data/list

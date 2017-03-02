@@ -11,7 +11,7 @@ let calendarIdList = CONFIG.calendarId;
 
 let EE = new EventEmitter();
 
-let colourDict = { "fg": 1, "dr": 2, "q1": 3, "q2": 4, "qc": 5, "bb": 6 };
+let colourDict = { "fg": 5, "dr": 7, "q1": 6, "q2": 10, "qc": 11, "bb": 3 };
 let RoomList = {
     queen1: { id: 'q1', name: 'Queen (Video)' },
     queen2: { id: 'q2', name: 'Queen (Projector)' },
