@@ -1,8 +1,9 @@
 const CONFIG = {
+    keyFile: require.resolve(process.env.GOOGLE_KEYFILE_PATH),
+    userId: process.env.USER_ID,
     serviceAcctId: process.env.SERVICE_ACCT_ID,
-    calendarId: process.env.CALENDAR_ID,
     calendarUrl: process.env.CALENDAR_URL,
-    keyfile: process.env.GOOGLE_KEYFILE_PATH
+    calendarId: JSON.parse(process.env.CALENDAR_ID)
 };
 
 export { CONFIG };

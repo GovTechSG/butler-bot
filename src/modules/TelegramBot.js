@@ -7,16 +7,9 @@ import * as SessionMgr from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import { MESSAGES } from './Messages';
 import USERS from '../data/users';
-import { default as Redis } from 'ioredis';
 import { default as Chrono } from 'chrono-node';
 import dotenv from 'dotenv';
 dotenv.load();
-
-const redis = new Redis(6379); // default redis port
-
-redis.on('connect', () => {
-  console.log('Connected to redis');
-});
 
 const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
 let Emitter = new EventEmitter();
@@ -446,19 +439,6 @@ function completeBooking(query) {
 }
 
 function insertBookingIntoCalendar(userId, msgId, description, room, startDate, timeSlot, duration, userName, fullName) {
-  redis.exists(userName, function(err, reply) {
-    if (err) {
-      throw new Error('unable to save to redis');
-    }
-    if (reply === 1) {
-      redis.hincrby(userName, 'bookings', 1).then(reply => {
-        console.log(`Total number of bookings for ${userName}: ${reply}`);
-      });
-    } else {
-      redis.hmset(userName, { bookings: 1 });
-    }
-  });
-
   let bookingSummary = description + ' by @' + userName + ' (' + fullName + ')';
   let startTime = startDate.getISO8601DateWithDefinedTimeString(timeSlot);
   for (let i = 0; i < duration; i++) {
