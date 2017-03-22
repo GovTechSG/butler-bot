@@ -30,7 +30,7 @@ Date.prototype.rounddownToNearestHalfHour = function () {
     let currentMin = this.getMinutes();
     if (currentMin == 0) {
         return this;
-    } else if (currentMin <= 30) {
+    } else if (currentMin < 30) {
         this.setMinutes(0);
     } else if (currentMin <= 59) {
         this.setMinutes(30);
@@ -47,8 +47,6 @@ Date.prototype.roundupToNearestHalfHour = function () {
     } else if (currentMin <= 59) {
         this.setMinutes(currentMin + (60 - currentMin));
     }
-
-    console.log('roundup ' + this);
     return this;
 }
 
