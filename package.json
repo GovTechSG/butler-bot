@@ -24,7 +24,9 @@
   "license": "MIT",
   "scripts": {
     "start": "babel-node src",
-    "build": "babel src -d build --copy-files"
+    "build": "babel src -d build --copy-files",
+    "test": "mocha --compilers js:node_modules/babel-register/lib/node.js",
+    "test watch": "mocha -w --compilers js:node_modules/babel-register/lib/node.js"
   },
   "dependencies": {
     "bluebird": "^3.5.0",
@@ -38,7 +40,9 @@
     "babel-cli": "^6.24.0",
     "babel-preset-env": "^1.2.2",
     "babel-register": "^6.24.0",
+    "chai": "^3.5.0",
     "eslint": "^3.18.0",
+    "mocha": "^3.2.0",
     "mockery": "^2.0.0"
   },
   "bugs": {
