@@ -189,7 +189,7 @@ export function handleListingForTwoCalendars(date, endDate, roomId) {
     });
 };
 
-function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
+export function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
     if (timeslotDict === {}) {
         return timeslotDict;
     }
@@ -204,7 +204,8 @@ function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
         }
     }
     return timeslotDict;
-}
+};
+
 //assumes booking for max length of a day
 export function listEmptySlotsInDay(date, roomId) {
     let endDate = new Date(date).addDays(1).getISO8601TimeStamp();
@@ -215,6 +216,7 @@ export function listEmptySlotsInDay(date, roomId) {
         return handleListingForTwoCalendars(date, endDate, roomId)
             .then(timeslotObj => {
                 let timeArr = setupTimeArray(date);
+                console.log(timeslotObj);
                 filterBusyTimeslots(timeArr, timeslotObj);
                 return timeArr;
             })
@@ -225,9 +227,10 @@ export function listEmptySlotsInDay(date, roomId) {
     } else {
         let calendarId = calendarIdList[roomId];
         return listBookedEventsByRoom(date, endDate, roomId)
-            .then(jsonArr => {
+            .then(timeslotObj => {
                 let timeArr = setupTimeArray(date);
-                filterBusyTimeslots(timeArr, jsonArr);
+                console.log(timeslotObj);
+                filterBusyTimeslots(timeArr, timeslotObj);
                 return timeArr;
             })
             .catch(err => {
