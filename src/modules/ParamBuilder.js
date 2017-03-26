@@ -58,12 +58,11 @@ function constructBackOption(room, date, startTime, duration) {
   return row;
 }
 
-function constructTimeslotOptions(availTimeJSON, room, date) {
+export function constructTimeslotOptions(availTimeJSON, room, date) {
   const btnInRow = 2;
   let count = 0;
   let row = [],
     items = [];
-
   for (let i in availTimeJSON) {
     let obj = {
       text: i + '',
@@ -87,7 +86,7 @@ function constructTimeslotOptions(availTimeJSON, room, date) {
   }];
   row.push(back);
   return row;
-}
+};
 
 function constructDurationOptions(durationJSON, room, date, startTime) {
   const btnInRow = 4;
@@ -124,10 +123,10 @@ function constructDateOptions(date, room) {
   const weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
   const btnInRow = 7;
   let count = 1;
-  let days = 28; 
+  let days = 28;
   let btnArr = [], row = [];
   date = date.addDays(1);
-  
+
   for (let i = 0; i < weekdays.length; i++) {
     row.push({
       text: weekdays[i] + '',
