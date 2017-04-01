@@ -1,4 +1,19 @@
 {
-    "extends": "airbnb",
-    "installedESLint": true
+	"extends": "airbnb",
+	"installedESLint": true,
+	"rules": {
+		"no-console": "off",
+		"comma-dangle": [
+			"error",
+			"never"
+		],
+		"quotes": 1,
+		"prefer-arrow-callback":"off",
+		"max-len": "off",
+		"quote-props" : "off",
+		"indent" : "off",
+		"no-tabs" : "off",
+		"prefer-const" : "off",
+		"no-param-reassign" : "off"
+	}
 }
