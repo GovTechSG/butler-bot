@@ -36,6 +36,10 @@ const durationOptions = {
 
 let bookingQueue = [];
 
+export function getColourForRoom(roomname) {
+	return colourDict[roomname];
+}
+
 export function getRoomNameFromId(id) {
 	for (let index in RoomList) {
 		if (RoomList[index].id === id) {
@@ -43,6 +47,12 @@ export function getRoomNameFromId(id) {
 		}
 	}
 	return '';
+}
+
+function getTimeslotName(startTime) {
+	let timeslot = startTime.getFormattedTime();
+	startTime = startTime.addMinutes(30);
+	return timeslot;
 }
 
 export function setupTimeArray(datetimeStr) {
@@ -55,21 +65,15 @@ export function setupTimeArray(datetimeStr) {
 	} else if (startTime.isDateToday() && startTime > endTime) {
 		return {};
 	}
-	let timeStart = startTime.roundupToNearestHalfHour();
+	let roundedTimeStart = startTime.roundupToNearestHalfHour();
 
 	let numOfSlots = Math.round(startTime.getMinuteDiff(endTime) / 30);
 	let timeslotDict = {};
 	for (let i = 0; i < numOfSlots; i++) {
-		let startTime = timeStart.getFormattedTime();
-		timeslotDict[getTimeslotName(timeStart)] = startTime;
+		let formattedTimeStart = roundedTimeStart.getFormattedTime();
+		timeslotDict[getTimeslotName(roundedTimeStart)] = formattedTimeStart;
 	}
 	return timeslotDict;
-}
-
-function getTimeslotName(startTime) {
-	let timeslot = startTime.getFormattedTime();
-	startTime = startTime.addMinutes(30);
-	return timeslot;
 }
 
 function countSlotsWithinTimeframe(startTime, endTime) {
@@ -81,8 +85,34 @@ export function getDurationOptionNameWithId(optionId) {
 	return durationOptions[optionId];
 }
 
-export function getColourForRoom(roomname) {
-	return colourDict[roomname];
+export function calculateUpcomingRecurrence(recurrenceEvent) {
+	let startDate = new Date(recurrenceEvent.start.dateTime);
+	let endDate = new Date(recurrenceEvent.end.dateTime);
+	console.log(startDate);
+	console.log(endDate);
+	console.log(recurrenceEvent.freq);
+	return new Date();
+}
+
+export function parseRecurrenceEvent(event) {
+	let eventRecurrenceInfo = { start: event.start, end: event.end };
+	let recurrenceString = event.recurrence[0];
+	recurrenceString = recurrenceString.slice(recurrenceString.indexOf(':') + 1);
+	let fields = recurrenceString.split(';');
+	for (let i in fields) {
+		let fieldArr = fields[i].split('=');
+		eventRecurrenceInfo[fieldArr[0].toLowerCase()] = fieldArr[1];
+	}
+
+	return eventRecurrenceInfo;
+	// FREQ + INTERVAL will determine next upcoming event
+
+	// json[i].recurrence : [ 'RRULE:FREQ=WEEKLY;BYDAY=SA' ]
+	// [ 'RRULE:FREQ=WEEKLY;COUNT=2;BYDAY=SA' ]
+	// 'RRULE:FREQ=WEEKLY;UNTIL=20170506T020000Z;BYDAY=SA' ]
+	// [ 'RRULE:FREQ=WEEKLY;UNTIL=20170506T020000Z;BYDAY=SU,MO,TU,WE,TH,FR,SA' ]
+	// [ 'RRULE:FREQ=WEEKLY;UNTIL=20170429T020000Z;INTERVAL=2;BYDAY=SA' ]
+	// RRULE:FREQ=WEEKLY;COUNT=2;INTERVAL=2;BYDAY=SA
 }
 
 export function listBookedEventsByUser(startDateTime, user) {
@@ -102,6 +132,9 @@ export function listBookedEventsByUser(startDateTime, user) {
 				let eventsInCalendar = [];
 				for (let i = 0; i < json.length; i++) {
 					if (json[i].description === undefined) json[i].description = '';
+					if (json[i].recurrence !== undefined) {
+						parseRecurrenceEvent(json[i]);
+					}
 					let event = {
 						id: json[i].id,
 						summary: json[i].summary,
@@ -129,6 +162,8 @@ export function listBookedEventsByUser(startDateTime, user) {
 
 			for (let key in bookedEventsArray) {
 				let evnt = bookedEventsArray[key];
+				console.log('event details');
+				console.log(evnt);
 				let bookingDescription = evnt.summary;
 				let bookedRoomName = evnt.location;
 				evnt.summary = bookingDescription;

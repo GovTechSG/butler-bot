@@ -1,11 +1,99 @@
 import dotenv from 'dotenv';
 dotenv.load();
-let cal_app = require('../src/modules/CalendarApp');
+let CalendarApp = require('../src/modules/CalendarApp');
 
 let chai = require('chai');
 let expect = chai.expect;
 
 describe('CalendarApp', () => {
+
+	describe('calculateUpcomingRecurrence', () => {
+		it('should calculateUpcomingRecurrence successfully', () => {
+			let testEvent = {
+				start: {
+					dateTime: '2017-03-18T17:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: '2017-03-18T18:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'WEEKLY',
+				count: '2',
+				interval: '3',
+				byday: 'SA'
+			};
+			let expectedResult = new Date(2017, 4, 1, 0, 0, 0, 0);
+			let result = CalendarApp.calculateUpcomingRecurrence(testEvent);
+			expect(result).to.eql(expectedResult);
+		});
+
+	});
+
+	describe('parseRecurrenceEvent', () => {
+		it('should parseRecurrenceEvent that repeats every 3 weeks twice into object successfully', () => {
+			let expectedResult = {
+				start: {
+					dateTime: '2017-03-18T17:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: '2017-03-18T18:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'WEEKLY',
+				count: '2',
+				interval: '3',
+				byday: 'SA'
+			};
+			let recurEventForTest = {
+				start:
+				{
+					dateTime: '2017-03-18T17:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				end:
+				{
+					dateTime: '2017-03-18T18:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				recurrence: ['RRULE:FREQ=WEEKLY;COUNT=2;INTERVAL=3;BYDAY=SA']
+			};
+			let result = CalendarApp.parseRecurrenceEvent(recurEventForTest);
+			expect(result).to.eql(expectedResult);
+		});
+
+		it('should parseRecurrenceString with multiple days per week into object successfully', () => {
+			let expectedResult = {
+				start: {
+					dateTime: '2017-03-18T17:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: '2017-03-18T18:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'WEEKLY',
+				byday: 'SU,MO,TU,WE,TH,FR,SA',
+				until: '20170506T020000Z'
+			};
+			let recurEventForTest = {
+				start:
+				{
+					dateTime: '2017-03-18T17:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				end:
+				{
+					dateTime: '2017-03-18T18:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				recurrence: ['RRULE:FREQ=WEEKLY;UNTIL=20170506T020000Z;BYDAY=SU,MO,TU,WE,TH,FR,SA']
+			};
+			let result = CalendarApp.parseRecurrenceEvent(recurEventForTest);
+			expect(result).to.eql(expectedResult);
+		});
+	});
 
 	describe('getRoomNameFromId', () => {
 		it('should return correct roomnames for all room ids', () => {
@@ -20,7 +108,7 @@ describe('CalendarApp', () => {
 			for (var key in roomNames) {
 				if (roomNames.hasOwnProperty(key)) {
 					let expectedResult = roomNames[key];
-					let result = cal_app.getRoomNameFromId(key);
+					let result = CalendarApp.getRoomNameFromId(key);
 					expect(result).to.eql(expectedResult);
 				}
 			}
@@ -44,7 +132,7 @@ describe('CalendarApp', () => {
 				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
 				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
 			};
-			let result = cal_app.setupTimeArray(new Date().setTime(0, 0, 0, 0));
+			let result = CalendarApp.setupTimeArray(new Date().setTime(0, 0, 0, 0));
 			expect(result).to.eql(expectedResult);
 		});
 
@@ -52,19 +140,19 @@ describe('CalendarApp', () => {
 			let expectedResult = {
 				'8:30 PM': '8:30 PM'
 			};
-			let result = cal_app.setupTimeArray(new Date().setTime(20, 30, 0, 0));
+			let result = CalendarApp.setupTimeArray(new Date().setTime(20, 30, 0, 0));
 			expect(result).to.eql(expectedResult);
 		});
 
 		it('should return {} when setupTimeArray called with 831pm', () => {
 			let expectedResult = {};
-			let result = cal_app.setupTimeArray(new Date().setTime(20, 31, 0, 0));
+			let result = CalendarApp.setupTimeArray(new Date().setTime(20, 31, 0, 0));
 			expect(result).to.eql(expectedResult);
 		});
 
 		it('should return {} when setupTimeArray called with 1159pm', () => {
 			let expectedResult = {};
-			let result = cal_app.setupTimeArray(new Date().setTime(23, 59, 0, 0));
+			let result = CalendarApp.setupTimeArray(new Date().setTime(23, 59, 0, 0));
 			expect(result).to.eql(expectedResult);
 		});
 	});
@@ -103,8 +191,8 @@ describe('CalendarApp', () => {
 				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
 				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
 			};
-			let fullTimeSlot = cal_app.setupTimeArray(new Date().setTime(0, 0, 0, 0));
-			let result = cal_app.filterBusyTimeslots(fullTimeSlot, events);
+			let fullTimeSlot = CalendarApp.setupTimeArray(new Date().setTime(0, 0, 0, 0));
+			let result = CalendarApp.filterBusyTimeslots(fullTimeSlot, events);
 			expect(result).to.eql(expectedResult);
 		});
 
@@ -156,8 +244,8 @@ describe('CalendarApp', () => {
 				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
 				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
 			};
-			let fullTimeSlot = cal_app.setupTimeArray(new Date().setTime(0, 0, 0, 0));
-			let result = cal_app.filterBusyTimeslots(fullTimeSlot, events);
+			let fullTimeSlot = CalendarApp.setupTimeArray(new Date().setTime(0, 0, 0, 0));
+			let result = CalendarApp.filterBusyTimeslots(fullTimeSlot, events);
 			expect(result).to.eql(expectedResult);
 		});
 	});

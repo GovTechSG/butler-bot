@@ -14,6 +14,7 @@
 		"indent" : "off",
 		"no-tabs" : "off",
 		"prefer-const" : "off",
-		"no-param-reassign" : "off"
+		"no-param-reassign" : "off",
+		"no-plusplus" : "off"
 	}
 }
