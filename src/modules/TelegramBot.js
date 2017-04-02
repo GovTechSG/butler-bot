@@ -360,32 +360,32 @@ function promptDateSelection(query, room, startDate) {
 }
 
 // //Step 2 - Timeslot
-// function promptTimeslotSelection(query, room, startDate) {
-//   let startDateStr;
-//   if (startDate.isDateToday()) {
-//     startDateStr = startDate.getISO8601TimeStamp();
-//   } else {
-//     startDateStr = startDate.getISO8601DateWithDefinedTime(8, 0, 0, 0);
-//   }
+function promptTimeslotSelection(query, room, startDate) {
+  let startDateStr;
+  if (startDate.isDateToday()) {
+    startDateStr = startDate.getISO8601TimeStamp();
+  } else {
+    startDateStr = startDate.getISO8601DateWithDefinedTime(8, 0, 0, 0);
+  }
 
-//   cal_app.listEmptySlotsInDay(startDateStr, room)
-//     .then(jsonArr => {
+  cal_app.listEmptySlotsInDay(startDateStr, room)
+    .then(jsonArr => {
 
-//       let msg;
-//       if (Object.keys(jsonArr).length === 0) {
-//         msg = ReplyBuilder.informNoTimeslot(roomlist[room], startDate);
-//       } else {
-//         msg = ReplyBuilder.askForTime(roomlist[room], startDate);
-//       }
-//       slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getTimeslots(jsonArr, room, startDate));
-//       SessionMgr.extendSession(query.message.chat.id, query.message.message_id);
-//     })
-//     .catch(err => {
-//       console.log('Error promptTimeslotSelection: ' + JSON.stringify(err));
-//       slimbot.editMessageText(query.message.chat.id, query.message.message_id, MESSAGES.error);
-//       throw new Error('Error promptTimeslotSelection: ' + JSON.stringify(err));
-//     });
-// }
+      let msg;
+      if (Object.keys(jsonArr).length === 0) {
+        msg = ReplyBuilder.informNoTimeslot(roomlist[room], startDate);
+      } else {
+        msg = ReplyBuilder.askForTime(roomlist[room], startDate);
+      }
+      slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getTimeslots(jsonArr, room, startDate));
+      SessionMgr.extendSession(query.message.chat.id, query.message.message_id);
+    })
+    .catch(err => {
+      console.log('Error promptTimeslotSelection: ' + JSON.stringify(err));
+      slimbot.editMessageText(query.message.chat.id, query.message.message_id, MESSAGES.error);
+      throw new Error('Error promptTimeslotSelection: ' + JSON.stringify(err));
+    });
+}
 
 // Step 3 - Duration
 function promptDurationSelection(query, room, startDate, startTime) {
