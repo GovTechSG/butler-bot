@@ -80,6 +80,13 @@ describe('CalendarApp', () => {
 	});
 
 	describe('calculateUpcomingRecurrence', () => {
+		// json[i].recurrence : [ 'RRULE:FREQ=WEEKLY;BYDAY=SA' ]
+		// [ 'RRULE:FREQ=WEEKLY;COUNT=2;BYDAY=SA' ]
+		// 'RRULE:FREQ=WEEKLY;UNTIL=20170506T020000Z;BYDAY=SA' ]
+		// [ 'RRULE:FREQ=WEEKLY;UNTIL=20170506T020000Z;BYDAY=SU,MO,TU,WE,TH,FR,SA' ]
+		// [ 'RRULE:FREQ=WEEKLY;UNTIL=20170429T020000Z;INTERVAL=2;BYDAY=SA' ]
+		// RRULE:FREQ=WEEKLY;COUNT=2;INTERVAL=2;BYDAY=SA
+
 		it('should return correct start/enddate for event recurring daily', () => {
 			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(16, 30, 0, 0);
 			let eventStart = new Date(today).addDays(-1);

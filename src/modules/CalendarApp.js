@@ -160,14 +160,6 @@ export function parseRecurrenceEvent(event) {
 	}
 
 	return eventRecurrenceInfo;
-	// FREQ + INTERVAL will determine next upcoming event
-
-	// json[i].recurrence : [ 'RRULE:FREQ=WEEKLY;BYDAY=SA' ]
-	// [ 'RRULE:FREQ=WEEKLY;COUNT=2;BYDAY=SA' ]
-	// 'RRULE:FREQ=WEEKLY;UNTIL=20170506T020000Z;BYDAY=SA' ]
-	// [ 'RRULE:FREQ=WEEKLY;UNTIL=20170506T020000Z;BYDAY=SU,MO,TU,WE,TH,FR,SA' ]
-	// [ 'RRULE:FREQ=WEEKLY;UNTIL=20170429T020000Z;INTERVAL=2;BYDAY=SA' ]
-	// RRULE:FREQ=WEEKLY;COUNT=2;INTERVAL=2;BYDAY=SA
 }
 
 export function listBookedEventsByUser(startDateTime, user) {
@@ -240,7 +232,7 @@ export function listBookedEventsByUser(startDateTime, user) {
 			}
 			return bookedEventsArray;
 		});
-};
+}
 
 export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
 	let bookedEventsArray = [];
@@ -262,12 +254,11 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
 				bookedEventsArray.push(event);
 			}
 			return bookedEventsArray;
-
 		}).catch(err => {
 			console.log(err);
 			throw err;
 		});
-};
+}
 
 export function handleListingForTwoCalendars(date, endDate, roomId) {
 	return Promise.join(
@@ -287,7 +278,7 @@ export function handleListingForTwoCalendars(date, endDate, roomId) {
 	).catch(err => {
 		throw new Error("handleListingForTwoCalendars error: " + err);
 	});
-};
+}
 
 export function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
 	if (timeslotDict === {}) {
@@ -337,7 +328,7 @@ export function listEmptySlotsInDay(date, roomId) {
 				throw new Error("listEmptySlotsInDay error: " + err);
 			});
 	}
-};
+}
 
 export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
 	const listAvailableTime = 21; //Check available time up to 9 pm
@@ -364,7 +355,7 @@ export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
 				throw new Error("listAvailableDurationForStartTime: " + err);
 			});
 	}
-};
+}
 
 function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
 	console.log('filterDurationSlots');
@@ -405,8 +396,60 @@ function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
 	return durOptions;
 }
 
-export function insertEventForCombinedRoom(room1Details, room2Details, username) {
+export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username, combinedName) {
+	console.log('insert: ' + location);
 
+	if (location === RoomList.queenC.id) {
+		let eventRoom1 = {
+			'bookingSummary': bookingSummary,
+			'startDateTime': startDateTimeStr,
+			'endDateTime': endDateTimeStr,
+			'location': RoomList.queen1.id,
+			'status': status,
+			'description': description
+		};
+		let eventRoom2 = {
+			'bookingSummary': bookingSummary,
+			'startDateTime': startDateTimeStr,
+			'endDateTime': endDateTimeStr,
+			'location': RoomList.queen2.id,
+			'status': status,
+			'description': description
+		};
+		return insertEventForCombinedRoom(eventRoom1, eventRoom2, username)
+			.catch(err => {
+				throw new Error("insertEvent: " + err);
+			});
+	} else {
+		let calendarId = calendarIdList[location];
+		let room = getRoomNameFromId(location);
+		if (combinedName !== undefined) {
+			room = combinedName;
+		}
+		return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, getColourForRoom(location))
+			.then(resp => {
+				let json = resp.body;
+				let results = {
+					'id': json.id,
+					'summary': json.summary,
+					'location': json.location,
+					'status': json.status,
+					'htmlLink': CONFIG.calendarUrl,
+					'start': json.start.dateTime,
+					'end': json.end.dateTime,
+					'created': new Date(json.created).getISO8601TimeStamp()
+				};
+
+				return results;
+			})
+			.catch(err => {
+				throw new Error("insertEvent: " +
+					console.log(err));
+			});
+	}
+}
+
+export function insertEventForCombinedRoom(room1Details, room2Details, username) {
 	return insertEvent(room2Details.bookingSummary, room2Details.startDateTime, room2Details.endDateTime,
 		room2Details.location, room2Details.status, room2Details.description, username, RoomList.queenC.name)
 		.then(resultsRoom2 => {
@@ -458,72 +501,6 @@ export function queueForInsert(bookingSummary, startDateTimeStr, endDateTimeStr,
 	});
 }
 
-export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username, combinedName) {
-	console.log('insert: ' + location);
-
-	if (location === RoomList.queenC.id) {
-		let eventRoom1 = {
-			'bookingSummary': bookingSummary,
-			'startDateTime': startDateTimeStr,
-			'endDateTime': endDateTimeStr,
-			'location': RoomList.queen1.id,
-			'status': status,
-			'description': description
-		};
-		let eventRoom2 = {
-			'bookingSummary': bookingSummary,
-			'startDateTime': startDateTimeStr,
-			'endDateTime': endDateTimeStr,
-			'location': RoomList.queen2.id,
-			'status': status,
-			'description': description
-		};
-		return insertEventForCombinedRoom(eventRoom1, eventRoom2, username)
-			.catch(err => {
-				throw new Error("insertEvent: " + err);
-			});
-
-	} else {
-
-		let calendarId = calendarIdList[location];
-		let room = getRoomNameFromId(location);
-		if (combinedName !== undefined) {
-			room = combinedName;
-		}
-		return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, getColourForRoom(location))
-			.then(resp => {
-				let json = resp.body;
-				let results = {
-					'id': json.id,
-					'summary': json.summary,
-					'location': json.location,
-					'status': json.status,
-					'htmlLink': CONFIG.calendarUrl,
-					'start': json.start.dateTime,
-					'end': json.end.dateTime,
-					'created': new Date(json.created).getISO8601TimeStamp()
-				};
-
-				return results;
-			})
-			.catch(err => {
-				throw new Error("insertEvent: " +
-					console.log(err));
-			});
-	}
-};
-
-function waitForTurnToBook(username, bookTime) {
-	if (checkBookingTurn(username, bookTime)) {
-		let booking = bookingQueue[0];
-		handleBookingProcess(booking);
-	} else {
-		setTimeout(function () {
-			waitForTurnToBook(username, bookTime);
-		}, 3000);
-	}
-}
-
 function checkBookingTurn(username, bookTime) {
 	let firstItemInQueue = bookingQueue[0];
 	console.log('checking turn: ' + firstItemInQueue.username + ' == ' + username);
@@ -535,27 +512,6 @@ function checkBookingTurn(username, bookTime) {
 		//not current booking's turn yet
 		return false;
 	};
-}
-
-function handleBookingProcess(booking) {
-	checkTimeslotFree(booking.startDateTime, booking.endDateTime, booking.location)
-		.then(isSlotFree => {
-			if (isSlotFree) {
-
-				insertEvent(booking.bookingSummary, booking.startDateTime, booking.endDateTime,
-					booking.location, booking.status, booking.description, booking.username)
-					.then(results => {
-
-						bookingQueue.shift();
-						EE.emit('booked' + booking.username + booking.bookTime, { success: true, results: results });
-					});
-
-			} else {
-
-				bookingQueue.shift();
-				EE.emit('booked' + booking.username + booking.bookTime, { success: false });
-			}
-		});
 }
 
 function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
@@ -614,6 +570,38 @@ export function checkTimeslotFree(startDateTimeStr, endDateTimeStr, room) {
 			});
 	}
 };
+
+function handleBookingProcess(booking) {
+	checkTimeslotFree(booking.startDateTime, booking.endDateTime, booking.location)
+		.then(isSlotFree => {
+			if (isSlotFree) {
+
+				insertEvent(booking.bookingSummary, booking.startDateTime, booking.endDateTime,
+					booking.location, booking.status, booking.description, booking.username)
+					.then(results => {
+
+						bookingQueue.shift();
+						EE.emit('booked' + booking.username + booking.bookTime, { success: true, results: results });
+					});
+
+			} else {
+
+				bookingQueue.shift();
+				EE.emit('booked' + booking.username + booking.bookTime, { success: false });
+			}
+		});
+}
+
+function waitForTurnToBook(username, bookTime) {
+	if (checkBookingTurn(username, bookTime)) {
+		let booking = bookingQueue[0];
+		handleBookingProcess(booking);
+	} else {
+		setTimeout(function () {
+			waitForTurnToBook(username, bookTime);
+		}, 3000);
+	}
+}
 
 export function deleteEvents(eventIdArray, roomId) {
 	let calendarIdListToDelete = [];
