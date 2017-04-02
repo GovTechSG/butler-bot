@@ -85,13 +85,68 @@ export function getDurationOptionNameWithId(optionId) {
 	return durationOptions[optionId];
 }
 
-export function calculateUpcomingRecurrence(recurrenceEvent) {
+export function checkWithinWeek(startDate, today, recurrenceInWeek, dayDiffInWeek) {
+	let daysToAddTillNextOccur = 0;
+	if (startDate >= today) {
+		return daysToAddTillNextOccur;
+	}
+
+	for (let j in recurrenceInWeek) {
+		let dayInWeek = new Date(startDate);
+		console.log('	within week, adding: ' + dayDiffInWeek[recurrenceInWeek[j]]);
+		dayInWeek.addDays(dayDiffInWeek[recurrenceInWeek[j]]);
+		daysToAddTillNextOccur = dayDiffInWeek[recurrenceInWeek[j]];
+		console.log('	' + dayInWeek);
+
+		if (dayInWeek >= today) {
+			console.log('	' + dayInWeek + ' >= ' + today);
+			console.log('	closest upcoming date : ' + dayInWeek);
+			return daysToAddTillNextOccur;
+		}
+	}
+	return -1;
+}
+
+export function calculateUpcomingRecurrence(recurrenceEvent, today) {
+	if (today === undefined) {
+		throw new Error('today missing');
+	}
 	let startDate = new Date(recurrenceEvent.start.dateTime);
 	let endDate = new Date(recurrenceEvent.end.dateTime);
-	console.log(startDate);
-	console.log(endDate);
-	console.log(recurrenceEvent.freq);
-	return new Date();
+	let recurCount = 0;
+	let maxRecurCount = (recurrenceEvent.count === undefined) ? 999 : parseInt(recurrenceEvent.count);
+	let interval = (recurrenceEvent.interval === undefined) ? 1 : parseInt(recurrenceEvent.interval);
+	let terminatingDate = (recurrenceEvent.until === undefined) ? new Date().setDateWithSimpleFormat('1/1/3000') : new Date().setDateWithGoogleRecurEventISO8601Format(recurrenceEvent.until);
+
+	if (recurrenceEvent.freq === 'WEEKLY') {
+		interval *= 7;
+		while (startDate < today && recurCount < maxRecurCount) {
+			if (recurrenceEvent.byday !== undefined) {
+				let recurrenceInWeek = recurrenceEvent.byday.split(',');
+				let daysTillClosestOccurrenceInWeek = checkWithinWeek(startDate, today, recurrenceInWeek, startDate.getNumOfDaysDiffInWeekForDayNames());
+				if (daysTillClosestOccurrenceInWeek > -1) {
+					startDate.addDays(daysTillClosestOccurrenceInWeek);
+					endDate.addDays(daysTillClosestOccurrenceInWeek);
+					break;
+				}
+			}
+			startDate.addDays(interval);
+			recurCount++;
+		}
+		endDate.addDays(interval * recurCount);
+	} else if (recurrenceEvent.freq === 'DAILY') {
+		while (startDate < today && recurCount < maxRecurCount) {
+			startDate.addDays(interval);
+			recurCount++;
+		}
+		endDate.addDays(interval * recurCount);
+	}
+	console.log(`${startDate} > ${terminatingDate}`);
+	console.log(`${startDate} < ${today}`);
+	if ((startDate < today) || (startDate > terminatingDate)) {
+		return {};
+	}
+	return { startDate, endDate };
 }
 
 export function parseRecurrenceEvent(event) {
@@ -128,12 +183,16 @@ export function listBookedEventsByUser(startDateTime, user) {
 		promiseList.push(cal.listEvents(calendarId, startDateTime, endDateTime, user)
 			.then(json => {
 				console.log('listBookedEventsByUser:: ' + room);
-				console.log(json);
 				let eventsInCalendar = [];
 				for (let i = 0; i < json.length; i++) {
 					if (json[i].description === undefined) json[i].description = '';
 					if (json[i].recurrence !== undefined) {
-						parseRecurrenceEvent(json[i]);
+						let { startDate, endDate } = calculateUpcomingRecurrence(parseRecurrenceEvent(json[i]), new Date());
+						if (startDate !== undefined) {
+							json[i].description += '(Recurring)';
+							json[i].start = { dateTime: startDate.getISO8601TimeStamp() };
+							json[i].end = { dateTime: endDate.getISO8601TimeStamp() };
+						}
 					}
 					let event = {
 						id: json[i].id,
@@ -149,6 +208,9 @@ export function listBookedEventsByUser(startDateTime, user) {
 					eventsInCalendar.push(event);
 					bookedEventsArray.push(event);
 				}
+				console.log('--- ');
+				console.log(bookedEventsArray);
+				console.log('--- ');
 				return eventsInCalendar;
 			}).catch(err => {
 				throw err;

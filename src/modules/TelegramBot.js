@@ -559,8 +559,8 @@ function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms) {
           parse_mode: 'markdown',
           reply_markup: JSON.stringify({
             inline_keyboard: [[
-              { text: 'Yes', callback_data: JSON.stringify({ date: startDate.getSimpleDate(), time: startDate.getFormattedTime(), dur: numOfSlots + "", room: rooms[0] }) },
-              { text: 'No', callback_data: JSON.stringify({ exit: message.chat.id + "" }) }
+              { text: 'Yes', callback_data: JSON.stringify({ date: startDate.getSimpleDate(), time: startDate.getFormattedTime(), dur: numOfSlots + '', room: rooms[0] }) },
+              { text: 'No', callback_data: JSON.stringify({ exit: message.chat.id + '' }) }
             ]]
           })
         };

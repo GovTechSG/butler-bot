@@ -7,25 +7,231 @@ let expect = chai.expect;
 
 describe('CalendarApp', () => {
 
-	describe('calculateUpcomingRecurrence', () => {
-		it('should calculateUpcomingRecurrence successfully', () => {
+	describe('checkWithinWeek', () => {
+		it('should return correct days till upcoming occurrence from startdate for future-start events', () => {
+			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(6, 30, 0, 0);	// SA
+			let eventStart = new Date(today).addDays(+2);	// SU
 			let testEvent = {
 				start: {
-					dateTime: '2017-03-18T17:00:00+08:00',
+					dateTime: eventStart.getISO8601DateWithDefinedTime(10, 0, 0, 0),
 					timeZone: 'Asia/Singapore'
 				},
 				end: {
-					dateTime: '2017-03-18T18:00:00+08:00',
+					dateTime: eventStart.getISO8601DateWithDefinedTime(12, 0, 0, 0),
 					timeZone: 'Asia/Singapore'
 				},
 				freq: 'WEEKLY',
 				count: '2',
-				interval: '3',
+				byday: 'MO,TU,TH,FR'
+			};
+
+			let recurrenceInWeek = testEvent.byday.split(',');
+			let dayDiffInWeek = eventStart.getNumOfDaysDiffInWeekForDayNames();
+			let result = CalendarApp.checkWithinWeek(eventStart, today, recurrenceInWeek, dayDiffInWeek);
+			let expectedResult = 0;
+			expect(result).to.eql(expectedResult);
+		});
+		it('should return correct days till upcoming occurrence from startdate for events across weeks', () => {
+			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(6, 30, 0, 0);	// SA
+			let eventStart = new Date(today).addDays(-2);	// TH
+			let testEvent = {
+				start: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(10, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(12, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'WEEKLY',
+				count: '2',
+				byday: 'MO,TU,TH,FR'
+			};
+
+			let recurrenceInWeek = testEvent.byday.split(',');
+			let dayDiffInWeek = eventStart.getNumOfDaysDiffInWeekForDayNames();
+			let result = CalendarApp.checkWithinWeek(eventStart, today, recurrenceInWeek, dayDiffInWeek);
+			let expectedResult = 4;
+			expect(result).to.eql(expectedResult);
+		});
+		it('should return -1 when no events within the week can be found to start after today', () => {
+			let today = new Date().setDateWithSimpleFormat('3/4/2017').setTime(6, 30, 0, 0);	// TU
+			let eventStart = new Date(today).addDays(-7);	// TH
+			let testEvent = {
+				start: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(10, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(12, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'WEEKLY',
+				count: '2',
+				byday: 'MO,TU,TH,FR'
+			};
+
+			let recurrenceInWeek = testEvent.byday.split(',');
+			let dayDiffInWeek = eventStart.getNumOfDaysDiffInWeekForDayNames();
+			let result = CalendarApp.checkWithinWeek(eventStart, today, recurrenceInWeek, dayDiffInWeek);
+			let expectedResult = -1;
+			expect(result).to.eql(expectedResult);
+		});
+	});
+
+	describe('calculateUpcomingRecurrence', () => {
+		it('should return correct start/enddate for event recurring daily', () => {
+			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(16, 30, 0, 0);
+			let eventStart = new Date(today).addDays(-1);
+			let testEvent = {
+				start: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(17, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(18, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'DAILY',
+				count: '5'
+			};
+			let expectedResultStart = new Date(today).setTime(17, 0, 0, 0);
+			let expectedResultEnd = new Date(today).setTime(18, 0, 0, 0);
+			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
+			console.log('expect: ' + expectedResultStart.getFormattedDateTime() + ' to be ' + startDate.getFormattedDateTime());
+			expect(startDate).to.eql(expectedResultStart);
+			expect(endDate).to.eql(expectedResultEnd);
+		});
+		it('should return correct start/enddate for event recurring every 3 days', () => {
+			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(17, 30, 0, 0);
+			let eventStart = new Date(today).addDays(-1);
+			let testEvent = {
+				start: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(17, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(18, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'DAILY',
+				interval: '3'
+			};
+			let expectedResultStart = new Date().setDateWithSimpleFormat('3/4/2017').setTime(17, 0, 0, 0);
+			let expectedResultEnd = new Date(today).setDateWithSimpleFormat('3/4/2017').setTime(18, 0, 0, 0);
+			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
+
+			console.log('expect: ' + expectedResultStart.getFormattedDateTime() + ' to be ' + startDate.getFormattedDateTime());
+			expect(startDate).to.eql(expectedResultStart);
+			expect(endDate).to.eql(expectedResultEnd);
+		});
+		it('should return correct start/enddate for event recurring once every 2 weeks', () => {
+			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(17, 0, 0, 0);
+			let eventStart = new Date(today).addDays(-14);
+			let testEvent = {
+				start: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(17, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(18, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'WEEKLY',
+				count: '2',
+				interval: '2',
 				byday: 'SA'
 			};
-			let expectedResult = new Date(2017, 4, 1, 0, 0, 0, 0);
-			let result = CalendarApp.calculateUpcomingRecurrence(testEvent);
-			expect(result).to.eql(expectedResult);
+			let expectedResultStart = new Date(today).setTime(17, 0, 0, 0);
+			let expectedResultEnd = new Date(today).setTime(18, 0, 0, 0);
+			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
+			expect(startDate).to.eql(expectedResultStart);
+			expect(endDate).to.eql(expectedResultEnd);
+		});
+		it('should return correct start/enddate for event recurring 4 times every week', () => {
+			let today = new Date().setDateWithSimpleFormat('3/4/2017').setTime(17, 20, 0, 0);	// MO
+			let eventStart = new Date().setDateWithSimpleFormat('17/3/2017');					// FR
+			let testEvent = {
+				start: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(17, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(18, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'WEEKLY',
+				count: '3',
+				byday: 'MO,TU,TH,FR'
+			};
+			let expectedResultStart = new Date().setDateWithSimpleFormat('04/04/2017').setTime(17, 0, 0, 0);	// TU
+			let expectedResultEnd = new Date().setDateWithSimpleFormat('04/04/2017').setTime(18, 0, 0, 0);
+			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
+			expect(startDate).to.eql(expectedResultStart);
+			expect(endDate).to.eql(expectedResultEnd);
+		});
+		it('should return correct start/enddate for recurring event ending on until date', () => {
+			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(21, 20, 0, 0);	// SA
+			let eventStart = new Date().setDateWithSimpleFormat('18/3/2017');					// SA
+			let testEvent = {
+				start: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(17, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(18, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'WEEKLY',
+				interval: '2',
+				until: '20170415T090000Z',
+				byday: 'SA'
+			};
+			let expectedResultStart = new Date().setDateWithSimpleFormat('15/04/2017').setTime(17, 0, 0, 0);	// SA
+			let expectedResultEnd = new Date().setDateWithSimpleFormat('15/04/2017').setTime(18, 0, 0, 0);
+			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
+			expect(startDate).to.eql(expectedResultStart);
+			expect(endDate).to.eql(expectedResultEnd);
+		});
+		it('should return {} as start/enddate for recurring events that exceeded recur count', () => {
+			let today = new Date().setDateWithSimpleFormat('3/4/2017').setTime(17, 20, 0, 0);	// MO
+			let eventStart = new Date().setDateWithSimpleFormat('17/3/2017');					// FR
+			let testEvent = {
+				start: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(17, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(18, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'WEEKLY',
+				count: '2',
+				byday: 'MO,TU,TH,FR'
+			};
+			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
+			expect(startDate).to.eql(undefined);
+			expect(endDate).to.eql(undefined);
+		});
+		it('should return {} as start/enddate for recurring events that exceeded until date', () => {
+			let today = new Date().setDateWithSimpleFormat('3/4/2017').setTime(17, 20, 0, 0);	// MO
+			let eventStart = new Date().setDateWithSimpleFormat('17/3/2017');					// FR
+			let testEvent = {
+				start: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(17, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				end: {
+					dateTime: eventStart.getISO8601DateWithDefinedTime(18, 0, 0, 0),
+					timeZone: 'Asia/Singapore'
+				},
+				freq: 'WEEKLY',
+				until: '20170401T020000Z',
+				byday: 'MO,TU,TH,FR'
+			};
+			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
+			expect(startDate).to.eql(undefined);
+			expect(endDate).to.eql(undefined);
 		});
 
 	});
