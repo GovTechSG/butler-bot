@@ -243,6 +243,13 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
 			console.log('json');
 			console.log(json);
 			for (let i = 0; i < json.length; i++) {
+				if (json[i].recurrence !== undefined) {
+					let { startDate, endDate } = calculateUpcomingRecurrence(parseRecurrenceEvent(json[i]), new Date());
+					if (startDate !== undefined) {
+						json[i].start = { dateTime: startDate.getISO8601TimeStamp() };
+						json[i].end = { dateTime: endDate.getISO8601TimeStamp() };
+					}
+				}
 				let event = {
 					id: json[i].id,
 					summary: json[i].summary,
