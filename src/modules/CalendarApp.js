@@ -408,12 +408,12 @@ function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
 export function insertEventForCombinedRoom(room1Details, room2Details, username) {
 
 	return insertEvent(room2Details.bookingSummary, room2Details.startDateTime, room2Details.endDateTime,
-		room2Details.location, room2Details.status, room2Details.description, username)
+		room2Details.location, room2Details.status, room2Details.description, username, RoomList.queenC.name)
 		.then(resultsRoom2 => {
 
 			room1Details.description += '@' + resultsRoom2.id;
 			return insertEvent(room1Details.bookingSummary, room1Details.startDateTime, room1Details.endDateTime,
-				room1Details.location, room1Details.status, room1Details.description, username)
+				room1Details.location, room1Details.status, room1Details.description, username, RoomList.queenC.name)
 				.then(resultsRoom1 => {
 					let results = {
 						'summary': resultsRoom1.summary,
@@ -458,7 +458,7 @@ export function queueForInsert(bookingSummary, startDateTimeStr, endDateTimeStr,
 	});
 }
 
-export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username) {
+export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username, combinedName) {
 	console.log('insert: ' + location);
 
 	if (location === RoomList.queenC.id) {
@@ -487,8 +487,8 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
 
 		let calendarId = calendarIdList[location];
 		let room = getRoomNameFromId(location);
-		if (room === RoomList.queen1.name || room === RoomList.queen2.name) {
-			room = RoomList.queenC.name;
+		if (combinedName !== undefined) {
+			room = combinedName;
 		}
 		return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, getColourForRoom(location))
 			.then(resp => {

@@ -368,7 +368,7 @@ function promptTimeslotSelection(query, room, startDate) {
     startDateStr = startDate.getISO8601DateWithDefinedTime(8, 0, 0, 0);
   }
 
-  cal_app.listEmptySlotsInDay(startDateStr, room)
+  CalendarApp.listEmptySlotsInDay(startDateStr, room)
     .then(jsonArr => {
 
       let msg;
