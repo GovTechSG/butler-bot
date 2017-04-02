@@ -7,6 +7,7 @@ import './Date';
 
 import * as SessionMgr from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
+import * as ParamBuilder from './ParamBuilder';
 import { MESSAGES } from './Messages';
 import USERS from '../data/users';
 
@@ -541,7 +542,7 @@ function anyRoom(message) {
   slimbot.sendMessage(message.chat.id, ReplyBuilder.checkAnyRoom(), { parse_mode: 'markdown' });
 
   // // look up lowest-priority cal for available slot
-  let rooms = ['bb', 'dr', 'fg', 'q1', 'q2', 'qc'];
+  let rooms = ['q1', 'q2', 'qc'];
   checkRoomFreeAtTimeslot(message, startTime, endTime, rooms);
 }
 
