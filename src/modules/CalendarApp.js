@@ -1,8 +1,8 @@
 // CalendarApp: booking app specific calendar logic
 import Promise from 'bluebird';
 import EventEmitter from 'eventemitter3';
-import { CONFIG } from '../config/settings';
 import CalendarAPI from 'node-google-calendar';
+import { CONFIG } from '../config/settings';
 import './Date';
 
 const cal = new CalendarAPI(CONFIG);
@@ -212,7 +212,7 @@ export function listBookedEventsByUser(startDateTime, user) {
 
 	return Promise.all(promiseList).then(
 		(eventsRoom1, eventsRoom2, eventsRoom3, eventsRoom4, eventsRoom5) => {
-			//modify event summaries + combine queensC events
+			// modify event summaries + combine queensC events
 
 			for (let key in bookedEventsArray) {
 				let evnt = bookedEventsArray[key];
@@ -239,7 +239,7 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
 	let calendarId = calendarIdList[query];
 
 	return cal.listEvents(calendarId, startDateTime, endDateTime)
-		.then(json => {
+		.then((json) => {
 			console.log('json');
 			console.log(json);
 			for (let i = 0; i < json.length; i++) {
@@ -261,7 +261,7 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
 				bookedEventsArray.push(event);
 			}
 			return bookedEventsArray;
-		}).catch(err => {
+		}).catch((err) => {
 			console.log(err);
 			throw err;
 		});
@@ -269,20 +269,20 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
 
 export function handleListingForTwoCalendars(date, endDate, roomId) {
 	return Promise.join(
-		listBookedEventsByRoom(date, endDate, RoomList.queen1.id)
+		listBookedEventsByRoom(date, endDate, jointRoomList[roomId][0])
+			.then((jsonArr) => {
+				return jsonArr;
+			}),
+
+		listBookedEventsByRoom(date, endDate, jointRoomList[roomId][1])
 			.then(jsonArr => {
 				return jsonArr;
 			}),
 
-		listBookedEventsByRoom(date, endDate, RoomList.queen2.id)
-			.then(jsonArr => {
-				return jsonArr;
-			}),
-
-		(timeslotQueen1, timeslotQueen2) => {
-			return timeslotQueen1.concat(timeslotQueen2);
+		(timeslotRoom1, timeslotRoom2) => {
+			return timeslotRoom1.concat(timeslotRoom2);
 		}
-	).catch(err => {
+	).catch((err) => {
 		throw new Error("handleListingForTwoCalendars error: " + err);
 	});
 }
@@ -302,9 +302,9 @@ export function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
 		}
 	}
 	return timeslotDict;
-};
+}
 
-//assumes booking for max length of a day
+// assumes booking for max length of a day
 export function listEmptySlotsInDay(date, roomId) {
 	let endDate = new Date(date).addDays(1).getISO8601TimeStamp();
 	date = new Date(date).getISO8601TimeStamp();
@@ -403,6 +403,31 @@ function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
 	return durOptions;
 }
 
+export function insertEventForCombinedRoom(room1Details, room2Details, username) {
+	return insertEvent(room2Details.bookingSummary, room2Details.startDateTime, room2Details.endDateTime,
+		room2Details.location, room2Details.status, room2Details.description, username, RoomList.queenC.name)
+		.then(resultsRoom2 => {
+
+			room1Details.description += '@' + resultsRoom2.id;
+			return insertEvent(room1Details.bookingSummary, room1Details.startDateTime, room1Details.endDateTime,
+				room1Details.location, room1Details.status, room1Details.description, username, RoomList.queenC.name)
+				.then(resultsRoom1 => {
+					let results = {
+						'summary': resultsRoom1.summary,
+						'location': resultsRoom1.location + '&' + resultsRoom2.location,
+						'status': resultsRoom1.status,
+						'htmlLink': CONFIG.calendarUrl,
+						'start': new Date(resultsRoom1.start),
+						'end': new Date(resultsRoom1.end),
+						'created': new Date(resultsRoom1.created).getISO8601TimeStamp()
+					};
+					return results;
+				});
+		}).catch((err) => {
+			throw new Error("insertEventForCombinedRoom: " + err);
+		});
+}
+
 export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username, combinedName) {
 	console.log('insert: ' + location);
 
@@ -424,60 +449,32 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
 			'description': description
 		};
 		return insertEventForCombinedRoom(eventRoom1, eventRoom2, username)
-			.catch(err => {
+			.catch((err) => {
 				throw new Error("insertEvent: " + err);
 			});
-	} else {
-		let calendarId = calendarIdList[location];
-		let room = getRoomNameFromId(location);
-		if (combinedName !== undefined) {
-			room = combinedName;
-		}
-		return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, getColourForRoom(location))
-			.then(resp => {
-				let json = resp.body;
-				let results = {
-					'id': json.id,
-					'summary': json.summary,
-					'location': json.location,
-					'status': json.status,
-					'htmlLink': CONFIG.calendarUrl,
-					'start': json.start.dateTime,
-					'end': json.end.dateTime,
-					'created': new Date(json.created).getISO8601TimeStamp()
-				};
-
-				return results;
-			})
-			.catch(err => {
-				throw new Error("insertEvent: " +
-					console.log(err));
-			});
 	}
-}
-
-export function insertEventForCombinedRoom(room1Details, room2Details, username) {
-	return insertEvent(room2Details.bookingSummary, room2Details.startDateTime, room2Details.endDateTime,
-		room2Details.location, room2Details.status, room2Details.description, username, RoomList.queenC.name)
-		.then(resultsRoom2 => {
-
-			room1Details.description += '@' + resultsRoom2.id;
-			return insertEvent(room1Details.bookingSummary, room1Details.startDateTime, room1Details.endDateTime,
-				room1Details.location, room1Details.status, room1Details.description, username, RoomList.queenC.name)
-				.then(resultsRoom1 => {
-					let results = {
-						'summary': resultsRoom1.summary,
-						'location': resultsRoom1.location + '&' + resultsRoom2.location,
-						'status': resultsRoom1.status,
-						'htmlLink': CONFIG.calendarUrl,
-						'start': new Date(resultsRoom1.start),
-						'end': new Date(resultsRoom1.end),
-						'created': new Date(resultsRoom1.created).getISO8601TimeStamp()
-					};
-					return results;
-				});
-		}).catch(err => {
-			throw new Error("insertEventForCombinedRoom: " + err);
+	let calendarId = calendarIdList[location];
+	let room = getRoomNameFromId(location);
+	if (combinedName !== undefined) {
+		room = combinedName;
+	}
+	return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, getColourForRoom(location))
+		.then((resp) => {
+			let json = resp.body;
+			let results = {
+				'id': json.id,
+				'summary': json.summary,
+				'location': json.location,
+				'status': json.status,
+				'htmlLink': CONFIG.calendarUrl,
+				'start': json.start.dateTime,
+				'end': json.end.dateTime,
+				'created': new Date(json.created).getISO8601TimeStamp()
+			};
+			return results;
+		})
+		.catch((err) => {
+			throw new Error("insertEvent: " + console.log(err));
 		});
 }
 
@@ -555,44 +552,41 @@ function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
 			}
 			return result;
 		});
-
 }
 
 export function checkTimeslotFree(startDateTimeStr, endDateTimeStr, room) {
 	console.log('checkTimeslotFree: ' + startDateTimeStr + ', ' + endDateTimeStr + ' ,' + room);
 
-	if (room == RoomList.queenC.id) {
+	if (room === RoomList.queenC.id) {
 		return checkJointRoomFree(startDateTimeStr, endDateTimeStr, room);
-	} else {
-		let calendarId = calendarIdList[room];
-		return cal.checkBusyPeriod(calendarId, startDateTimeStr, endDateTimeStr)
-			.then(function (eventsJson) {
-				if (eventsJson != undefined && eventsJson.length > 0) {
-					return false;
-				} else {
-					return true;
-				}
-			}).catch(err => {
-				throw new Error("checkTimeslotFree: " + err);
-			});
 	}
-};
+
+	let calendarId = calendarIdList[room];
+	return cal.checkBusyPeriod(calendarId, startDateTimeStr, endDateTimeStr)
+		.then(function (eventsJson) {
+			if (eventsJson != undefined && eventsJson.length > 0) {
+				return false;
+			} else {
+				return true;
+			}
+		}).catch((err) => {
+			throw new Error("checkTimeslotFree: " + err);
+		});
+
+}
 
 function handleBookingProcess(booking) {
 	checkTimeslotFree(booking.startDateTime, booking.endDateTime, booking.location)
-		.then(isSlotFree => {
+		.then((isSlotFree) => {
 			if (isSlotFree) {
-
 				insertEvent(booking.bookingSummary, booking.startDateTime, booking.endDateTime,
 					booking.location, booking.status, booking.description, booking.username)
-					.then(results => {
+					.then((results) => {
 
 						bookingQueue.shift();
 						EE.emit('booked' + booking.username + booking.bookTime, { success: true, results: results });
 					});
-
 			} else {
-
 				bookingQueue.shift();
 				EE.emit('booked' + booking.username + booking.bookTime, { success: false });
 			}
@@ -626,7 +620,7 @@ export function deleteEvents(eventIdArray, roomId) {
 		eventList.push(cal.deleteEvent(calendarId, eventIdArray[index])
 		);
 	}
-	return Promise.all(eventList).catch(err => {
+	return Promise.all(eventList).catch((err) => {
 		console.log('Error deleting Event' + err);
 		throw new Error("deleteEvent: " + err);
 	});

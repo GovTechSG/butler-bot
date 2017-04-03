@@ -48,7 +48,8 @@
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3",
     "mocha": "^3.2.0",
-    "mockery": "^2.0.0"
+    "mockery": "^2.0.0",
+    "sinon": "^2.1.0"
   },
   "bugs": {
     "url": "https://github.com/GovTechSG/butler-bot/issues"

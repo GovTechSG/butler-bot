@@ -240,11 +240,10 @@ describe('CalendarApp', () => {
 			expect(startDate).to.eql(undefined);
 			expect(endDate).to.eql(undefined);
 		});
-
 	});
 
 	describe('parseRecurrenceEvent', () => {
-		it('should parseRecurrenceEvent that repeats every 3 weeks twice into object successfully', () => {
+		it('should return obj with correct recurrence details when called with event that repeats every 3 weeks twice', () => {
 			let expectedResult = {
 				start: {
 					dateTime: '2017-03-18T17:00:00+08:00',
@@ -276,7 +275,7 @@ describe('CalendarApp', () => {
 			expect(result).to.eql(expectedResult);
 		});
 
-		it('should parseRecurrenceString with multiple days per week into object successfully', () => {
+		it('should return obj with correct recurrence details when called event that repeats multiple days per week', () => {
 			let expectedResult = {
 				start: {
 					dateTime: '2017-03-18T17:00:00+08:00',
@@ -318,7 +317,7 @@ describe('CalendarApp', () => {
 				'fg': 'Focus Group Discussion',
 				'bb': 'Bumblebee'
 			};
-			for (var key in roomNames) {
+			for (let key in roomNames) {
 				if (roomNames.hasOwnProperty(key)) {
 					let expectedResult = roomNames[key];
 					let result = CalendarApp.getRoomNameFromId(key);
@@ -329,7 +328,7 @@ describe('CalendarApp', () => {
 	});
 
 	describe('setupTimeArray', () => {
-		it('should return 8am - 830pm list of timeslots when setupTimeArray called with 1200am', () => {
+		it('should return 8am - 830pm list of timeslots when setupTimeArray called at 1200am', () => {
 			let expectedResult = {
 				'8:00 AM': '8:00 AM', '8:30 AM': '8:30 AM',
 				'9:00 AM': '9:00 AM', '9:30 AM': '9:30 AM',
@@ -349,7 +348,7 @@ describe('CalendarApp', () => {
 			expect(result).to.eql(expectedResult);
 		});
 
-		it('should return 830pm when setupTimeArray called with 830pm', () => {
+		it('should return 830pm when setupTimeArray called at 830pm', () => {
 			let expectedResult = {
 				'8:30 PM': '8:30 PM'
 			};
@@ -357,13 +356,13 @@ describe('CalendarApp', () => {
 			expect(result).to.eql(expectedResult);
 		});
 
-		it('should return {} when setupTimeArray called with 831pm', () => {
+		it('should return empty obj when setupTimeArray called at 831pm', () => {
 			let expectedResult = {};
 			let result = CalendarApp.setupTimeArray(new Date().setTime(20, 31, 0, 0));
 			expect(result).to.eql(expectedResult);
 		});
 
-		it('should return {} when setupTimeArray called with 1159pm', () => {
+		it('should return empty obj when setupTimeArray called at 1159pm', () => {
 			let expectedResult = {};
 			let result = CalendarApp.setupTimeArray(new Date().setTime(23, 59, 0, 0));
 			expect(result).to.eql(expectedResult);
@@ -463,5 +462,15 @@ describe('CalendarApp', () => {
 		});
 	});
 
+	// xdescribe('insertEvent', () => {
+	// 	it('should return event details when insert into q1 success', () => {
+	// 		let callback = sinon.stub(cal, 'insertEvent');
+	// 		callback.withArgs('bookingSummary', '2017-04-02T14:00:00+08:00', '2017-04-02T15:00:00+08:00', 'q1', '', 'booked by butler', '@shekyh').returns(1);
+
+	// 		let fullTimeSlot = CalendarApp.setupTimeArray(new Date().setTime(0, 0, 0, 0));
+	// 		let result = CalendarApp.filterBusyTimeslots(fullTimeSlot, events);
+	// 		expect(result).to.eql(expectedResult);
+	// 	});
+	// });
 });
 
