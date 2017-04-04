@@ -175,7 +175,7 @@ export function listBookedEventsByUser(startDateTime, user) {
 					if (json[i].recurrence !== undefined) {
 						let { startDate, endDate } = calculateUpcomingRecurrence(parseRecurrenceEvent(json[i]), new Date());
 						if (startDate !== undefined) {
-							json[i].description += '(Recurring)';
+							json[i].recurrent = ' (Recurring)';
 							json[i].start = { dateTime: startDate.getISO8601TimeStamp() };
 							json[i].end = { dateTime: endDate.getISO8601TimeStamp() };
 						}
@@ -189,7 +189,8 @@ export function listBookedEventsByUser(startDateTime, user) {
 						status: json[i].status,
 						description: json[i].description,
 						room: room,
-						isByMe: json[i].description.indexOf('booked via butler') !== -1
+						isByMe: json[i].description.indexOf('booked via butler') !== -1,
+						recurrent: json[i].recurrent
 					};
 					eventsInCalendar.push(event);
 					bookedEventsArray.push(event);
