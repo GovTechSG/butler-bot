@@ -40,6 +40,11 @@ References:
 * Booking insert job queue improvement
 * Authenticate to only allow hive users to book (temporary workaround for now)
 
+## V0.1.2
+
+* Supports recurring bookings made through google calendar
+* /booked now shows your latest upcoming booking occurrence for recurring bookings
+
 ## V0.1.1
 
 * Store room bookings with google calendar
