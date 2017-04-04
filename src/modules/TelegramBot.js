@@ -18,6 +18,7 @@ const Emitter = new EventEmitter();
 const CalendarApp = require('./CalendarApp');
 
 let botName;
+let anyBookList = {};
 let bookerList = {};
 let roomlist = {
   'q1': 'Queen (Video)',
@@ -27,9 +28,8 @@ let roomlist = {
   'fg': 'Focus Group Discussion',
   'bb': 'Bumblebee'
 };
-let anyBookList = {};
 
-slimbot.getMe().then(update => {
+slimbot.getMe().then((update) => {
   console.log('bot started on ' + new Date().getFormattedTime());
   console.log(update);
   botName = update.result.username;
@@ -37,7 +37,7 @@ slimbot.getMe().then(update => {
 
 
 // Register listeners
-slimbot.on('message', message => {
+slimbot.on('message', (message) => {
   console.log('message');
   let isCommand = checkCommandList(message);
 
@@ -54,10 +54,10 @@ slimbot.on('message', message => {
   }
 });
 
-slimbot.on('inline_query', query => {
+slimbot.on('inline_query', (query) => {
   // do something with @bot inline query
   console.log('inline: ');
-  var results = JSON.stringify([{
+  let results = JSON.stringify([{
     'type': 'article',
     'id': 'help',
     'title': 'How to book ah?',
@@ -115,17 +115,17 @@ slimbot.on('inline_query', query => {
     }
   }]);
 
-  slimbot.answerInlineQuery(query.id, results).then(resp => {
-    console.log('answerInlineQuery');
-  });
+//   slimbot.answerInlineQuery(query.id, results).then((resp) => {
+//     console.log('answerInlineQuery');
+//   });
 });
 
-slimbot.on('chosen_inline_result', query => {
+slimbot.on('chosen_inline_result', (query) => {
   //whenever any inline query option is selected
   console.log('chosenanswerInlineQuery');
 });
 
-slimbot.on('callback_query', query => {
+slimbot.on('callback_query', (query) => {
   console.log('callback');
   processCallBack(query);
 });
@@ -171,8 +171,6 @@ function processCallBack(query) {
   } else if (callback_data.date == 'pick_date') {
     if (callback_data.month === undefined) {
       promptDateSelection(query, callback_data.room, new Date());
-    } else {
-      //TODO: show promptDateSelection with selected month
     }
   } else {
     //date selected
@@ -190,69 +188,70 @@ function processCallBack(query) {
 }
 
 function checkCommandList(message) {
-  let roomSelected, optionalParams;
+  let roomSelected;
+  let optionalParams;
   console.log(message);
   if (!USERS.hasOwnProperty(message.from.username)) {
     slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
     throw new Error('Unauthenticated access');
   }
 
-  if (message.text == '/view') {
+  if (message.text === '/view') {
     slimbot.sendMessage(message.chat.id, 'Check out this link for the overall room booking schedules: https://sgtravelbot.com');
 
-  } else if (message.text == '/book_any' || message.text == '/any') {
+  } else if (message.text === '/book_any' || message.text === '/any') {
     askAny(message);
 
-  } else if (message.text == '/book_fgd') {
+  } else if (message.text === '/book_fgd') {
     roomSelected = 'fg';
     promptTodayOrDateOption(roomSelected, message);
 
-  } else if (message.text == '/book_queen_video') {
+  } else if (message.text === '/book_queen_video') {
     roomSelected = 'q1';
     promptTodayOrDateOption(roomSelected, message);
 
-  } else if (message.text == '/book_queen_projector') {
+  } else if (message.text === '/book_queen_projector') {
     roomSelected = 'q2';
     promptTodayOrDateOption(roomSelected, message);
 
-  } else if (message.text == '/book_queen_combined') {
+  } else if (message.text === '/book_queen_combined') {
     roomSelected = 'qc';
     promptTodayOrDateOption(roomSelected, message);
 
-  } else if (message.text == '/book_drone') {
+  } else if (message.text === '/book_drone') {
     roomSelected = 'dr';
     promptTodayOrDateOption(roomSelected, message);
 
-  } else if (message.text == '/book_bumblebee') {
+  } else if (message.text === '/book_bumblebee') {
     roomSelected = 'bb';
     promptTodayOrDateOption(roomSelected, message);
 
-  } else if (message.text == '/book') {
+  } else if (message.text === '/book') {
     promptRoomSelection(message);
 
-  } else if (message.text == '/booked' && message.chat.type == 'group' || message.text == '/delete' && message.chat.type == 'group') {
+  } else if ((message.text === '/booked' && message.chat.type === 'group') || (message.text === '/delete' && message.chat.type === 'group')) {
     slimbot.sendMessage(message.chat.id, MESSAGES.private);
 
-  } else if (message.text == '/exit') {
+  } else if (message.text === '/exit') {
     console.log('/exit current booking');
     SessionMgr.terminateSession(message.chat.id);
 
-  } else if (message.text == `/help@${botName}` || message.text == '/help') {
+  } else if (message.text === `/help@${botName}` || message.text === '/help') {
     slimbot.sendMessage(message.chat.id, MESSAGES.help, { parse_mode: 'Markdown' });
 
-  } else if (message.chat.type == 'private') {
-    if (message.text == '/start') {
+  } else if (message.chat.type === 'private') {
+    if (message.text === '/start') {
       slimbot.sendMessage(message.chat.id, MESSAGES.start, { parse_mode: 'Markdown' });
 
-    } else if (message.text == '/help') {
+    } else if (message.text === '/help') {
       slimbot.sendMessage(message.chat.id, MESSAGES.help, { parse_mode: 'Markdown' });
 
-    } else if (message.text == '/booked') {
+    } else if (message.text === '/booked') {
       let fullname = message.from.first_name + ' ' + message.from.last_name;
       let searchQuery = '@' + message.chat.username;
       checkUserBookings(message, searchQuery, MESSAGES.noBooking);
 
-    } else if (message.text == '/delete') {
+    } else if (message.text === '/delete') {
       let fullname = message.from.first_name + ' ' + message.from.last_name;
       let searchQuery = '@' + message.chat.username;
       checkUserBookings(message, searchQuery, MESSAGES.noBooking, true);
@@ -268,10 +267,10 @@ function checkCommandList(message) {
       let bookId = message.text.substring(message.text.indexOf('@') + 1);
       deleteBookings([bookId], roomId, message);
 
-    } else {  //ignore non-commands in private chat
+    } else {  // ignore non-commands in private chat
       return false;
     }
-  } else {   //ignore non-commands
+  } else {   // ignore non-commands
     return false;
   }
   return true;
@@ -473,7 +472,7 @@ function deleteBookings(eventsToDeleteArray, roomId, message) {
     let fullname = message.from.first_name + ' ' + message.from.last_name;
     let searchQuery = '@' + message.chat.username;
     checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete, true);
-  }).catch(err => {
+  }).catch((err) => {
     slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
   });
 }

@@ -1,8 +1,8 @@
 import { expect } from 'chai';
+
 require('../src/modules/Date');
 
 describe('Date', () => {
-
 	describe('setDateWithSimpleFormat', () => {
 		it('should return 30/1/2017 as Date with "30/1/2017" as input', () => {
 			let date = new Date().setDateWithSimpleFormat('30/1/2017');

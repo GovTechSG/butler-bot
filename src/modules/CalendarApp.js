@@ -10,7 +10,7 @@ const calendarIdList = CONFIG.calendarId;
 
 let EE = new EventEmitter();
 
-const colourDict = { "fg": 5, "dr": 7, "q1": 6, "q2": 10, "qc": 11, "bb": 3 };
+const colourDict = { 'fg': 5, 'dr': 7, 'q1': 6, 'q2': 10, 'qc': 11, 'bb': 3 };
 const RoomList = {
 	queen1: { id: 'q1', name: 'Queen (Video)' },
 	queen2: { id: 'q2', name: 'Queen (Projector)' },
@@ -93,14 +93,10 @@ export function checkWithinWeek(startDate, today, recurrenceInWeek, dayDiffInWee
 
 	for (let j in recurrenceInWeek) {
 		let dayInWeek = new Date(startDate);
-		console.log('	within week, adding: ' + dayDiffInWeek[recurrenceInWeek[j]]);
 		dayInWeek.addDays(dayDiffInWeek[recurrenceInWeek[j]]);
 		daysToAddTillNextOccur = dayDiffInWeek[recurrenceInWeek[j]];
-		console.log('	' + dayInWeek);
 
 		if (dayInWeek >= today) {
-			console.log('	' + dayInWeek + ' >= ' + today);
-			console.log('	closest upcoming date : ' + dayInWeek);
 			return daysToAddTillNextOccur;
 		}
 	}
@@ -141,8 +137,7 @@ export function calculateUpcomingRecurrence(recurrenceEvent, today) {
 		}
 		endDate.addDays(interval * recurCount);
 	}
-	console.log(`${startDate} > ${terminatingDate}`);
-	console.log(`${startDate} < ${today}`);
+
 	if ((startDate < today) || (startDate > terminatingDate)) {
 		return {};
 	}
@@ -174,7 +169,6 @@ export function listBookedEventsByUser(startDateTime, user) {
 
 		promiseList.push(cal.listEvents(calendarId, startDateTime, endDateTime, user)
 			.then(json => {
-				console.log('listBookedEventsByUser:: ' + room);
 				let eventsInCalendar = [];
 				for (let i = 0; i < json.length; i++) {
 					if (json[i].description === undefined) json[i].description = '';
@@ -200,11 +194,8 @@ export function listBookedEventsByUser(startDateTime, user) {
 					eventsInCalendar.push(event);
 					bookedEventsArray.push(event);
 				}
-				console.log('--- ');
-				console.log(bookedEventsArray);
-				console.log('--- ');
 				return eventsInCalendar;
-			}).catch(err => {
+			}).catch((err) => {
 				throw err;
 			})
 		);
@@ -216,8 +207,6 @@ export function listBookedEventsByUser(startDateTime, user) {
 
 			for (let key in bookedEventsArray) {
 				let evnt = bookedEventsArray[key];
-				console.log('event details');
-				console.log(evnt);
 				let bookingDescription = evnt.summary;
 				let bookedRoomName = evnt.location;
 				evnt.summary = bookingDescription;
@@ -240,8 +229,6 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
 
 	return cal.listEvents(calendarId, startDateTime, endDateTime)
 		.then((json) => {
-			console.log('json');
-			console.log(json);
 			for (let i = 0; i < json.length; i++) {
 				if (json[i].recurrence !== undefined) {
 					let { startDate, endDate } = calculateUpcomingRecurrence(parseRecurrenceEvent(json[i]), new Date());
@@ -262,7 +249,7 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
 			}
 			return bookedEventsArray;
 		}).catch((err) => {
-			console.log(err);
+			console.log('listBookedEventsByRoom Error:' + err);
 			throw err;
 		});
 }
@@ -312,27 +299,23 @@ export function listEmptySlotsInDay(date, roomId) {
 
 	if (roomId == RoomList.queenC.id) {
 		return handleListingForTwoCalendars(date, endDate, roomId)
-			.then(timeslotObj => {
+			.then((timeslotObj) => {
 				let timeArr = setupTimeArray(date);
-				console.log(timeslotObj);
 				filterBusyTimeslots(timeArr, timeslotObj);
 				return timeArr;
 			})
-			.catch(err => {
-				throw new Error("listEmptySlotsInDay error: " + err);
+			.catch((err) => {
+				throw new Error('listEmptySlotsInDay error: ' + err);
 			});
-
 	} else {
-		let calendarId = calendarIdList[roomId];
 		return listBookedEventsByRoom(date, endDate, roomId)
-			.then(timeslotObj => {
+			.then((timeslotObj) => {
 				let timeArr = setupTimeArray(date);
-				console.log(timeslotObj);
 				filterBusyTimeslots(timeArr, timeslotObj);
 				return timeArr;
 			})
-			.catch(err => {
-				throw new Error("listEmptySlotsInDay error: " + err);
+			.catch((err) => {
+				throw new Error('listEmptySlotsInDay error: ' + err);
 			});
 	}
 }
@@ -341,25 +324,22 @@ export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
 	const listAvailableTime = 21; //Check available time up to 9 pm
 	let startTimestamp = new Date(startDatetimeStr).getISO8601TimeStamp();
 	let endTimestamp = new Date(startDatetimeStr).getISO8601DateWithDefinedTime(listAvailableTime, 0, 0, 0);
-	let calendarId = calendarIdList[roomId];
 
 	if (roomId == RoomList.queenC.id) {
 		return handleListingForTwoCalendars(startTimestamp, endTimestamp, roomId)
-			.then(timeslotObj => {
-
+			.then((timeslotObj) => {
 				return filterDurationSlots(timeslotObj, startTimestamp);
 			})
-			.catch(err => {
-				throw new Error("listAvailableDurationForStartTime: " + err);
+			.catch((err) => {
+				throw new Error('listAvailableDurationForStartTime: ' + err);
 			});
 	} else {
 		return listBookedEventsByRoom(startTimestamp, endTimestamp, roomId)
-			.then(jsonArr => {
-
+			.then((jsonArr) => {
 				return filterDurationSlots(jsonArr, startTimestamp);
 			})
-			.catch(err => {
-				throw new Error("listAvailableDurationForStartTime: " + err);
+			.catch((err) => {
+				throw new Error('listAvailableDurationForStartTime: ' + err);
 			});
 	}
 }
@@ -429,7 +409,7 @@ export function insertEventForCombinedRoom(room1Details, room2Details, username)
 }
 
 export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username, combinedName) {
-	console.log('insert: ' + location);
+	console.log('insertEvent: ' + location);
 
 	if (location === RoomList.queenC.id) {
 		let eventRoom1 = {
@@ -474,7 +454,8 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
 			return results;
 		})
 		.catch((err) => {
-			throw new Error("insertEvent: " + console.log(err));
+			console.log('insertEvent Error: ' + err);
+			throw new Error('insertEvent: ' + err);
 		});
 }
 
@@ -509,13 +490,13 @@ function checkBookingTurn(username, bookTime) {
 	let firstItemInQueue = bookingQueue[0];
 	console.log('checking turn: ' + firstItemInQueue.username + ' == ' + username);
 	if (firstItemInQueue.username == username && firstItemInQueue.bookTime == bookTime) {
-		//current booking's turn
+		// current booking's turn
 		console.log('turn for ' + username + ' to insert');
 		return true;
-	} else {
-		//not current booking's turn yet
-		return false;
-	};
+	}
+
+	// not current booking's turn yet
+	return false;
 }
 
 function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
@@ -530,7 +511,7 @@ function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
 
 		promiseList.push(
 			cal.checkBusyPeriod(calendarId, startDateTimeStr, endDateTimeStr)
-				.then(json => {
+				.then((json) => {
 					if (json != undefined && json.length > 0) {
 						statusList.push(false);
 						return false;
@@ -538,7 +519,7 @@ function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
 						statusList.push(true);
 						return true;
 					}
-				}).catch(err => {
+				}).catch((err) => {
 					throw new Error("checkJointRoomFree: " + err);
 				})
 		);
@@ -564,13 +545,12 @@ export function checkTimeslotFree(startDateTimeStr, endDateTimeStr, room) {
 	let calendarId = calendarIdList[room];
 	return cal.checkBusyPeriod(calendarId, startDateTimeStr, endDateTimeStr)
 		.then(function (eventsJson) {
-			if (eventsJson != undefined && eventsJson.length > 0) {
+			if (eventsJson !== undefined && eventsJson.length > 0) {
 				return false;
-			} else {
-				return true;
 			}
+			return true;
 		}).catch((err) => {
-			throw new Error("checkTimeslotFree: " + err);
+			throw new Error('checkTimeslotFree: ' + err);
 		});
 
 }
@@ -621,7 +601,7 @@ export function deleteEvents(eventIdArray, roomId) {
 		);
 	}
 	return Promise.all(eventList).catch((err) => {
-		console.log('Error deleting Event' + err);
-		throw new Error("deleteEvent: " + err);
+		console.log('deleteEvent Error: ' + err);
+		throw new Error('deleteEvent: ' + err);
 	});
 }
