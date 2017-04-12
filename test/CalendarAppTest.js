@@ -370,6 +370,53 @@ describe('CalendarApp', () => {
 	});
 
 	describe('filterBusyTimeslots', () => {
+
+
+		it('should return correct timeslots & ignore error event when setupTimeArray called with error event ', () => {
+			let events = [{
+				id: '7j1f3ngpff65k8v8ta67lumi1g',
+				summary: 'event',
+				location: 'Drone Room',
+				start:
+				{
+					dateTime: '2017-04-06T17:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				end:
+				{
+					dateTime: '2017-04-06T17:30:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				status: 'confirmed'
+			}, {
+				id: '799u03hc0a9tkqhm5dfo5n4a00_20170412T060000Z',
+				summary: undefined,
+				location: undefined,
+				start: undefined,
+				end: undefined,
+				status: 'cancelled'
+			}];
+
+			let expectedResult = {
+				'8:00 AM': '8:00 AM', '8:30 AM': '8:30 AM',
+				'9:00 AM': '9:00 AM', '9:30 AM': '9:30 AM',
+				'10:00 AM': '10:00 AM', '10:30 AM': '10:30 AM',
+				'11:00 AM': '11:00 AM', '11:30 AM': '11:30 AM',
+				'12:00 PM': '12:00 PM', '12:30 PM': '12:30 PM',
+				'1:00 PM': '1:00 PM', '1:30 PM': '1:30 PM',
+				'2:00 PM': '2:00 PM', '2:30 PM': '2:30 PM',
+				'3:00 PM': '3:00 PM', '3:30 PM': '3:30 PM',
+				'4:00 PM': '4:00 PM', '4:30 PM': '4:30 PM',
+				'5:30 PM': '5:30 PM',
+				'6:00 PM': '6:00 PM', '6:30 PM': '6:30 PM',
+				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
+				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
+			};
+			let fullTimeSlot = CalendarApp.setupTimeArray(new Date().setTime(0, 0, 0, 0));
+			let result = CalendarApp.filterBusyTimeslots(fullTimeSlot, events);
+			expect(result).to.eql(expectedResult);
+		});
+
 		it('should return timeslots (8am - 830pm except 5pm slot) when setupTimeArray called with event from 5-530pm', () => {
 			let events = [{
 				id: '7j1f3ngpff65k8v8ta67lumi1g',

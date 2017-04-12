@@ -271,6 +271,7 @@ export function handleListingForTwoCalendars(date, endDate, roomId) {
 			return timeslotRoom1.concat(timeslotRoom2);
 		}
 	).catch((err) => {
+		console.log('handleListingForTwoCalendars Error');
 		throw new Error("handleListingForTwoCalendars error: " + err);
 	});
 }
@@ -281,6 +282,9 @@ export function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
 	}
 
 	for (let key in roomBusyTimeslot) {
+		if (roomBusyTimeslot[key].start === undefined || roomBusyTimeslot[key].status !== 'confirmed') {
+			continue;
+		}
 		let startTime = new Date(roomBusyTimeslot[key].start.dateTime);
 		let endTime = new Date(roomBusyTimeslot[key].end.dateTime);
 
@@ -301,21 +305,29 @@ export function listEmptySlotsInDay(date, roomId) {
 	if (roomId == RoomList.queenC.id) {
 		return handleListingForTwoCalendars(date, endDate, roomId)
 			.then((timeslotObj) => {
+				console.log('handleListingForTwoCalendars');
 				let timeArr = setupTimeArray(date);
 				filterBusyTimeslots(timeArr, timeslotObj);
 				return timeArr;
 			})
 			.catch((err) => {
+				console.log('listEmptySlotsInDay Error: ' + err);
 				throw new Error('listEmptySlotsInDay error: ' + err);
 			});
 	} else {
 		return listBookedEventsByRoom(date, endDate, roomId)
 			.then((timeslotObj) => {
 				let timeArr = setupTimeArray(date);
+
+				console.log('listBookedEventsByRoom start: ');
+				console.log(timeArr);
+				console.log(timeslotObj);
 				filterBusyTimeslots(timeArr, timeslotObj);
+				console.log('listBookedEventsByRoom done: ' + timeArr);
 				return timeArr;
 			})
 			.catch((err) => {
+				console.log('listEmptySlotsInDay Error: ' + err);
 				throw new Error('listEmptySlotsInDay error: ' + err);
 			});
 	}
