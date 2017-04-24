@@ -98,14 +98,6 @@ slimbot.on('inline_query', (query) => {
 		}
 	}, {
 		'type': 'article',
-		'id': 'bb',
-		'title': 'Bumblebee',
-		'input_message_content': {
-			'message_text': '/book_bumblebee',
-			'disable_web_page_preview': true
-		}
-	}, {
-		'type': 'article',
 		'id': 'fg',
 		'title': 'Focus Group Discussion',
 		'input_message_content': {
@@ -223,10 +215,6 @@ function checkCommandList(message) {
 		roomSelected = 'dr';
 		promptTodayOrDateOption(roomSelected, message);
 
-	} else if (message.text === '/book_bumblebee') {
-		roomSelected = 'bb';
-		promptTodayOrDateOption(roomSelected, message);
-
 	} else if (message.text === '/book') {
 		promptRoomSelection(message);
 
@@ -326,8 +314,7 @@ function promptRoomSelection(message) {
 				{ text: 'Queen (Video)', callback_data: JSON.stringify({ room: 'q1' }) },
 				{ text: 'Queen (Projector)', callback_data: JSON.stringify({ room: 'q2' }) }
 			], [
-				{ text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) },
-				{ text: 'Bumblebee Room', callback_data: JSON.stringify({ room: 'bb' }) }
+				{ text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) }
 			]
 			]
 		})
@@ -535,7 +522,7 @@ function anyRoom(message) {
 	slimbot.sendMessage(message.chat.id, ReplyBuilder.checkAnyRoom(), { parse_mode: 'markdown' });
 
 	// look up lowest-priority cal for available slot
-	let rooms = ['dr', 'bb', 'fg', 'q1', 'q2', 'qc'];
+	let rooms = ['dr', 'fg', 'q1', 'q2', 'qc'];
 	checkRoomFreeAtTimeslot(message, startTime, endTime, rooms);
 }
 
