@@ -90,14 +90,6 @@ slimbot.on('inline_query', (query) => {
 		}
 	}, {
 		'type': 'article',
-		'id': 'dr',
-		'title': 'Drone',
-		'input_message_content': {
-			'message_text': '/book_drone',
-			'disable_web_page_preview': true
-		}
-	}, {
-		'type': 'article',
 		'id': 'fg',
 		'title': 'Focus Group Discussion',
 		'input_message_content': {
@@ -211,13 +203,8 @@ function checkCommandList(message) {
 		roomSelected = 'qc';
 		promptTodayOrDateOption(roomSelected, message);
 
-	} else if (message.text === '/book_drone') {
-		roomSelected = 'dr';
-		promptTodayOrDateOption(roomSelected, message);
-
 	} else if (message.text === '/book') {
 		promptRoomSelection(message);
-
 	} else if ((message.text === '/booked' && message.chat.type === 'group') || (message.text === '/delete' && message.chat.type === 'group')) {
 		slimbot.sendMessage(message.chat.id, MESSAGES.private);
 
@@ -309,14 +296,11 @@ function promptRoomSelection(message) {
 		reply_markup: JSON.stringify({
 			inline_keyboard: [[
 				{ text: 'Focus Group Room', callback_data: JSON.stringify({ room: 'fg' }) },
-				{ text: 'Drone Room', callback_data: JSON.stringify({ room: 'dr' }) }
+				{ text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) }
 			], [
 				{ text: 'Queen (Video)', callback_data: JSON.stringify({ room: 'q1' }) },
 				{ text: 'Queen (Projector)', callback_data: JSON.stringify({ room: 'q2' }) }
-			], [
-				{ text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) }
-			]
-			]
+			]]
 		})
 	};
 	slimbot.sendMessage(message.chat.id, MESSAGES.book, optionalParams)
@@ -332,7 +316,7 @@ function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
 	let msg = ReplyBuilder.askForDate(roomlist[roomSelectedId]);
 	if (hasPrevMsg) {
 		slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams);
-		SessionMgr.extendSession(query.message.chat.id, query.message.message_id);
+		SessionMgr.extendSession(query.message.chat.id, query.message.message_id, query.message.chat.username);
 	} else {
 		slimbot.sendMessage(query.chat.id, msg, optionalParams)
 			.then((message) => {
@@ -344,7 +328,7 @@ function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
 function promptDateSelection(query, room, startDate) {
 	let msg = 'You have selected:\n' + '*' + roomlist[room] + '*' + '\n\nPlease select a date in the upcoming month:';
 	slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getDateSelection(room));
-	SessionMgr.extendSession(query.message.chat.id, query.message.message_id);
+	SessionMgr.extendSession(query.message.chat.id, query.message.message_id, query.message.chat.username);
 }
 
 // //Step 2 - Timeslot
@@ -359,14 +343,15 @@ function promptTimeslotSelection(query, room, startDate) {
 	CalendarApp.listEmptySlotsInDay(startDateStr, room)
 		.then((jsonArr) => {
 			console.log('promptTimeslotSelection::listEmptySlotsInDay done');
+			console.log(jsonArr);
 			let msg;
-			if (Object.keys(jsonArr).length === 0) {
+			if (jsonArr === undefined || jsonArr === {} || Object.keys(jsonArr).length === 0) {
 				msg = ReplyBuilder.informNoTimeslot(roomlist[room], startDate);
 			} else {
 				msg = ReplyBuilder.askForTime(roomlist[room], startDate);
 			}
 			slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getTimeslots(jsonArr, room, startDate));
-			SessionMgr.extendSession(query.message.chat.id, query.message.message_id);
+			SessionMgr.extendSession(query.message.chat.id, query.message.message_id, query.message.chat.username);
 		})
 		.catch((err) => {
 			console.log('Error promptTimeslotSelection: room: ' + room + ' | ' + JSON.stringify(err));
@@ -381,7 +366,7 @@ function promptDurationSelection(query, room, startDate, startTime) {
 		.then(function (jsonArr) {
 			let msg = ReplyBuilder.askForDuration(roomlist[room], startDate, startTime);
 			slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getDuration(jsonArr, room, startDate, startTime));
-			SessionMgr.extendSession(query.message.chat.id, query.message.message_id);
+			SessionMgr.extendSession(query.message.chat.id, query.message.message_id, query.message.chat.username);
 		}, function (err) {
 			console.log('Error promptDurationSelection: ' + JSON.stringify(err));
 			slimbot.editMessageText(query.message.chat.id, query.message.message_id, MESSAGES.error);
@@ -405,7 +390,7 @@ function promptDescription(query, room, startDate, startTime, duration) {
 				dur: duration,
 				lastUpdated: new Date()
 			};
-			SessionMgr.extendSession(query.message.chat.id, query.message.message_id);
+			SessionMgr.extendSession(query.message.chat.id, query.message.message_id, query.message.chat.username);
 		});
 }
 
@@ -484,7 +469,7 @@ function anyRoom(message) {
 	if (!results.length || results[0].end === undefined || results[0].start === undefined) {
 		slimbot.sendMessage(message.chat.id, ReplyBuilder.askAnyRoomErrorInput(), { parse_mode: 'markdown' })
 			.then((sentMsg) => {
-				SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id);
+				SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
 			});
 		return;
 	}
@@ -502,7 +487,7 @@ function anyRoom(message) {
 			startTime.getFormattedTime(), endTime.getFormattedTime(), startTime.getMinuteDiff(endTime)),
 			{ parse_mode: 'markdown' })
 			.then((sentMsg) => {
-				SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id);
+				SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
 			});
 		return;
 	}
@@ -514,7 +499,7 @@ function anyRoom(message) {
 			startTime.getFormattedTime(), endTime.getFormattedTime(), startTime.getMinuteDiff(endTime)),
 			{ parse_mode: 'markdown' })
 			.then((sentMsg) => {
-				SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id);
+				SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
 			});
 		return;
 	}
@@ -522,7 +507,7 @@ function anyRoom(message) {
 	slimbot.sendMessage(message.chat.id, ReplyBuilder.checkAnyRoom(), { parse_mode: 'markdown' });
 
 	// look up lowest-priority cal for available slot
-	let rooms = ['dr', 'fg', 'q1', 'q2', 'qc'];
+	let rooms = ['fg', 'q1', 'q2', 'qc'];
 	checkRoomFreeAtTimeslot(message, startTime, endTime, rooms);
 }
 
@@ -551,7 +536,7 @@ function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms) {
 				slimbot.sendMessage(message.chat.id, ReplyBuilder.confirmAnyRoom(startDate.getFormattedDate(),
 					startDate.getFormattedTime(), endDate.getFormattedTime(), startDate.getMinuteDiff(endDate), roomlist[rooms[0]]), optionalParams)
 					.then((sentMsg) => {
-						SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id);
+						SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
 					});
 			} else {
 				console.log(`${rooms[0]} is not free, trying next room`);

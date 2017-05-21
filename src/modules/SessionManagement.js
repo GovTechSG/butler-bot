@@ -15,8 +15,13 @@ export function startSessionCountdown(userChatId, msgId, username) {
 	activeUsers[userChatId] = { userChatId: userChatId, msgId: msgId, username: username, timer: timer };
 };
 
-export function extendSession(userChatId, msgId) {
+export function extendSession(userChatId, msgId, username) {
 	let sessObj = activeUsers[userChatId];
+	if (sessObj === undefined) {
+		console.log('Session not available to extend; starting new session');
+		this.startSessionCountdown(userChatId, msgId, username);
+		return;
+	}
 	console.log('[Session Extended] by @' + sessObj.username);
 
 	clearTimeout(sessObj.timer);
