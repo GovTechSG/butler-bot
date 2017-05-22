@@ -8,12 +8,6 @@ Grab dependencies
 npm i
 ```
 
-Run your own Redis Server
-``` bash
-# if you have docker installed
-docker run -p '6379:6379' redis
-```
-
 Run the bot
 ```javascript
 npm start
@@ -35,17 +29,28 @@ References:
 * [Keeping a changelog](http://keepachangelog.com/)
 * [Semver](http://semver.org/)
 
+Report a bug [here](https://github.com/GovTechSG/butler-bot/issues).
+
 ## Todo
 
 * Booking insert job queue improvement
-* Authenticate to only allow hive users to book (temporary workaround for now)
+* Authenticate to only allow hive users to book (temporary workaround for now)   
 
-## V0.1.2
+
+
+## Releases
+
+### V0.1.3
+
+* Removed room options that are no longer available for booking
+* Minor Bug fixes
+
+### V0.1.2
 
 * Supports recurring bookings made through google calendar
 * /booked now shows your latest upcoming booking occurrence for recurring bookings
 
-## V0.1.1
+### V0.1.1
 
 * Store room bookings with google calendar
 * /book or @swee_zhar_bot command to initiate room booking
@@ -57,3 +62,4 @@ References:
 * Html calendar page to display all calendar bookings
 * /view command for to show link for calendar listing
 * /any command for easy booking of any meeting room at given date & time
+
