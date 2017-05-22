@@ -335,14 +335,14 @@ function promptDateSelection(query, room, startDate) {
 function promptTimeslotSelection(query, room, startDate) {
 	let startDateStr;
 	if (startDate.isDateToday()) {
-		startDateStr = startDate.getISO8601TimeStamp();
+		startDateStr = new Date().getISO8601TimeStamp();
 	} else {
 		startDateStr = startDate.getISO8601DateWithDefinedTime(8, 0, 0, 0);
 	}
 
 	CalendarApp.listEmptySlotsInDay(startDateStr, room)
 		.then((jsonArr) => {
-			console.log('promptTimeslotSelection::listEmptySlotsInDay done');
+			console.log('promptTimeslotSelection - listEmptySlotsInDay done:');
 			console.log(jsonArr);
 			let msg;
 			if (jsonArr === undefined || jsonArr === {} || Object.keys(jsonArr).length === 0) {
