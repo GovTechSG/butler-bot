@@ -1,4 +1,4 @@
-// CalendarApp: booking app specific calendar logic
+// CalendarApp: booking specific calendar logic
 import Promise from 'bluebird';
 import EventEmitter from 'eventemitter3';
 import CalendarAPI from 'node-google-calendar';

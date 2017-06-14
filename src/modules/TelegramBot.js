@@ -52,61 +52,6 @@ slimbot.on('message', (message) => {
 	}
 });
 
-slimbot.on('inline_query', (query) => {
-	// do something with @bot inline query
-	console.log('inline: ');
-	let results = JSON.stringify([{
-		'type': 'article',
-		'id': 'help',
-		'title': 'How to book ah?',
-		'input_message_content': {
-			'message_text': '/help',
-			'disable_web_page_preview': true
-		}
-	}, {
-		'type': 'article',
-		'id': 'qc',
-		'title': 'Queen (Combined)',
-		'input_message_content': {
-			'message_text': '/book_queen_combined',
-			'disable_web_page_preview': true
-		}
-	}, {
-		'type': 'article',
-		'id': 'q1',
-		'title': 'Queen (Video)',
-		'input_message_content': {
-			'message_text': '/book_queen_video',
-			'disable_web_page_preview': true
-		}
-	}, {
-		'type': 'article',
-		'id': 'q2',
-		'title': 'Queen (Projector)',
-		'input_message_content': {
-			'message_text': '/book_queen_projector',
-			'disable_web_page_preview': true
-		}
-	}, {
-		'type': 'article',
-		'id': 'fg',
-		'title': 'Focus Group Discussion',
-		'input_message_content': {
-			'message_text': '/book_fgd',
-			'disable_web_page_preview': true
-		}
-	}]);
-
-	//   slimbot.answerInlineQuery(query.id, results).then((resp) => {
-	//     console.log('answerInlineQuery');
-	//   });
-});
-
-slimbot.on('chosen_inline_result', (query) => {
-	//whenever any inline query option is selected
-	console.log('chosenanswerInlineQuery');
-});
-
 slimbot.on('callback_query', (query) => {
 	console.log('callback');
 	processCallBack(query);
