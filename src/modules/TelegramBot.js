@@ -8,7 +8,7 @@ import './Date';
 import * as SessionMgr from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import * as ParamBuilder from './ParamBuilder';
-import { MESSAGES } from './Messages';
+import MESSAGES from './Messages';
 import USERS from '../data/users';
 
 dotenv.load();

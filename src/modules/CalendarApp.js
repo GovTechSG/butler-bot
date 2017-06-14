@@ -2,7 +2,7 @@
 import Promise from 'bluebird';
 import EventEmitter from 'eventemitter3';
 import CalendarAPI from 'node-google-calendar';
-import { CONFIG } from '../config/settings';
+import CONFIG from '../config/settings';
 import './Date';
 
 const cal = new CalendarAPI(CONFIG);
