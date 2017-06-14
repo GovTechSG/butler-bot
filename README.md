@@ -14,6 +14,8 @@ npm start
 ```
 
 ## Configuration
+* Setup test google calendar, service account and get auth key
+* Setup test telegram bot and get bot token
 * Copy [.sample-env](.sample-env) to `.env` and replace with your own env variables
 * Add sample users data in [sample-users.js](src/data/sample-users.js)
 
@@ -32,11 +34,11 @@ References:
 Report a bug [here](https://github.com/GovTechSG/butler-bot/issues).
 
 ## Todo
-
-* Booking insert job queue improvement
-* Authenticate to only allow hive users to book (temporary workaround for now)   
-
-
+* [Refactor] Extract available room options to settings file
+* [Feature] Users to state meeting participants and auto send email meeting invites 
+* [Feature] Quick command to check available rooms in the next coming hour
+* [Improvement] Booking insert job queue improvement
+* [Improvement] Authenticate to only allow hive users to book (temporary workaround for now)   
 
 ## Releases
 
@@ -53,7 +55,7 @@ Report a bug [here](https://github.com/GovTechSG/butler-bot/issues).
 ### V0.1.1
 
 * Store room bookings with google calendar
-* /book or @swee_zhar_bot command to initiate room booking
+* /book command to initiate room booking
 * /help command for instructions
 * /booked command to check user's upcoming bookings
 * /exit command to terminate current booking process
