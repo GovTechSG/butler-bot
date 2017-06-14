@@ -81,6 +81,30 @@ describe('Date', () => {
 		});
 	});
 
+	describe('getISO8601DateWithDefinedTime', () => {
+		it('should return "2017-01-30T10:01:02+08:00" as Date format with "30/1/2017, 10:01:02" as input', () => {
+			let date = new Date().setDateWithSimpleFormat('30/1/2017');
+			let isoDateStr = date.getISO8601DateWithDefinedTime(10, 1, 2, 0);
+			let expectedResult = '2017-01-30T10:01:02+08:00';
+			expect(isoDateStr).to.eql(expectedResult);
+		});
+	});
+
+	describe('getISO8601DateWithDefinedTimeString', () => {
+		it('should return "2017-01-30T10:01:02+08:00" as Date format with "30/1/2017, 10:01 AM" as input', () => {
+			let date = new Date().setDateWithSimpleFormat('30/1/2017');
+			let isoDateStr = date.getISO8601DateWithDefinedTimeString('10:01 AM');
+			let expectedResult = '2017-01-30T10:01:00+08:00';
+			expect(isoDateStr).to.eql(expectedResult);
+		});
+		it('should return "2017-01-30T10:01:02+08:00" as Date format with "30/1/2017, 10:01 PM" as input', () => {
+			let date = new Date().setDateWithSimpleFormat('30/1/2017');
+			let isoDateStr = date.getISO8601DateWithDefinedTimeString('10:01 PM');
+			let expectedResult = '2017-01-30T22:01:00+08:00';
+			expect(isoDateStr).to.eql(expectedResult);
+		});
+	});
+
 	describe('rounddownToNearestHalfHour', () => {
 		it('should return 2:00hr with 2:00hr as input', () => {
 			let date = new Date().setTime(2, 0, 0, 0).rounddownToNearestHalfHour();
@@ -126,4 +150,26 @@ describe('Date', () => {
 			expect(date).to.eql(expectedResult);
 		});
 	});
+
+	describe('getCurrentMonthNamed', () => {
+		it('should return January for date 30/1/2017', () => {
+			let date = new Date().setDateWithSimpleFormat('30/1/2017');
+			let expectedResult = 'January';
+			expect(date.getCurrentMonthNamed()).to.eql(expectedResult);
+		});
+
+	});
+
+	describe('getMinuteDiff', () => {
+		it('should return 1 as diff between 10:01 and 10:00', () => {
+			let date = new Date().setDateWithSimpleFormat('30/1/2017').setTime(10, 0, 0, 0);
+			let compareDate = new Date().setDateWithSimpleFormat('30/1/2017').setTime(10, 1, 0, 0);
+
+			let expectedResult = 1;
+			expect(date.getMinuteDiff(compareDate)).to.eql(expectedResult);
+		});
+
+	});
+
+
 });
