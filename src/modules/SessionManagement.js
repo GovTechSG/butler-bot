@@ -1,7 +1,7 @@
 import MESSAGES from './Messages';
 
 const sessionLength = 1000 * 60;
-let activeUsers = {};       //stores userId, lastMsgId, username, timer
+let activeUsers = {};       // stores userId, lastMsgId, username, timer
 let Emitter;
 
 export function setupEventEmitter(botEventEmitter) {
@@ -47,7 +47,7 @@ export function terminateSession(userChatId, msg) {
 	notifyUserAndClearUserData(userChatId, sessObj.msgId, sessObj.username, msg);
 };
 
-export function endSession(userChatId) {    //used when booking completes
+export function endSession(userChatId) {    // used when booking completes
 	if (activeUsers[userChatId] === undefined) {
 		return;
 	}

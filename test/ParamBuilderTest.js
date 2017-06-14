@@ -3,7 +3,6 @@ let chai = require('chai');
 let expect = chai.expect;
 
 describe('ParamBuilder', () => {
-
 	describe('constructTimeslotOptions', () => {
 		it('should return full list telegram keyboard paramOptions when allTimeslots available', () => {
 			let expectedResult =

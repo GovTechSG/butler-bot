@@ -1,4 +1,3 @@
-// TelegramBot
 import Slimbot from 'slimbot';
 import EventEmitter from 'eventemitter3';
 import { default as Chrono } from 'chrono-node';
@@ -16,7 +15,6 @@ dotenv.load();
 const slimbot = new Slimbot(process.env.TELEGRAM_BOT_TOKEN);
 const Emitter = new EventEmitter();
 const CalendarApp = require('./CalendarApp');
-
 
 let botName;
 let anyBookList = {};
@@ -124,7 +122,6 @@ Emitter.on("sessionStateChange", function (event) {
 Emitter.on("clearUserSession", function (event) {
 	clearUserSessionInfo(event.userChatId);
 });
-
 // End of listeners
 
 function clearUserSessionInfo(userChatId) {
@@ -157,7 +154,7 @@ function processCallBack(query) {
 			promptDateSelection(query, callback_data.room, new Date());
 		}
 	} else {
-		//date selected
+		// date selected
 		if (callback_data.time === undefined) {
 			promptTimeslotSelection(query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date));
 
@@ -173,7 +170,6 @@ function processCallBack(query) {
 
 function checkCommandList(message) {
 	let roomSelected;
-	let optionalParams;
 	console.log(message);
 	if (!USERS.hasOwnProperty(message.from.username)) {
 		slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
@@ -253,7 +249,7 @@ function checkCommandList(message) {
 	return true;
 }
 
-//booked command
+// booked command
 function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
 	CalendarApp.listBookedEventsByUser(new Date(), searchQuery)
 		.then((bookings) => {
@@ -305,14 +301,14 @@ function promptRoomSelection(message) {
 		})
 	};
 	slimbot.sendMessage(message.chat.id, MESSAGES.book, optionalParams)
-		.then(sentMsg => {
+		.then((sentMsg) => {
 			SessionMgr.startSessionCountdown(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
 		});
 }
 
 // Step 1 - Today or Date
 function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
-	console.log('/' + roomSelectedId);
+	console.log('Room Selected: /' + roomSelectedId);
 	let optionalParams = ParamBuilder.getTodayOrDateOptions(roomSelectedId);
 	let msg = ReplyBuilder.askForDate(roomlist[roomSelectedId]);
 	if (hasPrevMsg) {
