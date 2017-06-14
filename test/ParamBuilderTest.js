@@ -75,4 +75,50 @@ describe('ParamBuilder', () => {
 			expect(result).to.eql(expectedResult);
 		});
 	});
+
+	describe('constructRoomOptions', () => {
+		it('should return correct room options text and callback_data for 4 rooms', () => {
+			let expectedResult = [
+				[
+					{ text: 'Focus Group Room', callback_data: '{"room":"fg"}' },
+					{ text: 'Queen (Video)', callback_data: '{"room":"q1"}' }],
+				[
+					{ text: 'Queen (Projector)', callback_data: '{"room":"q2"}' },
+					{ text: 'Queen Room Combined', callback_data: '{"room":"qc"}' }
+				]
+			];
+
+			let roomConfig = {
+				'fg': { 'command': '/book_fgd', 'text': 'Focus Group Room' },
+				'q1': { 'command': '/book_queen_video', 'text': 'Queen (Video)' },
+				'q2': { 'command': '/book_queen_projector', 'text': 'Queen (Projector)' },
+				'qc': { 'command': '/book_queen_combined', 'text': 'Queen Room Combined' }
+			};
+			let result = ParamBuilder.constructRoomOptions(roomConfig);
+			expect(result).to.eql(expectedResult);
+		});
+		it('should return correct room order for 5 rooms', () => {
+			let expectedResult = [
+				[
+					{ text: 'A', callback_data: '{"room":"a"}' },
+					{ text: 'B', callback_data: '{"room":"b"}' }],
+				[
+					{ text: 'C', callback_data: '{"room":"c"}' },
+					{ text: 'D', callback_data: '{"room":"d"}' }
+				],
+				[
+					{ text: 'E', callback_data: '{"room":"e"}' }
+				]
+			];
+			let configRoomOption = {
+				'a': { 'command': '/a', 'text': 'A' },
+				'b': { 'command': '/b', 'text': 'B' },
+				'c': { 'command': '/c', 'text': 'C' },
+				'd': { 'command': '/d', 'text': 'D' },
+				'e': { 'command': '/e', 'text': 'E' }
+			};
+			let result = ParamBuilder.constructRoomOptions(configRoomOption);
+			expect(result).to.eql(expectedResult);
+		});
+	});
 });

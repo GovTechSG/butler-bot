@@ -175,27 +175,30 @@ function constructDateOptions(date, room) {
 	return btnArr;
 }
 
-function constructRoomOptions(bookingOptions) {
+export function constructRoomOptions(roomConfig) {
+	let btnInRow = 2;
+	let count = 1;
 	let btnArr = [];
 	let row = [];
-	let count = 0;
 
-	for (let i = 0; i < bookingOptions.length; i++) {
-		console.log(bookingOptions[i]);
-		// row.push(
-		// 	{
-		// 		text: bookingOptions[i].text + '',
-		// 		callback_data: ' '
-		// 	}
-		// );
-		// count++;
-		// if (count > btnInRow) {
-		// 	btnArr.push(row);
-		// 	row = [];
-		// 	count = 1;
-		// }
+	for (let key in roomConfig) {
+		if (roomConfig.hasOwnProperty(key)) {
+			row.push(
+				{
+					text: roomConfig[key].text,
+					callback_data: JSON.stringify({ room: key })
+				}
+			);
+			count++;
+			if (count > btnInRow) {
+				btnArr.push(row);
+				row = [];
+				count = 1;
+			}
+		}
 	}
-	// { text: 'Focus Group Room', callback_data: JSON.stringify({ room: 'fg' }) },
-
-	// return btnArr;
+	if (count > 1) {
+		btnArr.push(row);
+	}
+	return btnArr;
 }

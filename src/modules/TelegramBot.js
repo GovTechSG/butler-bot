@@ -13,9 +13,10 @@ import USERS from '../data/users';
 
 dotenv.load();
 
-const slimbot = new Slimbot(process.env['TELEGRAM_BOT_TOKEN']);
+const slimbot = new Slimbot(process.env.TELEGRAM_BOT_TOKEN);
 const Emitter = new EventEmitter();
 const CalendarApp = require('./CalendarApp');
+
 
 let botName;
 let anyBookList = {};
@@ -291,16 +292,16 @@ function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
 }
 
 function promptRoomSelection(message) {
+	let roomConfig = {
+		'fg': { 'command': '/book_fgd', 'text': 'Focus Group Room' },
+		'q1': { 'command': '/book_queen_video', 'text': 'Queen (Video)' },
+		'q2': { 'command': '/book_queen_projector', 'text': 'Queen (Projector)' },
+		'qc': { 'command': '/book_queen_combined', 'text': 'Queen Room Combined' }
+	};
 	let optionalParams = {
 		parse_mode: 'markdown',
 		reply_markup: JSON.stringify({
-			inline_keyboard: [[
-				{ text: 'Focus Group Room', callback_data: JSON.stringify({ room: 'fg' }) },
-				{ text: 'Queen Room Combined', callback_data: JSON.stringify({ room: 'qc' }) }
-			], [
-				{ text: 'Queen (Video)', callback_data: JSON.stringify({ room: 'q1' }) },
-				{ text: 'Queen (Projector)', callback_data: JSON.stringify({ room: 'q2' }) }
-			]]
+			inline_keyboard: ParamBuilder.constructRoomOptions(roomConfig)
 		})
 	};
 	slimbot.sendMessage(message.chat.id, MESSAGES.book, optionalParams)
