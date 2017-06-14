@@ -168,7 +168,7 @@ export function listBookedEventsByUser(startDateTime, user) {
 		let calendarId = calendarIdList[room];
 
 		promiseList.push(cal.listEvents(calendarId, startDateTime, endDateTime, user)
-			.then(json => {
+			.then((json) => {
 				let eventsInCalendar = [];
 				for (let i = 0; i < json.length; i++) {
 					if (json[i].description === undefined) json[i].description = '';
@@ -357,9 +357,8 @@ export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
 	}
 }
 
-function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
+export function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
 	console.log('filterDurationSlots');
-
 	let maxDurationBlocksAllowed = 8;
 	let closestEventBlocksAway = 99;
 	let durOptions = {
@@ -373,7 +372,7 @@ function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
 		8: '4 hours'
 	};
 
-	if (roomBusyTimeslot.length == 0) {
+	if (roomBusyTimeslot.length === 0) {
 		return durOptions;
 	}
 

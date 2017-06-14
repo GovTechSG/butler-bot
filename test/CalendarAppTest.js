@@ -507,6 +507,86 @@ describe('CalendarApp', () => {
 		});
 	});
 
+	describe('filterDurationSlots', () => {
+		it('should return correct duration available with an upcoming event 30 mins away', () => {
+			let expectedResult = { '1': '30 mins' };
+			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(9, 30, 0, 0)
+			let events = [{
+				id: '7j1f3ngpff65k8v8ta67lumi1g',
+				summary: 'event',
+				location: 'Drone Room',
+				start:
+				{
+					dateTime: '2017-04-06T10:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				end:
+				{
+					dateTime: '2017-04-06T12:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				status: 'confirmed'
+			}];
+
+			let result = CalendarApp.filterDurationSlots(events, testStartTime);
+			expect(result).to.eql(expectedResult);
+		});
+
+		it('should return max duration of 4hr with an upcoming event 5 hours away', () => {
+			let expectedResult = {
+				"1": "30 mins", "2": "1 hour",
+				"3": "1.5 hours", "4": "2 hours",
+				"5": "2.5 hours", "6": "3 hours",
+				"7": "3.5 hours", "8": "4 hours"
+			};
+			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(12, 0, 0, 0)
+			let events = [{
+				id: '7j1f3ngpff65k8v8ta67lumi1g',
+				summary: 'event',
+				location: 'Drone Room',
+				start:
+				{
+					dateTime: '2017-04-06T17::00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				end:
+				{
+					dateTime: '2017-04-06T18:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				status: 'confirmed'
+			}];
+
+			let result = CalendarApp.filterDurationSlots(events, testStartTime);
+			expect(result).to.eql(expectedResult);
+		});
+
+		it('should return empty duration object with an upcoming event 29 mins away', () => {
+			let expectedResult = {};
+			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(9, 31, 0, 0)
+			let events = [{
+				id: '7j1f3ngpff65k8v8ta67lumi1g',
+				summary: 'event',
+				location: 'Drone Room',
+				start:
+				{
+					dateTime: '2017-04-06T10:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				end:
+				{
+					dateTime: '2017-04-06T12:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
+				status: 'confirmed'
+			}];
+
+			let result = CalendarApp.filterDurationSlots(events, testStartTime);
+			expect(result).to.eql(expectedResult);
+		});
+	});
+
+
 	// xdescribe('insertEvent', () => {
 	// 	it('should return event details when insert into q1 success', () => {
 	// 		let callback = sinon.stub(cal, 'insertEvent');
