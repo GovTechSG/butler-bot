@@ -334,7 +334,7 @@ export function listEmptySlotsInDay(date, roomId) {
 }
 
 export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
-	const listAvailableTime = 21; //Check available time up to 9 pm
+	const listAvailableTime = 21; // Check available time up to 9 pm
 	let startTimestamp = new Date(startDatetimeStr).getISO8601TimeStamp();
 	let endTimestamp = new Date(startDatetimeStr).getISO8601DateWithDefinedTime(listAvailableTime, 0, 0, 0);
 

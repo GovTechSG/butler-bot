@@ -370,8 +370,6 @@ describe('CalendarApp', () => {
 	});
 
 	describe('filterBusyTimeslots', () => {
-
-
 		it('should return correct timeslots & ignore error event when setupTimeArray called with error event ', () => {
 			let events = [{
 				id: '7j1f3ngpff65k8v8ta67lumi1g',

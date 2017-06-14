@@ -34,7 +34,18 @@ slimbot.getMe().then((update) => {
 	botName = update.result.username;
 });
 
-// Register listeners
+// SessionManager listener
+SessionMgr.setupEventEmitter(Emitter);
+
+Emitter.on("sessionStateChange", function (event) {
+	slimbot.editMessageText(event.userChatId, event.msgId, event.msg);
+});
+
+Emitter.on("clearUserSession", function (event) {
+	clearUserSessionInfo(event.userChatId);
+});
+
+// Register Telegram listeners
 slimbot.on('message', (message) => {
 	console.log('message');
 	let isCommand = checkCommandList(message);
@@ -56,28 +67,7 @@ slimbot.on('callback_query', (query) => {
 	console.log('callback');
 	processCallBack(query);
 });
-
-// SessionManager listener
-SessionMgr.setupEventEmitter(Emitter);
-
-Emitter.on("sessionStateChange", function (event) {
-	slimbot.editMessageText(event.userChatId, event.msgId, event.msg);
-});
-
-Emitter.on("clearUserSession", function (event) {
-	clearUserSessionInfo(event.userChatId);
-});
 // End of listeners
-
-function clearUserSessionInfo(userChatId) {
-	console.log('Clear user session data for user: ' + userChatId + '(no of uncompleted bookings: ' + Object.keys(bookerList).length + ' )');
-	if (bookerList[userChatId] !== undefined) {
-		delete bookerList[userChatId];
-	}
-	if (anyBookList[userChatId] !== undefined) {
-		delete anyBookList[userChatId];
-	}
-}
 
 function processCallBack(query) {
 	if (query.data !== undefined && query.data.trim() === '') {
@@ -113,13 +103,18 @@ function processCallBack(query) {
 	}
 }
 
+function checkAuthorisedUsers(message) {
+	if (!USERS.hasOwnProperty(message.from.username)) {
+		slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
+		console.log(`Unauthenticated Access by ${message.from.username} on ${new Date()}`);
+		throw new Error('Unauthenticated access');
+	}
+}
+
 function checkCommandList(message) {
 	let roomSelected;
 	console.log(message);
-	if (!USERS.hasOwnProperty(message.from.username)) {
-		slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
-		throw new Error('Unauthenticated access');
-	}
+	checkAuthorisedUsers(message);
 
 	if (message.text === '/version') {
 		slimbot.sendMessage(message.chat.id, `v${process.env.npm_package_version}`);
@@ -158,37 +153,42 @@ function checkCommandList(message) {
 		slimbot.sendMessage(message.chat.id, MESSAGES.help, { parse_mode: 'Markdown' });
 
 	} else if (message.chat.type === 'private') {
-		if (message.text === '/start') {
-			slimbot.sendMessage(message.chat.id, MESSAGES.start, { parse_mode: 'Markdown' });
-
-		} else if (message.text === '/help') {
-			slimbot.sendMessage(message.chat.id, MESSAGES.help, { parse_mode: 'Markdown' });
-
-		} else if (message.text === '/booked') {
-			let fullname = message.from.first_name + ' ' + message.from.last_name;
-			let searchQuery = '@' + message.chat.username;
-			checkUserBookings(message, searchQuery, MESSAGES.noBooking);
-
-		} else if (message.text === '/delete') {
-			let fullname = message.from.first_name + ' ' + message.from.last_name;
-			let searchQuery = '@' + message.chat.username;
-			checkUserBookings(message, searchQuery, MESSAGES.noBooking, true);
-
-		} else if (new RegExp(/\/deleteBookingqc[a-z0-9]+@/, 'i').test(message.text)) {
-			let roomId = 'qc';
-			let event2Id = message.text.substring(message.text.indexOf('c') + 1, message.text.indexOf('@'));
-			let event1Id = message.text.substring(message.text.indexOf('@') + 1);
-			deleteBookings([event1Id, event2Id], roomId, message);
-
-		} else if (new RegExp(/\/deleteBooking[a-z0-9]+@/, 'i').test(message.text)) {
-			let roomId = message.text.substring(message.text.indexOf('g') + 1, message.text.indexOf('@'));
-			let bookId = message.text.substring(message.text.indexOf('@') + 1);
-			deleteBookings([bookId], roomId, message);
-
-		} else {  // ignore non-commands in private chat
-			return false;
-		}
+		return checkPrivateChatCommandList(message);
 	} else {   // ignore non-commands
+		return false;
+	}
+	return true;
+}
+
+function checkPrivateChatCommandList(message) {
+	if (message.text === '/start') {
+		slimbot.sendMessage(message.chat.id, MESSAGES.start, { parse_mode: 'Markdown' });
+
+	} else if (message.text === '/help') {
+		slimbot.sendMessage(message.chat.id, MESSAGES.help, { parse_mode: 'Markdown' });
+
+	} else if (message.text === '/booked') {
+		let fullname = message.from.first_name + ' ' + message.from.last_name;
+		let searchQuery = '@' + message.chat.username;
+		checkUserBookings(message, searchQuery, MESSAGES.noBooking);
+
+	} else if (message.text === '/delete') {
+		let fullname = message.from.first_name + ' ' + message.from.last_name;
+		let searchQuery = '@' + message.chat.username;
+		checkUserBookings(message, searchQuery, MESSAGES.noBooking, true);
+
+	} else if (new RegExp(/\/deleteBookingqc[a-z0-9]+@/, 'i').test(message.text)) {
+		let roomId = 'qc';
+		let event2Id = message.text.substring(message.text.indexOf('c') + 1, message.text.indexOf('@'));
+		let event1Id = message.text.substring(message.text.indexOf('@') + 1);
+		deleteBookings([event1Id, event2Id], roomId, message);
+
+	} else if (new RegExp(/\/deleteBooking[a-z0-9]+@/, 'i').test(message.text)) {
+		let roomId = message.text.substring(message.text.indexOf('g') + 1, message.text.indexOf('@'));
+		let bookId = message.text.substring(message.text.indexOf('@') + 1);
+		deleteBookings([bookId], roomId, message);
+
+	} else {  // ignore non-commands in private chat
 		return false;
 	}
 	return true;
@@ -226,7 +226,7 @@ function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
 					}
 					msg = msg.replace("_", "-"); // escape _ cuz markdown cant handle it
 				}
-				var reply = MESSAGES.listBooking + msg;
+				let reply = MESSAGES.listBooking + msg;
 				slimbot.sendMessage(message.chat.id, reply, { parse_mode: 'Markdown' });
 			}
 		});
@@ -388,6 +388,7 @@ function deleteBookings(eventsToDeleteArray, roomId, message) {
 		let searchQuery = '@' + message.chat.username;
 		checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete, true);
 	}).catch((err) => {
+		console.log(err);
 		slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
 	});
 }
