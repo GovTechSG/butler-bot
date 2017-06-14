@@ -45,6 +45,16 @@ Emitter.on("clearUserSession", function (event) {
 	clearUserSessionInfo(event.userChatId);
 });
 
+function clearUserSessionInfo(userChatId) {
+	console.log('Clear user session data for user: ' + userChatId + '(no of uncompleted bookings: ' + Object.keys(bookerList).length + ' )');
+	if (bookerList[userChatId] !== undefined) {
+		delete bookerList[userChatId];
+	}
+	if (anyBookList[userChatId] !== undefined) {
+		delete anyBookList[userChatId];
+	}
+}
+
 // Register Telegram listeners
 slimbot.on('message', (message) => {
 	console.log('message');
