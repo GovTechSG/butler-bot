@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/languantan/butler-bot.svg?branch=master)](https://travis-ci.org/languantan/butler-bot)
+
 # Butler Bot
 
 A Telegram Bot that helps you book meetings rooms. Awesome!

@@ -18,6 +18,9 @@ describe('Telegram Bot', () => {
       useCleanCache: true
     });
 
+    mockery.registerMock('../data/users', {
+
+    });
     mockery.registerMock('ioredis', () => {
       return {
         on: (name, callback) => {}
@@ -59,7 +62,7 @@ describe('Telegram Bot', () => {
       };
     });
 
-    it('should call cal app with startDate and room', () => {
+    it('should call calendar app with startDate and room', () => {
       butlerBot.emit('callback_query', query);
 
       expect(cal_app.listEmptySlotsInDay).to.have.been
