@@ -18,14 +18,7 @@ const Emitter = new EventEmitter();
 let botName;
 let anyBookList = {};
 let bookerList = {};
-let roomlist = {
-	'q1': 'Queen (Video)',
-	'q2': 'Queen (Projector)',
-	'qc': 'Queen (Combined)',
-	'dr': 'Drone',
-	'fg': 'Focus Group Discussion',
-	'bb': 'Bumblebee'
-};
+let roomlist = ROOM_CONFIG.roomsListing;
 
 slimbot.getMe().then((update) => {
 	console.log('bot started on ' + new Date().getFormattedTime());
@@ -264,7 +257,7 @@ function promptRoomSelection(message) {
 function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
 	console.log('Room Selected: /' + roomSelectedId);
 	let optionalParams = ParamBuilder.getTodayOrDateOptions(roomSelectedId);
-	let msg = ReplyBuilder.askForDate(roomlist[roomSelectedId]);
+	let msg = ReplyBuilder.askForDate(roomlist[roomSelectedId].name);
 	if (hasPrevMsg) {
 		slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, optionalParams);
 		SessionMgr.extendSession(query.message.chat.id, query.message.message_id, query.message.chat.username);
@@ -277,7 +270,7 @@ function promptTodayOrDateOption(roomSelectedId, query, hasPrevMsg) {
 }
 
 function promptDateSelection(query, room, startDate) {
-	let msg = 'You have selected:\n' + '*' + roomlist[room] + '*' + '\n\nPlease select a date in the upcoming month:';
+	let msg = 'You have selected:\n' + '*' + roomlist[room].name + '*' + '\n\nPlease select a date in the upcoming month:';
 	slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getDateSelection(room));
 	SessionMgr.extendSession(query.message.chat.id, query.message.message_id, query.message.chat.username);
 }
@@ -297,9 +290,9 @@ function promptTimeslotSelection(query, room, startDate) {
 			console.log(jsonArr);
 			let msg;
 			if (jsonArr === undefined || jsonArr === {} || Object.keys(jsonArr).length === 0) {
-				msg = ReplyBuilder.informNoTimeslot(roomlist[room], startDate);
+				msg = ReplyBuilder.informNoTimeslot(roomlist[room].name, startDate);
 			} else {
-				msg = ReplyBuilder.askForTime(roomlist[room], startDate);
+				msg = ReplyBuilder.askForTime(roomlist[room].name, startDate);
 			}
 			slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getTimeslots(jsonArr, room, startDate));
 			SessionMgr.extendSession(query.message.chat.id, query.message.message_id, query.message.chat.username);
@@ -315,7 +308,7 @@ function promptTimeslotSelection(query, room, startDate) {
 function promptDurationSelection(query, room, startDate, startTime) {
 	CalendarApp.listAvailableDurationForStartTime(startDate.getISO8601DateWithDefinedTimeString(startTime), room)
 		.then(function (jsonArr) {
-			let msg = ReplyBuilder.askForDuration(roomlist[room], startDate, startTime);
+			let msg = ReplyBuilder.askForDuration(roomlist[room].name, startDate, startTime);
 			slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getDuration(jsonArr, room, startDate, startTime));
 			SessionMgr.extendSession(query.message.chat.id, query.message.message_id, query.message.chat.username);
 		}, function (err) {
@@ -326,7 +319,7 @@ function promptDurationSelection(query, room, startDate, startTime) {
 
 //Step 4 - Booking Description
 function promptDescription(query, room, startDate, startTime, duration) {
-	let msg = ReplyBuilder.askForDescription(roomlist[room], startDate, startTime, CalendarApp.getDurationOptionNameWithId(duration));
+	let msg = ReplyBuilder.askForDescription(roomlist[room].name, startDate, startTime, CalendarApp.getDurationOptionNameWithId(duration));
 	slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getBackButton(room, startDate, startTime, duration))
 		.then((message) => {
 			let botId = message.result.chat.id;
@@ -374,7 +367,7 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
 	CalendarApp.queueForInsert(bookingSummary, startTime, endTime, room, 'confirmed', 'booked via butler', userName)
 		.then((json) => {
 			slimbot.editMessageText(userId, msgId, MESSAGES.confirm);
-			let msg = ReplyBuilder.bookingConfirmed(roomlist[room], startDate.getFormattedDate(), new Date(json.start).getFormattedTime(), new Date(json.end).getFormattedTime(), fullName, userName, description);
+			let msg = ReplyBuilder.bookingConfirmed(roomlist[room].name, startDate.getFormattedDate(), new Date(json.start).getFormattedTime(), new Date(json.end).getFormattedTime(), fullName, userName, description);
 
 			slimbot.sendMessage(userId, msg, { parse_mode: 'Markdown' })
 				.then((message) => {
@@ -391,7 +384,7 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
 
 function deleteBookings(eventsToDeleteArray, roomId, message) {
 	CalendarApp.deleteEvents(eventsToDeleteArray, roomId).then(function () {
-		let deletedFromRoom = roomlist[roomId];
+		let deletedFromRoom = roomlist[roomId].name;
 		slimbot.sendMessage(message.chat.id, MESSAGES.delete + ' for ' + deletedFromRoom + '.', { parse_mode: 'Markdown' });
 		let fullname = message.from.first_name + ' ' + message.from.last_name;
 		let searchQuery = '@' + message.chat.username;
@@ -486,7 +479,7 @@ function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms) {
 				delete anyBookList[message.chat.id];
 
 				slimbot.sendMessage(message.chat.id, ReplyBuilder.confirmAnyRoom(startDate.getFormattedDate(),
-					startDate.getFormattedTime(), endDate.getFormattedTime(), startDate.getMinuteDiff(endDate), roomlist[rooms[0]]), optionalParams)
+					startDate.getFormattedTime(), endDate.getFormattedTime(), startDate.getMinuteDiff(endDate), roomlist[rooms[0]].name), optionalParams)
 					.then((sentMsg) => {
 						SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
 					});
