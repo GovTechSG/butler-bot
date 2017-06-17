@@ -1,4 +1,5 @@
 # Butler Bot
+[![Build Status](https://travis-ci.org/GovTechSG/butler-bot.svg?branch=master)](https://travis-ci.org/GovTechSG/butler-bot)
 
 A Telegram Bot that helps you book meetings rooms. Awesome!
 

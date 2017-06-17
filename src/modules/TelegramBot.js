@@ -1,20 +1,19 @@
 import Slimbot from 'slimbot';
 import EventEmitter from 'eventemitter3';
 import { default as Chrono } from 'chrono-node';
-import dotenv from 'dotenv';
-import './Date';
+import CalendarAPI from 'node-google-calendar';
 
+import './Date';
+import MESSAGES from './Messages';
+import USERS from '../data/users';
+import CONFIG, { ROOM_CONFIG } from '../config/settings';
 import * as SessionMgr from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import * as ParamBuilder from './ParamBuilder';
-import MESSAGES from './Messages';
-import USERS from '../data/users';
+import * as CalendarApp from './CalendarApp';
 
-dotenv.load();
-
-const slimbot = new Slimbot(process.env.TELEGRAM_BOT_TOKEN);
+const slimbot = new Slimbot(CONFIG.telegramBotToken);
 const Emitter = new EventEmitter();
-const CalendarApp = require('./CalendarApp');
 
 let botName;
 let anyBookList = {};
@@ -33,6 +32,12 @@ slimbot.getMe().then((update) => {
 	console.log(update);
 	botName = update.result.username;
 });
+
+(function initCalendar() {
+	console.log('init Calendar');
+	let CalAPI = new CalendarAPI(CONFIG);
+	CalendarApp.init(CalAPI, CONFIG);
+}());
 
 // SessionManager listener
 SessionMgr.setupEventEmitter(Emitter);
@@ -234,7 +239,7 @@ function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
 							msg += `${MESSAGES.deleteInstruction}/\deleteBooking${booking.room}${room2Id}@${booking.id}\n`;
 						}
 					}
-					msg = msg.replace("_", "-"); // escape _ cuz markdown cant handle it
+					msg = msg.replace('_', '-'); // escape _ cuz markdown cant handle it
 				}
 				let reply = MESSAGES.listBooking + msg;
 				slimbot.sendMessage(message.chat.id, reply, { parse_mode: 'Markdown' });
@@ -243,16 +248,10 @@ function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
 }
 
 function promptRoomSelection(message) {
-	let roomConfig = {
-		'fg': { 'command': '/book_fgd', 'text': 'Focus Group Room' },
-		'q1': { 'command': '/book_queen_video', 'text': 'Queen (Video)' },
-		'q2': { 'command': '/book_queen_projector', 'text': 'Queen (Projector)' },
-		'qc': { 'command': '/book_queen_combined', 'text': 'Queen Room Combined' }
-	};
 	let optionalParams = {
 		parse_mode: 'markdown',
 		reply_markup: JSON.stringify({
-			inline_keyboard: ParamBuilder.constructRoomOptions(roomConfig)
+			inline_keyboard: ParamBuilder.constructRoomOptions(ROOM_CONFIG.roomsOpenForBooking)
 		})
 	};
 	slimbot.sendMessage(message.chat.id, MESSAGES.book, optionalParams)
@@ -372,8 +371,8 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
 	}
 	let endTime = startDate.getISO8601TimeStamp();
 
-	CalendarApp.queueForInsert(bookingSummary, startTime, endTime, room, "confirmed", "booked via butler", userName)
-		.then(json => {
+	CalendarApp.queueForInsert(bookingSummary, startTime, endTime, room, 'confirmed', 'booked via butler', userName)
+		.then((json) => {
 			slimbot.editMessageText(userId, msgId, MESSAGES.confirm);
 			let msg = ReplyBuilder.bookingConfirmed(roomlist[room], startDate.getFormattedDate(), new Date(json.start).getFormattedTime(), new Date(json.end).getFormattedTime(), fullName, userName, description);
 

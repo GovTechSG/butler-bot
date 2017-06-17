@@ -1,14 +1,9 @@
 // CalendarApp: booking specific calendar logic
 import Promise from 'bluebird';
 import EventEmitter from 'eventemitter3';
-import CalendarAPI from 'node-google-calendar';
-import CONFIG from '../config/settings';
+// import CalendarAPI from 'node-google-calendar';
+// import CONFIG from '../config/settings';
 import './Date';
-
-const cal = new CalendarAPI(CONFIG);
-const calendarIdList = CONFIG.calendarId;
-
-let EE = new EventEmitter();
 
 const colourDict = { 'fg': 5, 'dr': 7, 'q1': 6, 'q2': 10, 'qc': 11, 'bb': 3 };
 const RoomList = {
@@ -34,7 +29,18 @@ const durationOptions = {
 	8: '4 hours'
 };
 
+let config;
+let cal;
+let calendarIdList;
+
+let EE = new EventEmitter();
 let bookingQueue = [];
+
+export function init(calendarApiInstance, configObj) {
+	cal = calendarApiInstance;
+	config = configObj;
+	calendarIdList = configObj.calendarId;
+}
 
 export function getColourForRoom(roomname) {
 	return colourDict[roomname];
@@ -358,7 +364,6 @@ export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
 }
 
 export function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
-	console.log('filterDurationSlots');
 	let maxDurationBlocksAllowed = 8;
 	let closestEventBlocksAway = 99;
 	let durOptions = {
@@ -408,7 +413,7 @@ export function insertEventForCombinedRoom(room1Details, room2Details, username)
 						'summary': resultsRoom1.summary,
 						'location': resultsRoom1.location + '&' + resultsRoom2.location,
 						'status': resultsRoom1.status,
-						'htmlLink': CONFIG.calendarUrl,
+						'htmlLink': config.calendarUrl,
 						'start': new Date(resultsRoom1.start),
 						'end': new Date(resultsRoom1.end),
 						'created': new Date(resultsRoom1.created).getISO8601TimeStamp()
@@ -458,7 +463,7 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
 				'summary': json.summary,
 				'location': json.location,
 				'status': json.status,
-				'htmlLink': CONFIG.calendarUrl,
+				'htmlLink': config.calendarUrl,
 				'start': json.start.dateTime,
 				'end': json.end.dateTime,
 				'created': new Date(json.created).getISO8601TimeStamp()

@@ -1,14 +1,15 @@
-import dotenv from 'dotenv';
-dotenv.load();
-let CalendarApp = require('../src/modules/CalendarApp');
+import { expect } from 'chai';
+import sinon from 'sinon';
+import mockery from 'mockery';
+import bluebird from 'bluebird';
 
-let chai = require('chai');
-let expect = chai.expect;
+import CalendarAPI from 'node-google-calendar';
+import * as CalendarApp from '../src/modules/CalendarApp';
+import CONFIG from '../src/config/settings';
 
 describe('CalendarApp', () => {
-
 	describe('checkWithinWeek', () => {
-		it('should return correct days till upcoming occurrence from startdate for future-start events', () => {
+		it('should return correct days till upcoming occurrence from startdate given future-start events', () => {
 			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(6, 30, 0, 0);	// SA
 			let eventStart = new Date(today).addDays(+2);	// SU
 			let testEvent = {
@@ -31,7 +32,7 @@ describe('CalendarApp', () => {
 			let expectedResult = 0;
 			expect(result).to.eql(expectedResult);
 		});
-		it('should return correct days till upcoming occurrence from startdate for events across weeks', () => {
+		it('should return correct days till upcoming occurrence from startdate given events across weeks', () => {
 			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(6, 30, 0, 0);	// SA
 			let eventStart = new Date(today).addDays(-2);	// TH
 			let testEvent = {
@@ -54,7 +55,7 @@ describe('CalendarApp', () => {
 			let expectedResult = 4;
 			expect(result).to.eql(expectedResult);
 		});
-		it('should return -1 when no events within the week can be found to start after today', () => {
+		it('should return -1 given no events within the week can be found to start after today', () => {
 			let today = new Date().setDateWithSimpleFormat('3/4/2017').setTime(6, 30, 0, 0);	// TU
 			let eventStart = new Date(today).addDays(-7);	// TH
 			let testEvent = {
@@ -105,7 +106,6 @@ describe('CalendarApp', () => {
 			let expectedResultStart = new Date(today).setTime(17, 0, 0, 0);
 			let expectedResultEnd = new Date(today).setTime(18, 0, 0, 0);
 			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
-			console.log('expect: ' + expectedResultStart.getFormattedDateTime() + ' to be ' + startDate.getFormattedDateTime());
 			expect(startDate).to.eql(expectedResultStart);
 			expect(endDate).to.eql(expectedResultEnd);
 		});
@@ -128,7 +128,6 @@ describe('CalendarApp', () => {
 			let expectedResultEnd = new Date(today).setDateWithSimpleFormat('3/4/2017').setTime(18, 0, 0, 0);
 			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
 
-			console.log('expect: ' + expectedResultStart.getFormattedDateTime() + ' to be ' + startDate.getFormattedDateTime());
 			expect(startDate).to.eql(expectedResultStart);
 			expect(endDate).to.eql(expectedResultEnd);
 		});
@@ -586,16 +585,64 @@ describe('CalendarApp', () => {
 		});
 	});
 
+	describe('insertEvents', () => {
+		let stub;
+		after(() => {
+			stub.restore();
+		});
+		it('should return correct event details when insert into single room q1 success', () => {
+			let testInput = {
+				calendarId: 'calendarId',
+				bookingSummary: 'bookingSummary',
+				startdate: '2017-06-17T08:00:00+08:00',
+				enddate: '2017-06-17T10:00:00+08:00',
+				room: 'q1',
+				status: '',
+				description: 'booked by butler',
+				colour: 1,
+				username: 'user',
+				createdTime: new Date().getISO8601TimeStamp()
+			};
 
-	// xdescribe('insertEvent', () => {
-	// 	it('should return event details when insert into q1 success', () => {
-	// 		let callback = sinon.stub(cal, 'insertEvent');
-	// 		callback.withArgs('bookingSummary', '2017-04-02T14:00:00+08:00', '2017-04-02T15:00:00+08:00', 'q1', '', 'booked by butler', '@shekyh').returns(1);
+			let expectedResult = {
+				id: testInput.calendarId,
+				summary: `${testInput.bookingSummary} by @${testInput.username}`,
+				location: CalendarApp.getRoomNameFromId(testInput.room),
+				status: 'confirmed',
+				htmlLink: CONFIG.calendarUrl,
+				start: testInput.startdate,
+				end: testInput.enddate,
+				created: testInput.createdTime
+			};
 
-	// 		let fullTimeSlot = CalendarApp.setupTimeArray(new Date().setTime(0, 0, 0, 0));
-	// 		let result = CalendarApp.filterBusyTimeslots(fullTimeSlot, events);
-	// 		expect(result).to.eql(expectedResult);
-	// 	});
-	// });
+			let mockAPIResp = {
+				body: {
+					id: testInput.calendarId,
+					summary: `${testInput.bookingSummary} by @${testInput.username}`,
+					location: CalendarApp.getRoomNameFromId(testInput.room),
+					status: 'confirmed',
+					htmlLink: 'somegcaleventurl',
+					start: {
+						dateTime: testInput.startdate
+					},
+					end: {
+						dateTime: testInput.enddate
+					},
+					created: testInput.createdTime
+				}
+			};
+
+			stub = sinon.stub(CalendarAPI.prototype, 'insertEvent').resolves(mockAPIResp);
+			let calApiInstance = new CalendarAPI(CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG);
+
+			CalendarApp.insertEvent(testInput.bookingSummary, testInput.startdate, testInput.enddate, testInput.room, testInput.status, testInput.description, testInput.username)
+				.then((promisedResult) => {
+					console.log(promisedResult);
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+	});
+
 });
 

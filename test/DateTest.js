@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-
 require('../src/modules/Date');
 
 describe('Date', () => {
@@ -42,7 +41,6 @@ describe('Date', () => {
 				SU: 1, MO: 2, TU: 3, WE: 4, TH: 5, FR: 6, SA: 0
 			};
 			let result = startDate.getNumOfDaysDiffInWeekForDayNames();
-			console.log(result);
 			expect(result).to.eql(expectedResult);
 		});
 
@@ -52,7 +50,6 @@ describe('Date', () => {
 				SU: 6, MO: 0, TU: 1, WE: 2, TH: 3, FR: 4, SA: 5
 			};
 			let result = startDate.getNumOfDaysDiffInWeekForDayNames();
-			console.log(result);
 			expect(result).to.eql(expectedResult);
 		});
 	});
