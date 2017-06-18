@@ -14,6 +14,7 @@ export function startSessionCountdown(userChatId, msgId, username) {
 
 	let timer = setCountdownTimer(userChatId, msgId, username);
 	activeUsers[userChatId] = { userChatId: userChatId, msgId: msgId, username: username, timer: timer };
+	return activeUsers;
 };
 
 export function extendSession(userChatId, msgId, username) {

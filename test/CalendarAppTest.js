@@ -583,6 +583,68 @@ describe('CalendarApp', () => {
 		});
 	});
 
+	xdescribe('listEmptySlotsInDay', () => {
+		let stub;
+		afterEach(() => {
+			stub.restore();
+		});
+
+		it('should return available slots for booking given event datetime at 8am and single room fgd', () => {
+			let testInput = {
+				datetime: '2017-06-19T08:00:00+08:00',
+				roomId: 'fg'
+			};
+
+			let expectedResult = {
+				'9:00 AM': '9:00 AM',
+				'9:30 AM': '9:30 AM',
+				'11:30 AM': '11:30 AM',
+				'12:00 PM': '12:00 PM',
+				'12:30 PM': '12:30 PM',
+				'1:00 PM': '1:00 PM',
+				'1:30 PM': '1:30 PM',
+				'2:00 PM': '2:00 PM',
+				'2:30 PM': '2:30 PM',
+				'3:00 PM': '3:00 PM',
+				'3:30 PM': '3:30 PM',
+				'4:00 PM': '4:00 PM',
+				'4:30 PM': '4:30 PM',
+				'5:00 PM': '5:00 PM',
+				'5:30 PM': '5:30 PM',
+				'6:00 PM': '6:00 PM',
+				'6:30 PM': '6:30 PM',
+				'7:00 PM': '7:00 PM',
+				'7:30 PM': '7:30 PM',
+				'8:00 PM': '8:00 PM',
+				'8:30 PM': '8:30 PM'
+			};
+
+			let respStub = [{
+				id: 'id1',
+				summary: 'Booked by a',
+				location: 'Focus Group Room',
+				start: { dateTime: '2017-06-19T08:00:00+08:00' },
+				end: { dateTime: '2017-06-19T09:00:00+08:00' },
+				status: 'confirmed'
+			}, {
+				id: 'rtv8bon6il3hcq85u51i45qjmk',
+				summary: 'Booked by b',
+				location: 'Focus Group Room ',
+				start: { dateTime: '2017-06-19T10:00:00+08:00' },
+				end: { dateTime: '2017-06-19T11:30:00+08:00' },
+				status: 'confirmed'
+			}];
+			stub = sinon.stub(CalendarApp, 'listBookedEventsByRoom').resolves(respStub);
+
+			let calApiInstance = new CalendarAPI(CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG);
+			return CalendarApp.listEmptySlotsInDay(testInput.datetime, testInput.roomId)
+				.then((promisedResult) => {
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+	});
+
 	describe('insertEvent', () => {
 		let stub;
 		afterEach(() => {

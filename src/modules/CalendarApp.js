@@ -320,23 +320,22 @@ export function listEmptySlotsInDay(date, roomId) {
 				console.log('listEmptySlotsInDay Error: ' + err);
 				throw new Error('listEmptySlotsInDay error: ' + err);
 			});
-	} else {
-		return listBookedEventsByRoom(date, endDate, roomId)
-			.then((timeslotObj) => {
-				let timeArr = setupTimeArray(date);
-
-				console.log('listBookedEventsByRoom start: ');
-				console.log(timeArr);
-				console.log(timeslotObj);
-				filterBusyTimeslots(timeArr, timeslotObj);
-				console.log('listBookedEventsByRoom done: ' + timeArr);
-				return timeArr;
-			})
-			.catch((err) => {
-				console.log('listEmptySlotsInDay Error: ' + err);
-				throw new Error('listEmptySlotsInDay error: ' + err);
-			});
 	}
+	return listBookedEventsByRoom(date, endDate, roomId)
+		.then((timeslotObj) => {
+			let timeArr = setupTimeArray(date);
+
+			console.log('listBookedEventsByRoom start: ');
+			console.log(timeArr);
+			console.log(timeslotObj);
+			filterBusyTimeslots(timeArr, timeslotObj);
+			console.log('listBookedEventsByRoom done: ' + timeArr);
+			return timeArr;
+		})
+		.catch((err) => {
+			console.log('listEmptySlotsInDay Error: ' + err);
+			throw new Error('listEmptySlotsInDay error: ' + err);
+		});
 }
 
 export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {

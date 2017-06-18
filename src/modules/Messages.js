@@ -1,7 +1,9 @@
 const MESSAGES = {
 	start: `Allo!💁 To get started, type:\n\n*/help* in a private chat - for more info on how to book a room;\n*/any* book any available meeting room at a time of your choosing;\n*/book* to start booking from a list of rooms available;\n*/exit* terminate current booking process;\n*/booked* in a private chat - for list of rooms you have booked;\n*/delete* in a private chat - delete a booking;\n*/view* see all bookings in hive.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Viviean thank you velly much 😛`,
 	help: `Type:\n\n*/any* book any available meeting room at a time of your choosing;\n*/book* to start booking from a list of rooms available;\n*/exit* terminate current booking process;\n*/booked* in a private chat - for list of rooms you have booked;\n*/delete* in a private chat - delete a booking;\n*/view* see all bookings in hive.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Viviean thank you velly much 😛`,
+	unrecognisedCommands: `I don't understand your command, try using valid commands listed in /help menu.`,
 	book: `Which room would you like to book?`,
+	view: 'Check out this link for the overall room booking schedules: https://sgtravelbot.com',
 	delete: `You have successfully deleted your booking`,
 	deleteErr: `Oops, I think something went wrong while deleting your booking.`,
 	deleteInstruction: `\nClick on the following command to delete your booking: \n`,
