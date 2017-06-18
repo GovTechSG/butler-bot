@@ -1,7 +1,5 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import mockery from 'mockery';
-import bluebird from 'bluebird';
 
 import CalendarAPI from 'node-google-calendar';
 import * as CalendarApp from '../src/modules/CalendarApp';
@@ -585,14 +583,14 @@ describe('CalendarApp', () => {
 		});
 	});
 
-	describe('insertEvents', () => {
+	describe('insertEvent', () => {
 		let stub;
-		after(() => {
+		afterEach(() => {
 			stub.restore();
 		});
 		it('should return correct event details when insert into single room q1 success', () => {
 			let testInput = {
-				calendarId: 'calendarId',
+				eventIdCreated: 'eventid',
 				bookingSummary: 'bookingSummary',
 				startdate: '2017-06-17T08:00:00+08:00',
 				enddate: '2017-06-17T10:00:00+08:00',
@@ -605,7 +603,7 @@ describe('CalendarApp', () => {
 			};
 
 			let expectedResult = {
-				id: testInput.calendarId,
+				id: testInput.eventIdCreated,
 				summary: `${testInput.bookingSummary} by @${testInput.username}`,
 				location: CalendarApp.getRoomNameFromId(testInput.room),
 				status: 'confirmed',
@@ -617,7 +615,7 @@ describe('CalendarApp', () => {
 
 			let mockAPIResp = {
 				body: {
-					id: testInput.calendarId,
+					id: testInput.eventIdCreated,
 					summary: `${testInput.bookingSummary} by @${testInput.username}`,
 					location: CalendarApp.getRoomNameFromId(testInput.room),
 					status: 'confirmed',
@@ -628,7 +626,15 @@ describe('CalendarApp', () => {
 					end: {
 						dateTime: testInput.enddate
 					},
-					created: testInput.createdTime
+					created: testInput.createdTime,
+					colorId: testInput.colour,
+					description: testInput.description,
+					creator: { email: CONFIG.serviceAcctId },
+					organizer: {
+						email: CONFIG.calendarId[testInput.room],
+						displayName: CalendarApp.getRoomNameFromId(testInput.room),
+						self: true
+					}
 				}
 			};
 
@@ -636,9 +642,79 @@ describe('CalendarApp', () => {
 			let calApiInstance = new CalendarAPI(CONFIG);
 			CalendarApp.init(calApiInstance, CONFIG);
 
-			CalendarApp.insertEvent(testInput.bookingSummary, testInput.startdate, testInput.enddate, testInput.room, testInput.status, testInput.description, testInput.username)
+			return CalendarApp.insertEvent(testInput.bookingSummary, testInput.startdate, testInput.enddate, testInput.room, testInput.status, testInput.description, testInput.username)
 				.then((promisedResult) => {
-					console.log(promisedResult);
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+
+		it('should return correct event details when insert into combined room qc success', () => {
+			let testInput = {
+				bookingSummary: 'bookingSummary',
+				startdate: '2017-06-17T08:00:00+08:00',
+				enddate: '2017-06-17T10:00:00+08:00',
+				room: 'qc',
+				status: '',
+				description: 'booked by butler',
+				colour: 1,
+				username: 'user',
+				createdTime: new Date().getISO8601TimeStamp()
+			};
+
+			let expectedResult = {
+				summary: `${testInput.bookingSummary} by @${testInput.username}`,
+				location: CalendarApp.getRoomNameFromId(testInput.room),
+				status: 'confirmed',
+				htmlLink: CONFIG.calendarUrl,
+				start: testInput.startdate,
+				end: testInput.enddate,
+				created: testInput.createdTime
+			};
+			let mockAPIRespR2 = {
+				body: {
+					id: 'event2Id',
+					summary: `${testInput.bookingSummary} by @${testInput.username}`,
+					location: CalendarApp.getRoomNameFromId(testInput.room),
+					status: 'confirmed',
+					htmlLink: 'somegcaleventurl',
+					start: {
+						dateTime: testInput.startdate
+					},
+					end: {
+						dateTime: testInput.enddate
+					},
+					created: testInput.createdTime,
+					description: 'booked via butler'
+				}
+			};
+
+			let mockAPIRespR1 = {
+				body: {
+					id: 'event1Id',
+					summary: `${testInput.bookingSummary} by @${testInput.username}`,
+					location: CalendarApp.getRoomNameFromId(testInput.room),
+					status: 'confirmed',
+					htmlLink: 'somegcaleventurl',
+					start: {
+						dateTime: testInput.startdate
+					},
+					end: {
+						dateTime: testInput.enddate
+					},
+					created: testInput.createdTime,
+					description: `booked via butler@${mockAPIRespR2.body.id}`
+				}
+			};
+
+			stub = sinon.stub(CalendarAPI.prototype, 'insertEvent');
+			stub.onFirstCall().resolves(mockAPIRespR2);
+			stub.onSecondCall().resolves(mockAPIRespR1);
+
+			let calApiInstance = new CalendarAPI(CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG);
+
+			return CalendarApp.insertEvent(testInput.bookingSummary, testInput.startdate, testInput.enddate, testInput.room, testInput.status, testInput.description, testInput.username)
+				.then((promisedResult) => {
 					expect(promisedResult).to.eql(expectedResult);
 				});
 		});

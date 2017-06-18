@@ -403,25 +403,25 @@ export function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
 export function insertEventForCombinedRoom(room1Details, room2Details, username) {
 	return insertEvent(room2Details.bookingSummary, room2Details.startDateTime, room2Details.endDateTime,
 		room2Details.location, room2Details.status, room2Details.description, username, RoomList.queenC.name)
-		.then(resultsRoom2 => {
+		.then((resultsRoom2) => {
+			room1Details.description += `@${resultsRoom2.id}`;
 
-			room1Details.description += '@' + resultsRoom2.id;
 			return insertEvent(room1Details.bookingSummary, room1Details.startDateTime, room1Details.endDateTime,
 				room1Details.location, room1Details.status, room1Details.description, username, RoomList.queenC.name)
-				.then(resultsRoom1 => {
+				.then((resultsRoom1) => {
 					let results = {
 						'summary': resultsRoom1.summary,
-						'location': resultsRoom1.location + '&' + resultsRoom2.location,
+						'location': resultsRoom1.location,
 						'status': resultsRoom1.status,
 						'htmlLink': config.calendarUrl,
-						'start': new Date(resultsRoom1.start),
-						'end': new Date(resultsRoom1.end),
+						'start': new Date(resultsRoom1.start).getISO8601TimeStamp(),
+						'end': new Date(resultsRoom1.end).getISO8601TimeStamp(),
 						'created': new Date(resultsRoom1.created).getISO8601TimeStamp()
 					};
 					return results;
 				});
 		}).catch((err) => {
-			throw new Error("insertEventForCombinedRoom: " + err);
+			throw new Error('insertEventForCombinedRoom: ' + err);
 		});
 }
 
@@ -447,7 +447,7 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
 		};
 		return insertEventForCombinedRoom(eventRoom1, eventRoom2, username)
 			.catch((err) => {
-				throw new Error("insertEvent: " + err);
+				throw new Error('insertEvent: ' + err);
 			});
 	}
 	let calendarId = calendarIdList[location];
@@ -457,6 +457,7 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
 	}
 	return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, getColourForRoom(location))
 		.then((resp) => {
+			console.log(resp.body);
 			let json = resp.body;
 			let results = {
 				'id': json.id,
@@ -579,7 +580,6 @@ function handleBookingProcess(booking) {
 				insertEvent(booking.bookingSummary, booking.startDateTime, booking.endDateTime,
 					booking.location, booking.status, booking.description, booking.username)
 					.then((results) => {
-
 						bookingQueue.shift();
 						EE.emit('booked' + booking.username + booking.bookTime, { success: true, results: results });
 					});

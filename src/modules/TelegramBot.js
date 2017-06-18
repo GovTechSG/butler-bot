@@ -21,7 +21,7 @@ let bookerList = {};
 let roomlist = ROOM_CONFIG.roomsListing;
 
 slimbot.getMe().then((update) => {
-	console.log('bot started on ' + new Date().getFormattedTime());
+	console.log('bot started on ' + new Date().getISO8601TimeStamp());
 	console.log(update);
 	botName = update.result.username;
 });
@@ -357,7 +357,7 @@ function completeBooking(query) {
 }
 
 function insertBookingIntoCalendar(userId, msgId, description, room, startDate, timeSlot, duration, userName, fullName) {
-	let bookingSummary = description + ' by @' + userName + ' (' + fullName + ')';
+	let bookingSummary = `${description} by @${userName} (${fullName})`;
 	let startTime = startDate.getISO8601DateWithDefinedTimeString(timeSlot);
 	for (let i = 0; i < duration; i++) {
 		startDate.addMinutes(30);
@@ -367,7 +367,9 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
 	CalendarApp.queueForInsert(bookingSummary, startTime, endTime, room, 'confirmed', 'booked via butler', userName)
 		.then((json) => {
 			slimbot.editMessageText(userId, msgId, MESSAGES.confirm);
-			let msg = ReplyBuilder.bookingConfirmed(roomlist[room].name, startDate.getFormattedDate(), new Date(json.start).getFormattedTime(), new Date(json.end).getFormattedTime(), fullName, userName, description);
+			let startDateTime = new Date(json.start);
+			let endDateTime = new Date(json.end);
+			let msg = ReplyBuilder.bookingConfirmed(roomlist[room].name, startDateTime.getFormattedDate(), startDateTime.getFormattedTime(), endDateTime.getFormattedTime(), fullName, userName, description);
 
 			slimbot.sendMessage(userId, msg, { parse_mode: 'Markdown' })
 				.then((message) => {
