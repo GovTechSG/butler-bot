@@ -321,12 +321,12 @@ export function listEmptySlotsInDay(date, roomId) {
 				throw new Error('listEmptySlotsInDay error: ' + err);
 			});
 	}
-	return listBookedEventsByRoom(date, endDate, roomId)
+	return exports.listBookedEventsByRoom(date, endDate, roomId)
 		.then((timeslotObj) => {
 			let timeArr = setupTimeArray(date);
 
 			console.log('listBookedEventsByRoom start: ');
-			console.log(timeArr);
+			// console.log(timeArr);
 			console.log(timeslotObj);
 			filterBusyTimeslots(timeArr, timeslotObj);
 			console.log('listBookedEventsByRoom done: ' + timeArr);

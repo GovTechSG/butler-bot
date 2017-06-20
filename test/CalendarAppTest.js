@@ -372,13 +372,11 @@ describe('CalendarApp', () => {
 				id: '7j1f3ngpff65k8v8ta67lumi1g',
 				summary: 'event',
 				location: 'Drone Room',
-				start:
-				{
+				start: {
 					dateTime: '2017-04-06T17:00:00+08:00',
 					timeZone: 'Asia/Singapore'
 				},
-				end:
-				{
+				end: {
 					dateTime: '2017-04-06T17:30:00+08:00',
 					timeZone: 'Asia/Singapore'
 				},
@@ -583,7 +581,7 @@ describe('CalendarApp', () => {
 		});
 	});
 
-	xdescribe('listEmptySlotsInDay', () => {
+	describe('listEmptySlotsInDay', () => {
 		let stub;
 		afterEach(() => {
 			stub.restore();
@@ -635,6 +633,16 @@ describe('CalendarApp', () => {
 				status: 'confirmed'
 			}];
 			stub = sinon.stub(CalendarApp, 'listBookedEventsByRoom').resolves(respStub);
+			// stub().then((resp) => {
+			// 	console.log('stub');
+			// 	console.log(resp);
+			// });
+
+			// return CalendarApp.listBookedEventsByRoom('2017-06-19T10:00:00+08:00', '2017-06-19T11:00:00+08:00', 'q1')
+			// 	.then((resp) => {
+			// console.log('using calapp direct');
+			// 		console.log(resp);
+			// 	});
 
 			let calApiInstance = new CalendarAPI(CONFIG);
 			CalendarApp.init(calApiInstance, CONFIG);
@@ -701,6 +709,7 @@ describe('CalendarApp', () => {
 			};
 
 			stub = sinon.stub(CalendarAPI.prototype, 'insertEvent').resolves(mockAPIResp);
+
 			let calApiInstance = new CalendarAPI(CONFIG);
 			CalendarApp.init(calApiInstance, CONFIG);
 
