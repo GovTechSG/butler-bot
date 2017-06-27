@@ -263,12 +263,12 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
 
 export function handleListingForTwoCalendars(date, endDate, roomId) {
 	return Promise.join(
-		listBookedEventsByRoom(date, endDate, jointRoomList[roomId][0])
+		exports.listBookedEventsByRoom(date, endDate, jointRoomList[roomId][0])
 			.then((jsonArr) => {
 				return jsonArr;
 			}),
 
-		listBookedEventsByRoom(date, endDate, jointRoomList[roomId][1])
+		exports.listBookedEventsByRoom(date, endDate, jointRoomList[roomId][1])
 			.then(jsonArr => {
 				return jsonArr;
 			}),
@@ -309,11 +309,12 @@ export function listEmptySlotsInDay(date, roomId) {
 	console.log('listEmptySlotsInDay: ' + getRoomNameFromId(roomId) + ' ' + date + ' - ' + endDate);
 
 	if (roomId == RoomList.queenC.id) {
-		return handleListingForTwoCalendars(date, endDate, roomId)
+		return exports.handleListingForTwoCalendars(date, endDate, roomId)
 			.then((timeslotObj) => {
-				console.log('handleListingForTwoCalendars');
+				console.log(timeslotObj);
 				let timeArr = setupTimeArray(date);
 				filterBusyTimeslots(timeArr, timeslotObj);
+				console.log(timeArr);
 				return timeArr;
 			})
 			.catch((err) => {
@@ -324,12 +325,8 @@ export function listEmptySlotsInDay(date, roomId) {
 	return exports.listBookedEventsByRoom(date, endDate, roomId)
 		.then((timeslotObj) => {
 			let timeArr = setupTimeArray(date);
-
-			console.log('listBookedEventsByRoom start: ');
-			// console.log(timeArr);
-			console.log(timeslotObj);
-			filterBusyTimeslots(timeArr, timeslotObj);
-			console.log('listBookedEventsByRoom done: ' + timeArr);
+			exports.filterBusyTimeslots(timeArr, timeslotObj);
+			console.log(timeArr);
 			return timeArr;
 		})
 		.catch((err) => {
@@ -425,7 +422,7 @@ export function insertEventForCombinedRoom(room1Details, room2Details, username)
 }
 
 export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username, combinedName) {
-	console.log('insertEvent: ' + location);
+	console.log(`try insertEvent: ${location} | ${startDateTimeStr} | ${endDateTimeStr} | ${bookingSummary} | ${username}  | ${description} `);
 
 	if (location === RoomList.queenC.id) {
 		let eventRoom1 = {
@@ -456,7 +453,7 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
 	}
 	return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, getColourForRoom(location))
 		.then((resp) => {
-			console.log(resp.body);
+			// console.log(resp.body);
 			let json = resp.body;
 			let results = {
 				'id': json.id,

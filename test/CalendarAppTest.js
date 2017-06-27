@@ -632,20 +632,136 @@ describe('CalendarApp', () => {
 				end: { dateTime: '2017-06-19T11:30:00+08:00' },
 				status: 'confirmed'
 			}];
-			stub = sinon.stub(CalendarApp, 'listBookedEventsByRoom').resolves(respStub);
-			// stub().then((resp) => {
-			// 	console.log('stub');
-			// 	console.log(resp);
-			// });
 
-			// return CalendarApp.listBookedEventsByRoom('2017-06-19T10:00:00+08:00', '2017-06-19T11:00:00+08:00', 'q1')
-			// 	.then((resp) => {
-			// console.log('using calapp direct');
-			// 		console.log(resp);
-			// 	});
+			stub = sinon.stub(CalendarApp, 'listBookedEventsByRoom').resolves(respStub);
+			let calApiInstance = new CalendarAPI(CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG);
+
+			return CalendarApp.listEmptySlotsInDay(testInput.datetime, testInput.roomId)
+				.then((promisedResult) => {
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+
+		it('should return available slots for booking given event datetime at 8am and combined room qc', () => {
+			let testInput = {
+				datetime: '2017-06-19T08:00:00+08:00',
+				roomId: 'qc'
+			};
+
+			let expectedResult = {
+				'12:00 PM': '12:00 PM',
+				'12:30 PM': '12:30 PM',
+				'1:00 PM': '1:00 PM',
+				'1:30 PM': '1:30 PM',
+				'2:00 PM': '2:00 PM',
+				'2:30 PM': '2:30 PM',
+				'3:00 PM': '3:00 PM',
+				'3:30 PM': '3:30 PM',
+				'4:00 PM': '4:00 PM',
+				'4:30 PM': '4:30 PM',
+				'5:00 PM': '5:00 PM',
+				'5:30 PM': '5:30 PM',
+				'6:00 PM': '6:00 PM',
+				'6:30 PM': '6:30 PM',
+				'7:00 PM': '7:00 PM',
+				'7:30 PM': '7:30 PM',
+				'8:00 PM': '8:00 PM',
+				'8:30 PM': '8:30 PM'
+			};
+
+			let respStubQ1 = [{
+				id: 'id1',
+				summary: 'Booked by a',
+				location: 'Queen (Video)',
+				start: { dateTime: '2017-06-19T08:00:00+08:00' },
+				end: { dateTime: '2017-06-19T09:00:00+08:00' },
+				status: 'confirmed'
+			}, {
+				id: 'id2',
+				summary: 'Booked by b',
+				location: 'Queen (Video)',
+				start: { dateTime: '2017-06-19T10:00:00+08:00' },
+				end: { dateTime: '2017-06-19T11:30:00+08:00' },
+				status: 'confirmed'
+			}];
+
+			let respStubQ2 = [{
+				id: 'id3',
+				summary: 'Booked by c',
+				location: 'Queen (Projector)',
+				start: { dateTime: '2017-06-19T09:00:00+08:00' },
+				end: { dateTime: '2017-06-19T10:00:00+08:00' },
+				status: 'confirmed'
+			}, {
+				id: 'id4',
+				summary: 'Booked by d',
+				location: 'Queen (Projector)',
+				start: { dateTime: '2017-06-19T11:30:00+08:00' },
+				end: { dateTime: '2017-06-19T12:00:00+08:00' },
+				status: 'confirmed'
+			}];
+
+			stub = sinon.stub(CalendarApp, 'listBookedEventsByRoom');
+			stub.onFirstCall().resolves(respStubQ1);
+			stub.onSecondCall().resolves(respStubQ2);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
 			CalendarApp.init(calApiInstance, CONFIG);
+
+			return CalendarApp.listEmptySlotsInDay(testInput.datetime, testInput.roomId)
+				.then((promisedResult) => {
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+
+		it('should return empty result given missing event info', () => {
+			let testInput = {
+				datetime: '',
+				roomId: 'q1'
+			};
+
+			let expectedResult = {};
+
+			let respStubQ1 = [{
+				id: 'id1',
+				summary: 'Booked by a',
+				location: 'Queen (Video)',
+				start: { dateTime: '2017-06-19T08:00:00+08:00' },
+				end: { dateTime: '2017-06-19T09:00:00+08:00' },
+				status: 'confirmed'
+			}, {
+				id: 'id2',
+				summary: 'Booked by b',
+				location: 'Queen (Video)',
+				start: { dateTime: '2017-06-19T10:00:00+08:00' },
+				end: { dateTime: '2017-06-19T11:30:00+08:00' },
+				status: 'confirmed'
+			}];
+
+			let respStubQ2 = [{
+				id: 'id3',
+				summary: 'Booked by c',
+				location: 'Queen (Projector)',
+				start: { dateTime: '2017-06-19T09:00:00+08:00' },
+				end: { dateTime: '2017-06-19T10:00:00+08:00' },
+				status: 'confirmed'
+			}, {
+				id: 'id4',
+				summary: 'Booked by d',
+				location: 'Queen (Projector)',
+				start: { dateTime: '2017-06-19T11:30:00+08:00' },
+				end: { dateTime: '2017-06-19T12:00:00+08:00' },
+				status: 'confirmed'
+			}];
+
+			stub = sinon.stub(CalendarApp, 'listBookedEventsByRoom');
+			stub.onFirstCall().resolves(respStubQ1);
+			stub.onSecondCall().resolves(respStubQ2);
+
+			let calApiInstance = new CalendarAPI(CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG);
+
 			return CalendarApp.listEmptySlotsInDay(testInput.datetime, testInput.roomId)
 				.then((promisedResult) => {
 					expect(promisedResult).to.eql(expectedResult);
@@ -731,7 +847,6 @@ describe('CalendarApp', () => {
 				username: 'user',
 				createdTime: new Date().getISO8601TimeStamp()
 			};
-
 			let expectedResult = {
 				summary: `${testInput.bookingSummary} by @${testInput.username}`,
 				location: CalendarApp.getRoomNameFromId(testInput.room),

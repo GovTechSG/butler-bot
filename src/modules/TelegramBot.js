@@ -1,6 +1,6 @@
 import Slimbot from 'slimbot';
 import EventEmitter from 'eventemitter3';
-import { default as Chrono } from 'chrono-node';
+import Chrono from 'chrono-node';
 import CalendarAPI from 'node-google-calendar';
 
 import './Date';
