@@ -1,6 +1,6 @@
 import MESSAGES from './Messages';
+import { SESSION_LENGTH as sessionLength } from '../config/settings';
 
-const sessionLength = 1000 * 60;
 let activeUsers = {};       // stores userId, lastMsgId, username, timer
 let Emitter;
 
@@ -61,7 +61,7 @@ export function endSession(userChatId) {    // used when booking completes
 
 function setCountdownTimer(userChatId, msgId, username) {
 	return setTimeout(
-		function () {
+		() => {
 			console.log('[Session Expired] for : @' + username);
 			notifyUserAndClearUserData(userChatId, msgId, username, MESSAGES.session_expired);
 		}, sessionLength);

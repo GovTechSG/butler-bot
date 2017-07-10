@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
-dotenv.load();
 
+dotenv.load();
+const SESSION_LENGTH = 1000 * 60 * 3;
 const CONFIG = {
 	keyFile: require.resolve(process.env.GOOGLE_KEYFILE_PATH),
 	userId: process.env.USER_ID,
@@ -27,4 +28,5 @@ const ROOM_CONFIG = {
 	}
 };
 
-export { CONFIG as default, ROOM_CONFIG };
+
+export { CONFIG as default, ROOM_CONFIG, SESSION_LENGTH };
