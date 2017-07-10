@@ -1,5 +1,6 @@
 # Butler Bot
 [![Build Status](https://travis-ci.org/GovTechSG/butler-bot.svg?branch=master)](https://travis-ci.org/GovTechSG/butler-bot)
+[![Known Vulnerabilities](https://snyk.io/test/github/yuhong90/butler-calendar/badge.svg)](https://snyk.io/test/github/yuhong90/butler-calendar)
 
 A Telegram Bot that helps you book meetings rooms. Awesome!
 
@@ -12,6 +13,11 @@ npm i
 Run the bot
 ```javascript
 npm start
+```
+
+Running tests
+```javascript
+npm test
 ```
 
 ## Configuration
@@ -36,8 +42,8 @@ Report a bug [here](https://github.com/GovTechSG/butler-bot/issues).
 
 ## Todo
 * [Refactor] Extract available room options to settings file
-* [Feature] Users to state meeting participants and auto send email meeting invites 
 * [Feature] Quick command to check available rooms in the next coming hour
+* [Feature] Users to state meeting participants and auto send email meeting invites 
 * [Improvement] Booking insert job queue improvement
 * [Improvement] Authenticate to only allow hive users to book (temporary workaround for now)   
 

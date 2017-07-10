@@ -8,7 +8,7 @@ const MESSAGES = {
 	deleteErr: `Oops, I think something went wrong while deleting your booking.`,
 	deleteInstruction: `\nClick on the following command to delete your booking: \n`,
 	listBooking: `You have the following bookings scheduled: \n`,
-	noBooking: `You don\'t have any upcoming room bookings leh 😧. You sure you got book or not?`,
+	noBooking: `You don\'t have any upcoming room bookings leh 😧. \n\nYou won't be able to see your bookings thru booked command if you've manually booked thru the admins kay. \nOr try checking your booking with /view instead :)`,
 	noBookingAfterDelete: `Okay, you\'ve got more no upcoming room bookings liao. `,
 	error: `Oops sorry ah, I think something spoil aledi.. you don\'t mind try again later ok? 😅`,
 	confirm: `Swee lah! Your room booking is confirmed! 👍🏻`,

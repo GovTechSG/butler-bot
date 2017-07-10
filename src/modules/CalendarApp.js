@@ -311,10 +311,10 @@ export function listEmptySlotsInDay(date, roomId) {
 	if (roomId == RoomList.queenC.id) {
 		return exports.handleListingForTwoCalendars(date, endDate, roomId)
 			.then((timeslotObj) => {
-				console.log(timeslotObj);
+				// console.log(timeslotObj);
 				let timeArr = setupTimeArray(date);
 				filterBusyTimeslots(timeArr, timeslotObj);
-				console.log(timeArr);
+				// console.log(timeArr);
 				return timeArr;
 			})
 			.catch((err) => {
@@ -326,7 +326,7 @@ export function listEmptySlotsInDay(date, roomId) {
 		.then((timeslotObj) => {
 			let timeArr = setupTimeArray(date);
 			exports.filterBusyTimeslots(timeArr, timeslotObj);
-			console.log(timeArr);
+			// console.log(timeArr);
 			return timeArr;
 		})
 		.catch((err) => {
