@@ -29,7 +29,7 @@ slimbot.getMe().then((update) => {
 (function initCalendar() {
 	console.log('init Calendar');
 	let CalAPI = new CalendarAPI(CONFIG);
-	CalendarApp.init(CalAPI, CONFIG);
+	CalendarApp.init(CalAPI, CONFIG, ROOM_CONFIG.roomsListing);
 }());
 
 // SessionManager listener
@@ -226,6 +226,7 @@ function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
 							if (aryDesc.length > 1) {
 								room2Id = aryDesc[1];
 							}
+							console.log(`${room2Id}@${booking.id}`);
 							msg += `${MESSAGES.deleteInstruction}/\deleteBooking${booking.room}${room2Id}@${booking.id}\n`;
 						}
 					}

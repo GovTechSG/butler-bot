@@ -1,19 +1,17 @@
 // CalendarApp: booking specific calendar logic
 import Promise from 'bluebird';
 import EventEmitter from 'eventemitter3';
-// import CalendarAPI from 'node-google-calendar';
-// import CONFIG from '../config/settings';
 import './Date';
 
 const colourDict = { 'fg': 5, 'dr': 7, 'q1': 6, 'q2': 10, 'qc': 11, 'bb': 3 };
-const RoomList = {
-	queen1: { id: 'q1', name: 'Queen (Video)' },
-	queen2: { id: 'q2', name: 'Queen (Projector)' },
-	queenC: { id: 'qc', name: 'Queen (Combined)', children: ['q1', 'q2'] },
-	drone: { id: 'dr', name: 'Drone' },
-	fgd: { id: 'fg', name: 'Focus Group Discussion' },
-	bb: { id: 'bb', name: 'Bumblebee' }
-};
+// const RoomList = {
+// 	queen1: { id: 'q1', name: 'Queen (Video)' },
+// 	queen2: { id: 'q2', name: 'Queen (Projector)' },
+// 	queenC: { id: 'qc', name: 'Queen (Combined)', children: ['q1', 'q2'] },
+// 	drone: { id: 'dr', name: 'Drone' },
+// 	fgd: { id: 'fg', name: 'Focus Group Discussion' },
+// 	bb: { id: 'bb', name: 'Bumblebee' }
+// };
 const jointRoomList = {
 	'qc': ['q1', 'q2']
 };
@@ -32,14 +30,16 @@ const durationOptions = {
 let config;
 let cal;
 let calendarIdList;
+let roomInfoList;
 
 let EE = new EventEmitter();
 let bookingQueue = [];
 
-export function init(calendarApiInstance, configObj) {
+export function init(calendarApiInstance, configObj, roomlistObj) {
 	cal = calendarApiInstance;
 	config = configObj;
 	calendarIdList = configObj.calendarId;
+	roomInfoList = roomlistObj;
 }
 
 export function getColourForRoom(roomname) {
@@ -47,12 +47,7 @@ export function getColourForRoom(roomname) {
 }
 
 export function getRoomNameFromId(id) {
-	for (let index in RoomList) {
-		if (RoomList[index].id === id) {
-			return RoomList[index].name;
-		}
-	}
-	return '';
+	return roomInfoList[id].name;
 }
 
 function getTimeslotName(startTime) {
@@ -175,6 +170,7 @@ export function listBookedEventsByUser(startDateTime, user) {
 
 		promiseList.push(cal.listEvents(calendarId, startDateTime, endDateTime, user)
 			.then((json) => {
+				console.log(json);
 				let eventsInCalendar = [];
 				for (let i = 0; i < json.length; i++) {
 					if (json[i].description === undefined) json[i].description = '';
@@ -213,19 +209,25 @@ export function listBookedEventsByUser(startDateTime, user) {
 			// modify event summaries + combine queensC events
 
 			for (let key in bookedEventsArray) {
+				console.log(key);
 				let evnt = bookedEventsArray[key];
-				let bookingDescription = evnt.summary;
+				console.log(evnt);
+				// let bookingDescription = evnt.summary;
 				let bookedRoomName = evnt.location;
-				evnt.summary = bookingDescription;
+				// evnt.summary = bookingDescription;
 
-				if (bookedRoomName === RoomList.queenC.name) {
+				if (bookedRoomName === roomInfoList.qc.name) {
+					console.log('Combined');
 					if (evnt.description.indexOf('@') >= 0) {
-						evnt.room = RoomList.queenC.id;
+						evnt.room = roomInfoList.qc.id;
+						console.log('\tCombined roomid replaced in event');
 					} else {
 						delete bookedEventsArray[key];
 					}
 				}
 			}
+			console.log('summary');
+			console.log(bookedEventsArray);
 			return bookedEventsArray;
 		});
 }
@@ -306,9 +308,9 @@ export function filterBusyTimeslots(timeslotDict, roomBusyTimeslot) {
 export function listEmptySlotsInDay(date, roomId) {
 	let endDate = new Date(date).addDays(1).getISO8601TimeStamp();
 	date = new Date(date).getISO8601TimeStamp();
-	console.log('listEmptySlotsInDay: ' + getRoomNameFromId(roomId) + ' ' + date + ' - ' + endDate);
+	console.log('\tAttempting listEmptySlotsInDay: ' + getRoomNameFromId(roomId) + ' ' + date + ' - ' + endDate);
 
-	if (roomId == RoomList.queenC.id) {
+	if (roomId == roomInfoList.qc.id) {
 		return exports.handleListingForTwoCalendars(date, endDate, roomId)
 			.then((timeslotObj) => {
 				// console.log(timeslotObj);
@@ -340,7 +342,7 @@ export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
 	let startTimestamp = new Date(startDatetimeStr).getISO8601TimeStamp();
 	let endTimestamp = new Date(startDatetimeStr).getISO8601DateWithDefinedTime(listAvailableTime, 0, 0, 0);
 
-	if (roomId == RoomList.queenC.id) {
+	if (roomId == roomInfoList.qc.id) {
 		return handleListingForTwoCalendars(startTimestamp, endTimestamp, roomId)
 			.then((timeslotObj) => {
 				return filterDurationSlots(timeslotObj, startTimestamp);
@@ -398,12 +400,12 @@ export function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
 
 export function insertEventForCombinedRoom(room1Details, room2Details, username) {
 	return insertEvent(room2Details.bookingSummary, room2Details.startDateTime, room2Details.endDateTime,
-		room2Details.location, room2Details.status, room2Details.description, username, RoomList.queenC.name)
+		room2Details.location, room2Details.status, room2Details.description, username, roomInfoList.qc.name)
 		.then((resultsRoom2) => {
 			room1Details.description += `@${resultsRoom2.id}`;
 
 			return insertEvent(room1Details.bookingSummary, room1Details.startDateTime, room1Details.endDateTime,
-				room1Details.location, room1Details.status, room1Details.description, username, RoomList.queenC.name)
+				room1Details.location, room1Details.status, room1Details.description, username, roomInfoList.qc.name)
 				.then((resultsRoom1) => {
 					let results = {
 						'summary': resultsRoom1.summary,
@@ -422,14 +424,14 @@ export function insertEventForCombinedRoom(room1Details, room2Details, username)
 }
 
 export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, location, status, description, username, combinedName) {
-	console.log(`try insertEvent: ${location} | ${startDateTimeStr} | ${endDateTimeStr} | ${bookingSummary} | ${username}  | ${description} `);
+	console.log(`\tAttempting insertEvent: ${location} | ${startDateTimeStr} | ${endDateTimeStr} | ${bookingSummary} | ${username}  | ${description} `);
 
-	if (location === RoomList.queenC.id) {
+	if (location === roomInfoList.qc.id) {
 		let eventRoom1 = {
 			'bookingSummary': bookingSummary,
 			'startDateTime': startDateTimeStr,
 			'endDateTime': endDateTimeStr,
-			'location': RoomList.queen1.id,
+			'location': roomInfoList.q1.id,
 			'status': status,
 			'description': description
 		};
@@ -437,7 +439,7 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
 			'bookingSummary': bookingSummary,
 			'startDateTime': startDateTimeStr,
 			'endDateTime': endDateTimeStr,
-			'location': RoomList.queen2.id,
+			'location': roomInfoList.q2.id,
 			'status': status,
 			'description': description
 		};
@@ -487,8 +489,8 @@ export function queueForInsert(bookingSummary, startDateTimeStr, endDateTimeStr,
 	};
 
 	bookingQueue.push(booking);
-	return new Promise(function (fulfill, reject) {
-		EE.once('booked' + username + bookTime, function (resp) {
+	return new Promise((fulfill, reject) => {
+		EE.once('booked' + username + bookTime, (resp) => {
 			if (resp.success) {
 				fulfill(resp.results);
 			} else {
@@ -500,12 +502,12 @@ export function queueForInsert(bookingSummary, startDateTimeStr, endDateTimeStr,
 	});
 }
 
-function checkBookingTurn(username, bookTime) {
-	let firstItemInQueue = bookingQueue[0];
+function checkBookingTurn(username, bookTime, bookQueue) {
+	let firstItemInQueue = bookQueue[0];
 	console.log('checking turn: ' + firstItemInQueue.username + ' == ' + username);
 	if (firstItemInQueue.username == username && firstItemInQueue.bookTime == bookTime) {
 		// current booking's turn
-		console.log('turn for ' + username + ' to insert');
+		console.log('turn for ' + username + ' to insert event');
 		return true;
 	}
 
@@ -552,7 +554,7 @@ function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
 export function checkTimeslotFree(startDateTimeStr, endDateTimeStr, room) {
 	console.log('checkTimeslotFree: ' + startDateTimeStr + ', ' + endDateTimeStr + ' ,' + room);
 
-	if (room === RoomList.queenC.id) {
+	if (room === roomInfoList.qc.id) {
 		return checkJointRoomFree(startDateTimeStr, endDateTimeStr, room);
 	}
 
@@ -587,34 +589,33 @@ function handleBookingProcess(booking) {
 }
 
 function waitForTurnToBook(username, bookTime) {
-	if (checkBookingTurn(username, bookTime)) {
+	if (checkBookingTurn(username, bookTime, bookingQueue)) {
 		let booking = bookingQueue[0];
 		handleBookingProcess(booking);
 	} else {
-		setTimeout(function () {
+		setTimeout(() => {
 			waitForTurnToBook(username, bookTime);
 		}, 3000);
 	}
 }
 
 export function deleteEvents(eventIdArray, roomId) {
-	let calendarIdListToDelete = [];
-	let eventList = [];
-	if (RoomList.queenC.id === roomId) {
-		for (let index in RoomList.queenC.children) {
-			let childRoom = RoomList.queenC.children[index];
-			calendarIdListToDelete.push(calendarIdList[childRoom]);
+	let promiseList = [];
+	if (roomInfoList.qc.id === roomId) {
+		for (let index in roomInfoList.qc.children) {
+			let childRoom = roomInfoList.qc.children[index];
+			let calendarId = calendarIdList[childRoom];
+			console.log(`\tAttempting to delete event: ${childRoom}, ${eventIdArray[index]} `)
+			promiseList.push(cal.deleteEvent(calendarId, eventIdArray[index]));
 		}
 	} else {
-		calendarIdListToDelete.push(calendarIdList[roomId]);
+		console.log(`\tAttempting to delete event: ${roomId}, ${eventIdArray[0]} `)
+		promiseList.push(cal.deleteEvent(calendarIdList[roomId], eventIdArray[0]));
 	}
-	for (let index in calendarIdListToDelete) {
-		let calendarId = calendarIdListToDelete[index];
-		eventList.push(cal.deleteEvent(calendarId, eventIdArray[index])
-		);
-	}
-	return Promise.all(eventList).catch((err) => {
-		console.log('deleteEvent Error: ' + err);
-		throw new Error('deleteEvent: ' + err);
+	return Promise.all(promiseList).then((result) => {
+		console.log('\t' + JSON.stringify(result));
+		return result;
+	}).catch((err) => {
+		throw new Error('deleteEvents: ' + err);
 	});
 }

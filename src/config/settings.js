@@ -19,12 +19,14 @@ const ROOM_CONFIG = {
 		'q2': { 'command': '/book_queen_projector', 'text': 'Queen (Projector)' }
 	},
 	roomsListing: {
-		'fg': { name: 'Focus Group Room' },
-		'q1': { name: 'Queen (Video)' },
-		'q2': { name: 'Queen (Projector)' },
-		'qc': { name: 'Queen (Combined)', children: ['q1', 'q2'] },
-		'dr': { name: 'Drone' },
-		'bb': { name: 'Bumblebee' }
+		// used for reading & displaying event room info
+		'primary': { name: 'Open Space', id: 'primary' },
+		'fg': { name: 'Focus Group Room', id: 'fg' },
+		'q1': { name: 'Queen (Video)', id: 'q1' },
+		'q2': { name: 'Queen (Projector)', id: 'q2' },
+		'qc': { name: 'Queen (Combined)', id: 'qc', children: ['q1', 'q2'] },
+		'dr': { name: 'Drone', id: 'dr' },
+		'bb': { name: 'Bumblebee', id: 'bb' }
 	}
 };
 

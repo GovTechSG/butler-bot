@@ -3,9 +3,30 @@ import sinon from 'sinon';
 
 import CalendarAPI from 'node-google-calendar';
 import * as CalendarApp from '../src/modules/CalendarApp';
-import CONFIG from '../src/config/settings';
+import CONFIG, { ROOM_CONFIG } from '../src/config/settings';
 
 describe('CalendarApp', () => {
+	let mockEvent = {
+		kind: 'calendar#event',
+		etag: '\"0000000000000000\"',
+		id: '12345',
+		status: 'confirmed',
+		htmlLink: 'https://www.google.com/calendar/event?eid=12345',
+		created: '2017-01-01T00:00:00.000Z',
+		updated: '2017-01-01T00:00:00.722Z',
+		description: 'booked via butler',
+		summary: 'event summary',
+		location: '',
+		colorId: '1',
+		creator: { email: '..@gmail.com' },
+		organizer: { email: '..@gmail.com', displayName: 'Roomname', self: true },
+		start: { dateTime: '2017-07-01T00:30:00+08:00' },
+		end: { dateTime: '2017-07-01T01:00:00+08:00' },
+		iCalUID: '12345@google.com',
+		sequence: 0,
+		reminders: { useDefault: true }
+	};
+
 	describe('checkWithinWeek', () => {
 		it('should return correct days till upcoming occurrence from startdate given future-start events', () => {
 			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(6, 30, 0, 0);	// SA
@@ -305,13 +326,17 @@ describe('CalendarApp', () => {
 	});
 
 	describe('getRoomNameFromId', () => {
+		beforeEach(() => {
+			let CalAPI = new CalendarAPI(CONFIG);
+			CalendarApp.init(CalAPI, CONFIG, ROOM_CONFIG.roomsListing);
+		});
 		it('should return correct roomnames for all room ids', () => {
 			let roomNames = {
+				'fg': 'Focus Group Room',
 				'q1': 'Queen (Video)',
 				'q2': 'Queen (Projector)',
 				'qc': 'Queen (Combined)',
 				'dr': 'Drone',
-				'fg': 'Focus Group Discussion',
 				'bb': 'Bumblebee'
 			};
 			for (let key in roomNames) {
@@ -635,7 +660,7 @@ describe('CalendarApp', () => {
 
 			stub = sinon.stub(CalendarApp, 'listBookedEventsByRoom').resolves(respStub);
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
 
 			return CalendarApp.listEmptySlotsInDay(testInput.datetime, testInput.roomId)
 				.then((promisedResult) => {
@@ -707,7 +732,7 @@ describe('CalendarApp', () => {
 			stub.onSecondCall().resolves(respStubQ2);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
 
 			return CalendarApp.listEmptySlotsInDay(testInput.datetime, testInput.roomId)
 				.then((promisedResult) => {
@@ -760,7 +785,7 @@ describe('CalendarApp', () => {
 			stub.onSecondCall().resolves(respStubQ2);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
 
 			return CalendarApp.listEmptySlotsInDay(testInput.datetime, testInput.roomId)
 				.then((promisedResult) => {
@@ -774,7 +799,7 @@ describe('CalendarApp', () => {
 		afterEach(() => {
 			stub.restore();
 		});
-		it('should return correct event details when insert into single room q1 success', () => {
+		it('should return correct subset of event details from response when insert into single room q1 success', () => {
 			let testInput = {
 				eventIdCreated: 'eventid',
 				bookingSummary: 'bookingSummary',
@@ -827,7 +852,7 @@ describe('CalendarApp', () => {
 			stub = sinon.stub(CalendarAPI.prototype, 'insertEvent').resolves(mockAPIResp);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
 
 			return CalendarApp.insertEvent(testInput.bookingSummary, testInput.startdate, testInput.enddate, testInput.room, testInput.status, testInput.description, testInput.username)
 				.then((promisedResult) => {
@@ -835,9 +860,9 @@ describe('CalendarApp', () => {
 				});
 		});
 
-		it('should return correct event details when insert into combined room qc success', () => {
+		it('should return correct subset of event details from response when insert into combined room qc success', () => {
 			let testInput = {
-				bookingSummary: 'bookingSummary',
+				bookingSummary: 'bookingSummary qc',
 				startdate: '2017-06-17T08:00:00+08:00',
 				enddate: '2017-06-17T10:00:00+08:00',
 				room: 'qc',
@@ -845,7 +870,34 @@ describe('CalendarApp', () => {
 				description: 'booked by butler',
 				colour: 1,
 				username: 'user',
-				createdTime: new Date().getISO8601TimeStamp()
+				createdTime: new Date().getISO8601TimeStamp(),
+				combinedRoomDisplayName: CalendarApp.getRoomNameFromId('qc')
+			};
+			let mockAPIRespR2 = {
+				body: {
+					id: 'event2Id',
+					summary: `${testInput.bookingSummary} by @${testInput.username}`,
+					location: testInput.combinedRoomDisplayName,
+					status: 'confirmed',
+					htmlLink: 'somegcaleventurl',
+					start: { dateTime: testInput.startdate },
+					end: { dateTime: testInput.enddate },
+					created: testInput.createdTime,
+					description: testInput.description
+				}
+			};
+			let mockAPIRespR1 = {
+				body: {
+					id: 'event1Id',
+					summary: `${testInput.bookingSummary} by @${testInput.username}`,
+					location: testInput.combinedRoomDisplayName,
+					status: 'confirmed',
+					htmlLink: 'somegcaleventurl',
+					start: { dateTime: testInput.startdate },
+					end: { dateTime: testInput.enddate },
+					created: testInput.createdTime,
+					description: `booked via butler@${mockAPIRespR2.body.id}`
+				}
 			};
 			let expectedResult = {
 				summary: `${testInput.bookingSummary} by @${testInput.username}`,
@@ -856,48 +908,12 @@ describe('CalendarApp', () => {
 				end: testInput.enddate,
 				created: testInput.createdTime
 			};
-			let mockAPIRespR2 = {
-				body: {
-					id: 'event2Id',
-					summary: `${testInput.bookingSummary} by @${testInput.username}`,
-					location: CalendarApp.getRoomNameFromId(testInput.room),
-					status: 'confirmed',
-					htmlLink: 'somegcaleventurl',
-					start: {
-						dateTime: testInput.startdate
-					},
-					end: {
-						dateTime: testInput.enddate
-					},
-					created: testInput.createdTime,
-					description: 'booked via butler'
-				}
-			};
-
-			let mockAPIRespR1 = {
-				body: {
-					id: 'event1Id',
-					summary: `${testInput.bookingSummary} by @${testInput.username}`,
-					location: CalendarApp.getRoomNameFromId(testInput.room),
-					status: 'confirmed',
-					htmlLink: 'somegcaleventurl',
-					start: {
-						dateTime: testInput.startdate
-					},
-					end: {
-						dateTime: testInput.enddate
-					},
-					created: testInput.createdTime,
-					description: `booked via butler@${mockAPIRespR2.body.id}`
-				}
-			};
-
 			stub = sinon.stub(CalendarAPI.prototype, 'insertEvent');
 			stub.onFirstCall().resolves(mockAPIRespR2);
 			stub.onSecondCall().resolves(mockAPIRespR1);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
 
 			return CalendarApp.insertEvent(testInput.bookingSummary, testInput.startdate, testInput.enddate, testInput.room, testInput.status, testInput.description, testInput.username)
 				.then((promisedResult) => {
@@ -906,5 +922,183 @@ describe('CalendarApp', () => {
 		});
 	});
 
-});
+	describe('deleteEvents', () => {
+		let stub;
+		afterEach(() => {
+			stub.restore();
+		});
+		it('should return array of successful deleted object when deleting single room event in room q1', () => {
+			let testInput = { eventId: 'eventid', room: 'q1' };
+			let expectedResult = [{ statusCode: 204, message: 'Event delete success' }];
 
+			let mockAPIResp = { statusCode: 204, message: 'Event delete success' };
+			stub = sinon.stub(CalendarAPI.prototype, 'deleteEvent').resolves(mockAPIResp);
+
+			let calApiInstance = new CalendarAPI(CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+
+			return CalendarApp.deleteEvents([testInput.eventId], testInput.room)
+				.then((promisedResult) => {
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+
+		it('should return promise with error when deleting single event in room q1 returns error', () => {
+			let testInput = { eventId: 'eventid', room: 'q1' };
+			let mockAPIResp = {
+				error: {
+					errors: [{ domain: 'global', reason: 'notFound', message: 'Not Found' }],
+					code: 404,
+					message: 'Not Found'
+				}
+			};
+			let expectedError = new Error('deleteEvents: ' + mockAPIResp);
+
+			stub = sinon.stub(CalendarAPI.prototype, 'deleteEvent').rejects(mockAPIResp);
+
+			let calApiInstance = new CalendarAPI(CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+
+			return CalendarApp.deleteEvents([testInput.eventId], testInput.room)
+				.catch((err) => {
+					expect(err.message).to.eql(expectedError.message);
+				});
+		});
+
+		it('should return array of successful deleted objects when deleting combined room event in qc', () => {
+			let testInput = { event1Id: 'event1id', event2Id: 'event2id', room: 'qc' };
+			let expectedResult = [
+				{ statusCode: 204, message: 'Event delete success' },
+				{ statusCode: 204, message: 'Event delete success' }
+			];
+
+			let mockAPIResp = { statusCode: 204, message: 'Event delete success' };
+			stub = sinon.stub(CalendarAPI.prototype, 'deleteEvent').resolves(mockAPIResp);
+
+			let calApiInstance = new CalendarAPI(CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+
+			return CalendarApp.deleteEvents([testInput.event1Id, testInput.event2Id], testInput.room)
+				.then((promisedResult) => {
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+	});
+
+	describe('listBookedEventsByUser', () => {
+		let stub;
+		afterEach(() => {
+			stub.restore();
+		});
+
+		it('should return array of correct aggregate of single room events from searching through all calendars', () => {
+			let testInput = { startDateTime: new Date('2017-06-17T08:00:00+08:00'), user: 'user' };
+			let expectedResult = [{
+				id: mockEvent.id,
+				summary: mockEvent.summary,
+				location: mockEvent.location,
+				start: mockEvent.start,
+				end: mockEvent.end,
+				status: mockEvent.status,
+				description: mockEvent.description,
+				room: 'primary',	// first calendar on the list
+				isByMe: mockEvent.description.indexOf('booked via butler') !== -1,
+				recurrent: mockEvent.recurrent
+			}, {
+				id: mockEvent.id,
+				summary: mockEvent.summary,
+				location: mockEvent.location,
+				start: mockEvent.start,
+				end: mockEvent.end,
+				status: mockEvent.status,
+				description: mockEvent.description,
+				room: 'fg',	// second calendar on the list
+				isByMe: mockEvent.description.indexOf('booked via butler') !== -1,
+				recurrent: mockEvent.recurrent
+			}];
+
+			let mockResponse = [mockEvent];
+
+			stub = sinon.stub(CalendarAPI.prototype, 'listEvents');
+			stub.onFirstCall().resolves(mockResponse);
+			stub.onSecondCall().resolves(mockResponse);
+			stub.resolves([]);
+
+			let calApiInstance = new CalendarAPI(CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+
+			return CalendarApp.listBookedEventsByUser(testInput.startDateTime, testInput.user)
+				.then((promisedResult) => {
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+		it('should return array of correct aggregate of combined room events from searching through all calendars', () => {
+			let testInput = { startDateTime: new Date('2017-06-17T08:00:00+08:00'), user: 'user' };
+			let mockCombinedEvents = [{
+				kind: 'calendar#event',
+				etag: '\"0000000000000000\"',
+				id: 'event1',
+				status: 'confirmed',
+				htmlLink: 'https://www.google.com/calendar/event?eid=12345',
+				created: '2017-01-01T00:00:00.000Z',
+				updated: '2017-01-01T00:00:00.722Z',
+				description: 'booked via butler',
+				summary: 'event summary',
+				location: ROOM_CONFIG.roomsListing.qc.name,
+				colorId: '1',
+				creator: { email: '..@gmail.com' },
+				organizer: { email: '..@gmail.com', displayName: 'Roomname', self: true },
+				start: { dateTime: '2017-07-01T00:30:00+08:00' },
+				end: { dateTime: '2017-07-01T01:00:00+08:00' },
+				iCalUID: '12345@google.com',
+				sequence: 0,
+				reminders: { useDefault: true }
+			}, {
+				kind: 'calendar#event',
+				etag: '\"0000000000000000\"',
+				id: 'event2',
+				status: 'confirmed',
+				htmlLink: 'https://www.google.com/calendar/event?eid=12345',
+				created: '2017-01-01T00:00:00.000Z',
+				updated: '2017-01-01T00:00:00.722Z',
+				description: 'booked via butler@event1',
+				summary: 'event summary',
+				location: ROOM_CONFIG.roomsListing.qc.name,
+				colorId: '1',
+				creator: { email: '..@gmail.com' },
+				organizer: { email: '..@gmail.com', displayName: 'Roomname', self: true },
+				start: { dateTime: '2017-07-01T00:30:00+08:00' },
+				end: { dateTime: '2017-07-01T01:00:00+08:00' },
+				iCalUID: '12345@google.com',
+				sequence: 0,
+				reminders: { useDefault: true }
+			}];
+
+			let expectedResult = [, {									// q2 event will be deleted as part of merging combined room events
+				id: mockCombinedEvents[1].id,
+				summary: mockCombinedEvents[1].summary,
+				location: mockCombinedEvents[1].location,
+				start: mockCombinedEvents[1].start,
+				end: mockCombinedEvents[1].end,
+				status: mockCombinedEvents[1].status,
+				description: mockCombinedEvents[1].description,
+				room: ROOM_CONFIG.roomsListing.qc.id,						// the room id shown for combined events will be for qc
+				isByMe: mockCombinedEvents[1].description.indexOf('booked via butler') !== -1,
+				recurrent: mockCombinedEvents[1].recurrent
+			}];
+
+			stub = sinon.stub(CalendarAPI.prototype, 'listEvents');
+			stub.resolves([]);
+			stub.onCall(2).resolves([mockCombinedEvents[0]]);
+			stub.onCall(3).resolves([mockCombinedEvents[1]]);
+
+			let calApiInstance = new CalendarAPI(CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+
+			return CalendarApp.listBookedEventsByUser(testInput.startDateTime, testInput.user)
+				.then((promisedResult) => {
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+	});
+});
