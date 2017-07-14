@@ -170,7 +170,7 @@ export function listBookedEventsByUser(startDateTime, user) {
 
 		promiseList.push(cal.listEvents(calendarId, startDateTime, endDateTime, user)
 			.then((json) => {
-				console.log(json);
+
 				let eventsInCalendar = [];
 				for (let i = 0; i < json.length; i++) {
 					if (json[i].description === undefined) json[i].description = '';
@@ -209,25 +209,19 @@ export function listBookedEventsByUser(startDateTime, user) {
 			// modify event summaries + combine queensC events
 
 			for (let key in bookedEventsArray) {
-				console.log(key);
 				let evnt = bookedEventsArray[key];
-				console.log(evnt);
 				// let bookingDescription = evnt.summary;
 				let bookedRoomName = evnt.location;
 				// evnt.summary = bookingDescription;
 
 				if (bookedRoomName === roomInfoList.qc.name) {
-					console.log('Combined');
 					if (evnt.description.indexOf('@') >= 0) {
 						evnt.room = roomInfoList.qc.id;
-						console.log('\tCombined roomid replaced in event');
 					} else {
 						delete bookedEventsArray[key];
 					}
 				}
 			}
-			console.log('summary');
-			console.log(bookedEventsArray);
 			return bookedEventsArray;
 		});
 }

@@ -11,10 +11,12 @@ import * as SessionMgr from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import * as ParamBuilder from './ParamBuilder';
 import * as CalendarApp from './CalendarApp';
+import Logger from './Logger';
 
 const slimbot = new Slimbot(CONFIG.telegramBotToken);
 const Emitter = new EventEmitter();
 
+let log = new Logger('transaction.log', 'error.log');
 let botName;
 let anyBookList = {};
 let bookerList = {};
@@ -205,36 +207,37 @@ function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
 		.then((bookings) => {
 			if (!bookings.length) {
 				slimbot.sendMessage(message.chat.id, NoBookingReplyText, { parse_mode: 'Markdown' });
-			} else {
-				let count = 0;
-				let msg = '';
-				for (let key in bookings) {
-					count++;
-					let booking = bookings[key];
-					msg += '-------------------------------\n';
-					console.log(booking.summary);
-					let details = booking.summary.split(' by ');
-					let recur = booking.recurrent === undefined ? '' : booking.recurrent;
-					console.log(recur);
-					msg += ReplyBuilder.checkBookings(count, details[0] + recur, booking.location, booking.start.dateTime, booking.end.dateTime, details[1]);
-					if (undefined !== isDelete) {
-						if (!booking.isByMe) {
-							msg += MESSAGES.notBookedByMe;
-						} else {
-							let aryDesc = booking.description.split('@');
-							let room2Id = '';
-							if (aryDesc.length > 1) {
-								room2Id = aryDesc[1];
-							}
-							console.log(`${room2Id}@${booking.id}`);
-							msg += `${MESSAGES.deleteInstruction}/\deleteBooking${booking.room}${room2Id}@${booking.id}\n`;
-						}
-					}
-					msg = msg.replace('_', '-'); // escape _ cuz markdown cant handle it
-				}
-				let reply = MESSAGES.listBooking + msg;
-				slimbot.sendMessage(message.chat.id, reply, { parse_mode: 'Markdown' });
+				return;
 			}
+
+			let count = 0;
+			let msg = '';
+			for (let key in bookings) {
+				count++;
+				let booking = bookings[key];
+				msg += '-------------------------------\n';
+				console.log(booking.summary);
+				let details = booking.summary.split(' by ');
+				let recur = booking.recurrent === undefined ? '' : booking.recurrent;
+				console.log(recur);
+				msg += ReplyBuilder.checkBookings(count, details[0] + recur, booking.location, booking.start.dateTime, booking.end.dateTime, details[1]);
+				if (undefined !== isDelete) {
+					if (!booking.isByMe) {
+						msg += MESSAGES.notBookedByMe;
+					} else {
+						let aryDesc = booking.description.split('@');
+						let room2Id = '';
+						if (aryDesc.length > 1) {
+							room2Id = aryDesc[1];
+						}
+						msg += `${MESSAGES.deleteInstruction}/\deleteBooking${booking.room}${room2Id}@${booking.id}\n`;
+					}
+				}
+				msg = msg.replace('_', '-'); // escape _ cuz markdown cant handle it
+			}
+			let reply = MESSAGES.listBooking + msg;
+			slimbot.sendMessage(message.chat.id, reply, { parse_mode: 'Markdown' });
+
 		});
 }
 
@@ -370,11 +373,13 @@ function insertBookingIntoCalendar(userId, msgId, description, room, startDate, 
 				.then((message) => {
 					msg = ReplyBuilder.bookingConfirmedCalendarLink(json);
 					slimbot.sendMessage(userId, msg);
+					log.transaction(userId, 'insertEvent', { bookingSummary: bookingSummary, room: room, startTime: startTime, endTime: endTime });
 				});
 			SessionMgr.endSession(userId);
 		}).catch((err) => {
 			console.log('Error insertBookingIntoCalendar: ' + JSON.stringify(err));
 			slimbot.editMessageText(userId, msgId, MESSAGES.tooLate);
+			log.error(userId, 'insertBookingIntoCalendar', err.message);
 			throw err;
 		});
 }
@@ -386,9 +391,12 @@ function deleteBookings(eventsToDeleteArray, roomId, message) {
 			slimbot.sendMessage(message.chat.id, `${MESSAGES.delete} for ${deletedFromRoom}.`, { parse_mode: 'Markdown' });
 			let fullname = `${message.from.first_name} ${message.from.last_name}`;
 			let searchQuery = `@${message.chat.username}`;
+			log.transaction(userId, 'deleteEvent', { username: searchQuery, room: roomId, eventsToDelete: eventsToDeleteArray });
+
 			checkUserBookings(message, searchQuery, MESSAGES.noBookingAfterDelete, true);
 		}).catch((err) => {
 			console.log(err);
+			log.error(userId, 'deleteBookings', err.message);
 			slimbot.sendMessage(message.chat.id, MESSAGES.deleteErr, { parse_mode: 'Markdown' });
 		});
 }
