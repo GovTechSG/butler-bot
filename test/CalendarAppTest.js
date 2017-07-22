@@ -350,7 +350,7 @@ describe('CalendarApp', () => {
 	});
 
 	describe('setupTimeArray', () => {
-		it('should return 8am - 830pm list of timeslots when setupTimeArray called at 1200am', () => {
+		it('should return full 8am - 830pm list of timeslots when setupTimeArray called at 1200am', () => {
 			let expectedResult = {
 				'8:00 AM': '8:00 AM', '8:30 AM': '8:30 AM',
 				'9:00 AM': '9:00 AM', '9:30 AM': '9:30 AM',
@@ -370,7 +370,7 @@ describe('CalendarApp', () => {
 			expect(result).to.eql(expectedResult);
 		});
 
-		it('should return 830pm when setupTimeArray called at 830pm', () => {
+		it('should return last slot of the day (830pm) when setupTimeArray called at 830pm', () => {
 			let expectedResult = {
 				'8:30 PM': '8:30 PM'
 			};
@@ -378,13 +378,13 @@ describe('CalendarApp', () => {
 			expect(result).to.eql(expectedResult);
 		});
 
-		it('should return empty obj when setupTimeArray called at 831pm', () => {
+		it('should return {} when setupTimeArray called at 831pm', () => {
 			let expectedResult = {};
 			let result = CalendarApp.setupTimeArray(new Date().setTime(20, 31, 0, 0));
 			expect(result).to.eql(expectedResult);
 		});
 
-		it('should return empty obj when setupTimeArray called at 1159pm', () => {
+		it('should return {} when setupTimeArray called at 1159pm', () => {
 			let expectedResult = {};
 			let result = CalendarApp.setupTimeArray(new Date().setTime(23, 59, 0, 0));
 			expect(result).to.eql(expectedResult);
@@ -392,7 +392,7 @@ describe('CalendarApp', () => {
 	});
 
 	describe('filterBusyTimeslots', () => {
-		it('should return correct timeslots & ignore error event when setupTimeArray called with error event ', () => {
+		it('should return correct timeslots & ignore error event when called with error event ', () => {
 			let events = [{
 				id: '7j1f3ngpff65k8v8ta67lumi1g',
 				summary: 'event',
@@ -435,7 +435,7 @@ describe('CalendarApp', () => {
 			expect(result).to.eql(expectedResult);
 		});
 
-		it('should return timeslots (8am - 830pm except 5pm slot) when setupTimeArray called with event from 5-530pm', () => {
+		it('should return all except 5pm slot timeslots when called with event from 5-530pm', () => {
 			let events = [{
 				id: '7j1f3ngpff65k8v8ta67lumi1g',
 				summary: 'event',
@@ -473,7 +473,7 @@ describe('CalendarApp', () => {
 			expect(result).to.eql(expectedResult);
 		});
 
-		it('should return timeslots (8am - 830pm except 5pm-6pm slot) when setupTimeArray called with events from 5-530pm & 530-6pm', () => {
+		it('should return all except 5 & 530pm timeslots when called with events from 5-530pm & 530-6pm', () => {
 			let events = [{
 				id: '7j1f3ngpff65k8v8ta67lumi1g',
 				summary: 'event',
@@ -528,7 +528,7 @@ describe('CalendarApp', () => {
 	});
 
 	describe('filterDurationSlots', () => {
-		it('should return correct duration available with an upcoming event 30 mins away', () => {
+		it('should return only 30min duration option given an upcoming event 30 mins away', () => {
 			let expectedResult = { '1': '30 mins' };
 			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(9, 30, 0, 0)
 			let events = [{
@@ -552,7 +552,7 @@ describe('CalendarApp', () => {
 			expect(result).to.eql(expectedResult);
 		});
 
-		it('should return max duration of 4hr with an upcoming event 5 hours away', () => {
+		it('should return the maximum 4hr duration options given an upcoming event 5 hours away', () => {
 			let expectedResult = {
 				"1": "30 mins", "2": "1 hour",
 				"3": "1.5 hours", "4": "2 hours",
@@ -581,7 +581,7 @@ describe('CalendarApp', () => {
 			expect(result).to.eql(expectedResult);
 		});
 
-		it('should return empty duration object with an upcoming event 29 mins away', () => {
+		it('should return {} given an upcoming event 29 mins away', () => {
 			let expectedResult = {};
 			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(9, 31, 0, 0)
 			let events = [{
@@ -686,15 +686,14 @@ describe('CalendarApp', () => {
 			stub.restore();
 		});
 
-		it('should return available slots for booking given event datetime at 8am and single room fgd', () => {
+		it('should return all except 8-11am timeslots available given 2 single room events (8-9am & 9-11am)', () => {
 			let testInput = {
 				datetime: '2017-07-01T08:00:00+08:00',
 				roomId: 'fg'
 			};
 
 			let expectedResult = {
-				'9:00 AM': '9:00 AM',
-				'9:30 AM': '9:30 AM',
+				'11:00 AM': '11:00 AM',
 				'11:30 AM': '11:30 AM',
 				'12:00 PM': '12:00 PM',
 				'12:30 PM': '12:30 PM',
@@ -727,8 +726,8 @@ describe('CalendarApp', () => {
 				id: 'rtv8bon6il3hcq85u51i45qjmk',
 				summary: 'Booked by b',
 				location: 'Focus Group Room ',
-				start: { dateTime: '2017-06-19T10:00:00+08:00' },
-				end: { dateTime: '2017-06-19T11:30:00+08:00' },
+				start: { dateTime: '2017-07-01T09:00:00+08:00' },
+				end: { dateTime: '2017-07-01T11:00:00+08:00' },
 				status: 'confirmed'
 			}];
 
@@ -742,9 +741,9 @@ describe('CalendarApp', () => {
 				});
 		});
 
-		it('should return available slots for booking given event datetime at 8am and combined room qc', () => {
+		it('should return all except 8am-12pm timeslots available given 4 combined room events (8-9am, 10-11am & 9-10am, 11-12pm)', () => {
 			let testInput = {
-				datetime: '2017-06-19T08:00:00+08:00',
+				datetime: '2017-07-01T08:00:00+08:00',
 				roomId: 'qc'
 			};
 
@@ -773,15 +772,15 @@ describe('CalendarApp', () => {
 				id: 'id1',
 				summary: 'Booked by a',
 				location: 'Queen (Video)',
-				start: { dateTime: '2017-06-19T08:00:00+08:00' },
-				end: { dateTime: '2017-06-19T09:00:00+08:00' },
+				start: { dateTime: '2017-07-01T08:00:00+08:00' },
+				end: { dateTime: '2017-07-01T09:00:00+08:00' },
 				status: 'confirmed'
 			}, {
 				id: 'id2',
 				summary: 'Booked by b',
 				location: 'Queen (Video)',
-				start: { dateTime: '2017-06-19T10:00:00+08:00' },
-				end: { dateTime: '2017-06-19T11:30:00+08:00' },
+				start: { dateTime: '2017-07-01T10:00:00+08:00' },
+				end: { dateTime: '2017-07-01T11:00:00+08:00' },
 				status: 'confirmed'
 			}];
 
@@ -789,15 +788,15 @@ describe('CalendarApp', () => {
 				id: 'id3',
 				summary: 'Booked by c',
 				location: 'Queen (Projector)',
-				start: { dateTime: '2017-06-19T09:00:00+08:00' },
-				end: { dateTime: '2017-06-19T10:00:00+08:00' },
+				start: { dateTime: '2017-07-01T09:00:00+08:00' },
+				end: { dateTime: '2017-07-01T10:00:00+08:00' },
 				status: 'confirmed'
 			}, {
 				id: 'id4',
 				summary: 'Booked by d',
 				location: 'Queen (Projector)',
-				start: { dateTime: '2017-06-19T11:30:00+08:00' },
-				end: { dateTime: '2017-06-19T12:00:00+08:00' },
+				start: { dateTime: '2017-07-01T11:00:00+08:00' },
+				end: { dateTime: '2017-07-01T12:00:00+08:00' },
 				status: 'confirmed'
 			}];
 
@@ -814,7 +813,7 @@ describe('CalendarApp', () => {
 				});
 		});
 
-		it('should return empty result given missing event info', () => {
+		it('should return {} given missing datetime when listEmptySlotsInDay', () => {
 			let testInput = {
 				datetime: '',
 				roomId: 'q1'
