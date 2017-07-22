@@ -606,6 +606,80 @@ describe('CalendarApp', () => {
 		});
 	});
 
+	describe('listBookedEventsByRoom', () => {
+		it('should return array of booked events info for non-recurring single room events', () => {
+			let testInput = {
+				startDateTime: '2017-07-01T00:00:00+08:00',
+				endDateTime: '2017-07-02T00:00:00+08:00',
+				roomId: 'fg'
+			};
+
+			let expectedReturnedEvent = {
+				id: mockEvent.id,
+				summary: mockEvent.summary,
+				status: mockEvent.status,
+				location: mockEvent.location,
+				start: { dateTime: mockEvent.start.dateTime },
+				end: { dateTime: mockEvent.end.dateTime }
+			};
+			let expectedResult = [expectedReturnedEvent, expectedReturnedEvent];
+
+			let mockResponse = [mockEvent, mockEvent];
+			let mockCalendarAPI = {
+				listEvents: sinon.stub().resolves(mockResponse)
+			};
+			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing);
+
+			return CalendarApp.listBookedEventsByRoom(testInput.startDateTime, testInput.endDateTime, testInput.roomId)
+				.then((promisedResult) => {
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+
+		it('should return array of booked events info for recurring single room events', () => {
+			let testInput = {
+				startDateTime: '2017-07-22T00:00:00+08:00',
+				endDateTime: '2017-07-23T00:00:00+08:00',
+				roomId: 'fg'
+			};
+
+			let mockRecurringEvent = {
+				kind: mockEvent.kind,
+				id: mockEvent.id,
+				status: mockEvent.status,
+				created: mockEvent.created,
+				updated: mockEvent.updated,
+				description: mockEvent.description,
+				summary: mockEvent.summary,
+				location: testInput.room,
+				colorId: mockEvent.colorId,
+				start: { dateTime: mockEvent.start.dateTime },
+				end: { dateTime: mockEvent.end.dateTime },
+				recurrence: ['RRULE:FREQ=WEEKLY;COUNT=4;BYDAY=SA']
+			};
+			let mockResponse = [mockRecurringEvent, mockRecurringEvent];
+			let mockCalendarAPI = {
+				listEvents: sinon.stub().resolves(mockResponse)
+			};
+			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing);
+
+			let expectedReturnedEvent = {
+				id: mockRecurringEvent.id,
+				summary: mockRecurringEvent.summary,
+				status: mockRecurringEvent.status,
+				location: mockRecurringEvent.location,
+				start: { dateTime: new Date(mockRecurringEvent.start.dateTime).addDays(21).getISO8601TimeStamp() },
+				end: { dateTime: new Date(mockRecurringEvent.end.dateTime).addDays(21).getISO8601TimeStamp() }
+			};
+			let expectedResult = [expectedReturnedEvent, expectedReturnedEvent];
+
+			return CalendarApp.listBookedEventsByRoom(testInput.startDateTime, testInput.endDateTime, testInput.roomId, testInput.today)
+				.then((promisedResult) => {
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+	});
+
 	describe('listEmptySlotsInDay', () => {
 		let stub;
 		afterEach(() => {
@@ -614,7 +688,7 @@ describe('CalendarApp', () => {
 
 		it('should return available slots for booking given event datetime at 8am and single room fgd', () => {
 			let testInput = {
-				datetime: '2017-06-19T08:00:00+08:00',
+				datetime: '2017-07-01T08:00:00+08:00',
 				roomId: 'fg'
 			};
 
@@ -646,8 +720,8 @@ describe('CalendarApp', () => {
 				id: 'id1',
 				summary: 'Booked by a',
 				location: 'Focus Group Room',
-				start: { dateTime: '2017-06-19T08:00:00+08:00' },
-				end: { dateTime: '2017-06-19T09:00:00+08:00' },
+				start: { dateTime: '2017-07-01T08:00:00+08:00' },
+				end: { dateTime: '2017-07-01T09:00:00+08:00' },
 				status: 'confirmed'
 			}, {
 				id: 'rtv8bon6il3hcq85u51i45qjmk',
@@ -991,7 +1065,7 @@ describe('CalendarApp', () => {
 			stub.restore();
 		});
 
-		it('should return array of correct aggregate of single room events from searching through all calendars', () => {
+		it('should return array of correct aggregate of single room non-recurring events from searching through all calendars', () => {
 			let testInput = { startDateTime: new Date('2017-06-17T08:00:00+08:00'), user: 'user' };
 			let expectedResult = [{
 				id: mockEvent.id,
@@ -1032,11 +1106,11 @@ describe('CalendarApp', () => {
 					expect(promisedResult).to.eql(expectedResult);
 				});
 		});
-		it('should return array of correct aggregate of combined room events from searching through all calendars', () => {
+		it('should return array of correct aggregate of combined room non-recurring events from searching through all calendars', () => {
 			let testInput = { startDateTime: new Date('2017-06-17T08:00:00+08:00'), user: 'user' };
 			let mockCombinedEvents = [{
 				kind: 'calendar#event',
-				etag: '\"0000000000000000\"',
+				etag: '0000000000000000',
 				id: 'event1',
 				status: 'confirmed',
 				htmlLink: 'https://www.google.com/calendar/event?eid=12345',
@@ -1094,6 +1168,50 @@ describe('CalendarApp', () => {
 
 			let calApiInstance = new CalendarAPI(CONFIG);
 			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+
+			return CalendarApp.listBookedEventsByUser(testInput.startDateTime, testInput.user)
+				.then((promisedResult) => {
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+		it('should return array of correct aggregate of single room recurring events from searching through all calendars', () => {
+			let testInput = { startDateTime: new Date('2017-07-22T00:00:00+08:00'), user: 'user', room: 'fgd' };
+
+			let mockRecurringEvent = {
+				kind: mockEvent.kind,
+				id: mockEvent.id,
+				status: mockEvent.status,
+				created: mockEvent.created,
+				updated: mockEvent.updated,
+				description: mockEvent.description,
+				summary: mockEvent.summary,
+				location: testInput.room,
+				colorId: mockEvent.colorId,
+				start: { dateTime: mockEvent.start.dateTime },
+				end: { dateTime: mockEvent.end.dateTime },
+				recurrence: ['RRULE:FREQ=WEEKLY;COUNT=4;BYDAY=SA']
+			};
+			let mockResponse = [mockRecurringEvent];
+
+			stub = sinon.stub(CalendarAPI.prototype, 'listEvents');
+			stub.onFirstCall().resolves(mockResponse);
+			stub.resolves([]);
+
+			let calApiInstance = new CalendarAPI(CONFIG);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+
+			let expectedResult = [{
+				id: mockRecurringEvent.id,
+				summary: mockRecurringEvent.summary,
+				location: mockRecurringEvent.location,
+				start: { dateTime: new Date(mockRecurringEvent.start.dateTime).addDays(21).getISO8601TimeStamp() },
+				end: { dateTime: new Date(mockRecurringEvent.end.dateTime).addDays(21).getISO8601TimeStamp() },
+				status: mockRecurringEvent.status,
+				description: mockRecurringEvent.description,
+				room: 'primary',
+				isByMe: mockRecurringEvent.description.indexOf('booked via butler') !== -1,
+				recurrent: ' (Recurring)'
+			}];
 
 			return CalendarApp.listBookedEventsByUser(testInput.startDateTime, testInput.user)
 				.then((promisedResult) => {

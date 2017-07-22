@@ -161,21 +161,20 @@ export function parseRecurrenceEvent(event) {
 export function listBookedEventsByUser(startDateTime, user) {
 	let promiseList = [];
 	let bookedEventsArray = [];
-	let endDateTime = startDateTime;
-	startDateTime = startDateTime.getISO8601TimeStamp();
-	endDateTime = endDateTime.addDays(365).getISO8601TimeStamp();
+	let endDateTime = new Date(startDateTime);
+	let startDateTimeStamp = startDateTime.getISO8601TimeStamp();
+	let endDateTimeStamp = endDateTime.addDays(365).getISO8601TimeStamp();	// list events up to 1 year ahead
 
 	for (let room in calendarIdList) {
 		let calendarId = calendarIdList[room];
 
-		promiseList.push(cal.listEvents(calendarId, startDateTime, endDateTime, user)
+		promiseList.push(cal.listEvents(calendarId, startDateTimeStamp, endDateTimeStamp, user)
 			.then((json) => {
-
 				let eventsInCalendar = [];
 				for (let i = 0; i < json.length; i++) {
 					if (json[i].description === undefined) json[i].description = '';
 					if (json[i].recurrence !== undefined) {
-						let { startDate, endDate } = calculateUpcomingRecurrence(parseRecurrenceEvent(json[i]), new Date());
+						let { startDate, endDate } = calculateUpcomingRecurrence(parseRecurrenceEvent(json[i]), startDateTime);
 						if (startDate !== undefined) {
 							json[i].recurrent = ' (Recurring)';
 							json[i].start = { dateTime: startDate.getISO8601TimeStamp() };
@@ -199,6 +198,7 @@ export function listBookedEventsByUser(startDateTime, user) {
 				}
 				return eventsInCalendar;
 			}).catch((err) => {
+				console.log(`listBookedEventsByUser Error: ${err}`);
 				throw err;
 			})
 		);
@@ -210,9 +210,7 @@ export function listBookedEventsByUser(startDateTime, user) {
 
 			for (let key in bookedEventsArray) {
 				let evnt = bookedEventsArray[key];
-				// let bookingDescription = evnt.summary;
 				let bookedRoomName = evnt.location;
-				// evnt.summary = bookingDescription;
 
 				if (bookedRoomName === roomInfoList.qc.name) {
 					if (evnt.description.indexOf('@') >= 0) {
@@ -226,15 +224,15 @@ export function listBookedEventsByUser(startDateTime, user) {
 		});
 }
 
-export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
+export function listBookedEventsByRoom(startDateTimeStamp, endDateTimeStamp, query) {
 	let bookedEventsArray = [];
 	let calendarId = calendarIdList[query];
 
-	return cal.listEvents(calendarId, startDateTime, endDateTime)
+	return cal.listEvents(calendarId, startDateTimeStamp, endDateTimeStamp)
 		.then((json) => {
 			for (let i = 0; i < json.length; i++) {
 				if (json[i].recurrence !== undefined) {
-					let { startDate, endDate } = calculateUpcomingRecurrence(parseRecurrenceEvent(json[i]), new Date());
+					let { startDate, endDate } = calculateUpcomingRecurrence(parseRecurrenceEvent(json[i]), new Date(startDateTimeStamp));
 					if (startDate !== undefined) {
 						json[i].start = { dateTime: startDate.getISO8601TimeStamp() };
 						json[i].end = { dateTime: endDate.getISO8601TimeStamp() };
@@ -252,7 +250,7 @@ export function listBookedEventsByRoom(startDateTime, endDateTime, query) {
 			}
 			return bookedEventsArray;
 		}).catch((err) => {
-			console.log('listBookedEventsByRoom Error:' + err);
+			console.log(`listBookedEventsByRoom Error: ${err}`);
 			throw err;
 		});
 }
@@ -265,7 +263,7 @@ export function handleListingForTwoCalendars(date, endDate, roomId) {
 			}),
 
 		exports.listBookedEventsByRoom(date, endDate, jointRoomList[roomId][1])
-			.then(jsonArr => {
+			.then((jsonArr) => {
 				return jsonArr;
 			}),
 
@@ -274,7 +272,7 @@ export function handleListingForTwoCalendars(date, endDate, roomId) {
 		}
 	).catch((err) => {
 		console.log('handleListingForTwoCalendars Error');
-		throw new Error("handleListingForTwoCalendars error: " + err);
+		throw new Error(`handleListingForTwoCalendars error: ${err}`);
 	});
 }
 
@@ -314,8 +312,8 @@ export function listEmptySlotsInDay(date, roomId) {
 				return timeArr;
 			})
 			.catch((err) => {
-				console.log('listEmptySlotsInDay Error: ' + err);
-				throw new Error('listEmptySlotsInDay error: ' + err);
+				console.log(`listEmptySlotsInDay Error: ${err}`);
+				throw new Error(`listEmptySlotsInDay error: ${err}`);
 			});
 	}
 	return exports.listBookedEventsByRoom(date, endDate, roomId)
@@ -326,8 +324,8 @@ export function listEmptySlotsInDay(date, roomId) {
 			return timeArr;
 		})
 		.catch((err) => {
-			console.log('listEmptySlotsInDay Error: ' + err);
-			throw new Error('listEmptySlotsInDay error: ' + err);
+			console.log(`listEmptySlotsInDay Error: ${err}`);
+			throw new Error(`listEmptySlotsInDay error: ${err}`);
 		});
 }
 
@@ -342,7 +340,7 @@ export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
 				return filterDurationSlots(timeslotObj, startTimestamp);
 			})
 			.catch((err) => {
-				throw new Error('listAvailableDurationForStartTime: ' + err);
+				throw new Error(`listAvailableDurationForStartTime: ${err}`);
 			});
 	} else {
 		return listBookedEventsByRoom(startTimestamp, endTimestamp, roomId)
@@ -350,7 +348,7 @@ export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
 				return filterDurationSlots(jsonArr, startTimestamp);
 			})
 			.catch((err) => {
-				throw new Error('listAvailableDurationForStartTime: ' + err);
+				throw new Error(`listAvailableDurationForStartTime: ${err}`);
 			});
 	}
 }
@@ -396,7 +394,7 @@ export function insertEventForCombinedRoom(room1Details, room2Details, username)
 	return insertEvent(room2Details.bookingSummary, room2Details.startDateTime, room2Details.endDateTime,
 		room2Details.location, room2Details.status, room2Details.description, username, roomInfoList.qc.name)
 		.then((resultsRoom2) => {
-			room1Details.description += `@${resultsRoom2.id}`;
+			room1Details.description += `@${resultsRoom2.id} `;
 
 			return insertEvent(room1Details.bookingSummary, room1Details.startDateTime, room1Details.endDateTime,
 				room1Details.location, room1Details.status, room1Details.description, username, roomInfoList.qc.name)
