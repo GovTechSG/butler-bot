@@ -7,7 +7,7 @@ import './Date';
 import MESSAGES from './Messages';
 import USERS from '../data/users';
 import CONFIG, { ROOM_CONFIG } from '../config/settings';
-import * as SessionMgr from './SessionManagement';
+import SessionManagement from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import * as ParamBuilder from './ParamBuilder';
 import * as CalendarApp from './CalendarApp';
@@ -15,7 +15,7 @@ import * as CalendarApp from './CalendarApp';
 
 const slimbot = new Slimbot(CONFIG.telegramBotToken);
 const Emitter = new EventEmitter();
-
+const SessionMgr = new SessionManagement(Emitter);
 // let log = new Logger('transaction.log', 'error.log');
 let botName;
 let anyBookList = {};
@@ -35,7 +35,6 @@ slimbot.getMe().then((update) => {
 }());
 
 // SessionManager listener
-SessionMgr.setupEventEmitter(Emitter);
 
 Emitter.on("sessionStateChange", function (event) {
 	slimbot.editMessageText(event.userChatId, event.msgId, event.msg);
