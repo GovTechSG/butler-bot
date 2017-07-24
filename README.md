@@ -15,14 +15,14 @@ Run the bot
 npm start
 ```
 
-Running tests
+Running tests (After you have setup the env vars)
 ```javascript
 npm test
 ```
 
 ## Configuration
-* Setup test google calendar, service account and get auth key
-* Setup test telegram bot and get bot token
+* [Setup & grant permission to test google calendar, service account and get auth key](https://github.com/yuhong90/node-google-calendar/wiki#setup-service-accounts)
+* Setup test telegram bot and [get bot token](https://core.telegram.org/bots#6-botfather)
 * Copy [.sample-env](.sample-env) to `.env` and replace with your own env variables
 * Add sample users data in [sample-users.js](src/data/sample-users.js)
 
@@ -41,8 +41,8 @@ References:
 Report a bug [here](https://github.com/GovTechSG/butler-bot/issues).
 
 ## Todo
-* [Refactor] Extract available room options to settings file
-* [Feature] Quick command to check available rooms in the next coming hour
+* [Feature] Quick command to check available rooms in the next coming x hour
+* [Improvement] Improve /any booking flow
 * [Feature] Users to state meeting participants and auto send email meeting invites 
 * [Improvement] Booking insert job queue improvement
 * [Improvement] Authenticate to only allow hive users to book (temporary workaround for now)   

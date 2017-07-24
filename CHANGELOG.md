@@ -1,22 +1,21 @@
-# Butler Bot changelog
+# Butler Bot Changelog
 
 ## [unreleased]
 * Added Travis CI to run unit tests
-* Extracted available room options to settings file
-* Cleaning up project onboarding process
+* Extracted available room, duration, colour options and session settings to config file
+* Minor bugfixes in de-conflicting recurring booking conflicts & delete booking
 
+## [0.1.3] - 22nd May 2017
 
-### [0.1.3] - 22nd May 2017
-
-* Added extra error handling for listing event to handle random event data returned by googlw with undefined start and end time
+* Added extra error handling for listing event to handle random event data returned by google with undefined start and end time
 * Removed room options that are no longer available for booking
 
-### [0.1.2] - 4th April 2017
+## [0.1.2] - 4th April 2017
 
 * Added Mocha; Started writing unit tests
-* Removed Redis
 * Parses and handles recurring bookings during booking checks and slot availability checks made through google calendar
 * /booked now able to shows latest upcoming booking occurrence for recurring bookings
+* Removed unused Redis for simplicity
 
 ## [0.1.1] - 13th February 2017
 ### Added
@@ -26,7 +25,7 @@
 * Improved navigation interaction between each booking step @edisonchee
 * Changed booking format - from 0.5hr slots to user-defined start time and duration @shekyh/@yuhong90
 * Added booking session and timeout functionality @shekyh/@yuhong90
-* Added booking queue system @shkyh/@yuhong90
+* Added booking queue system @shekyh/@yuhong90
 * Changed voice and tone of bot i.e. add character and use singlish @edisonchee
 
 ## [0.1.0] - 1st August 2016
