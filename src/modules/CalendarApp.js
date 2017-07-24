@@ -394,7 +394,7 @@ export function insertEventForCombinedRoom(room1Details, room2Details, username)
 	return insertEvent(room2Details.bookingSummary, room2Details.startDateTime, room2Details.endDateTime,
 		room2Details.location, room2Details.status, room2Details.description, username, roomInfoList.qc.name)
 		.then((resultsRoom2) => {
-			room1Details.description += `@${resultsRoom2.id} `;
+			room1Details.description += `@${resultsRoom2.id}`;
 
 			return insertEvent(room1Details.bookingSummary, room1Details.startDateTime, room1Details.endDateTime,
 				room1Details.location, room1Details.status, room1Details.description, username, roomInfoList.qc.name)
