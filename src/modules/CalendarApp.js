@@ -3,30 +3,6 @@ import Promise from 'bluebird';
 import EventEmitter from 'eventemitter3';
 import './Date';
 
-const colourDict = { 'fg': 5, 'dr': 7, 'q1': 6, 'q2': 10, 'qc': 11, 'bb': 3 };
-// const RoomList = {
-// 	queen1: { id: 'q1', name: 'Queen (Video)' },
-// 	queen2: { id: 'q2', name: 'Queen (Projector)' },
-// 	queenC: { id: 'qc', name: 'Queen (Combined)', children: ['q1', 'q2'] },
-// 	drone: { id: 'dr', name: 'Drone' },
-// 	fgd: { id: 'fg', name: 'Focus Group Discussion' },
-// 	bb: { id: 'bb', name: 'Bumblebee' }
-// };
-const jointRoomList = {
-	'qc': ['q1', 'q2']
-};
-
-const durationOptions = {
-	1: '30 mins',
-	2: '1 hour',
-	3: '1.5 hours',
-	4: '2 hours',
-	5: '2.5 hours',
-	6: '3 hours',
-	7: '3.5 hours',
-	8: '4 hours'
-};
-
 let config;
 let cal;
 let calendarIdList;
@@ -43,11 +19,15 @@ export function init(calendarApiInstance, configObj, roomlistObj) {
 }
 
 export function getColourForRoom(roomname) {
-	return colourDict[roomname];
+	return roomInfoList[roomname].colour;
 }
 
 export function getRoomNameFromId(id) {
 	return roomInfoList[id].name;
+}
+
+export function getChildFromJointRoomId(jointRoomId) {
+	return roomInfoList[jointRoomId].children;
 }
 
 function getTimeslotName(startTime) {
@@ -80,10 +60,6 @@ export function setupTimeArray(datetimeStr) {
 function countSlotsWithinTimeframe(startTime, endTime) {
 	let timeDiff = endTime.getTime() - startTime.getTime();
 	return Math.round(timeDiff / (30 * 60 * 1000));
-}
-
-export function getDurationOptionNameWithId(optionId) {
-	return durationOptions[optionId];
 }
 
 export function checkWithinWeek(startDate, today, recurrenceInWeek, dayDiffInWeek) {
@@ -255,14 +231,14 @@ export function listBookedEventsByRoom(startDateTimeStamp, endDateTimeStamp, que
 		});
 }
 
-export function handleListingForTwoCalendars(date, endDate, roomId) {
+export function handleListingForTwoCalendars(date, endDate, jointRoomId) {
 	return Promise.join(
-		exports.listBookedEventsByRoom(date, endDate, jointRoomList[roomId][0])
+		exports.listBookedEventsByRoom(date, endDate, getChildFromJointRoomId(jointRoomId)[0])
 			.then((jsonArr) => {
 				return jsonArr;
 			}),
 
-		exports.listBookedEventsByRoom(date, endDate, jointRoomList[roomId][1])
+		exports.listBookedEventsByRoom(date, endDate, getChildFromJointRoomId(jointRoomId)[1])
 			.then((jsonArr) => {
 				return jsonArr;
 			}),
@@ -305,10 +281,8 @@ export function listEmptySlotsInDay(date, roomId) {
 	if (roomId == roomInfoList.qc.id) {
 		return exports.handleListingForTwoCalendars(date, endDate, roomId)
 			.then((timeslotObj) => {
-				// console.log(timeslotObj);
 				let timeArr = setupTimeArray(date);
 				filterBusyTimeslots(timeArr, timeslotObj);
-				// console.log(timeArr);
 				return timeArr;
 			})
 			.catch((err) => {
@@ -320,37 +294,12 @@ export function listEmptySlotsInDay(date, roomId) {
 		.then((timeslotObj) => {
 			let timeArr = setupTimeArray(date);
 			exports.filterBusyTimeslots(timeArr, timeslotObj);
-			// console.log(timeArr);
 			return timeArr;
 		})
 		.catch((err) => {
 			console.log(`listEmptySlotsInDay Error: ${err}`);
 			throw new Error(`listEmptySlotsInDay error: ${err}`);
 		});
-}
-
-export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
-	const listAvailableTime = 21; // Check available time up to 9 pm
-	let startTimestamp = new Date(startDatetimeStr).getISO8601TimeStamp();
-	let endTimestamp = new Date(startDatetimeStr).getISO8601DateWithDefinedTime(listAvailableTime, 0, 0, 0);
-
-	if (roomId == roomInfoList.qc.id) {
-		return handleListingForTwoCalendars(startTimestamp, endTimestamp, roomId)
-			.then((timeslotObj) => {
-				return filterDurationSlots(timeslotObj, startTimestamp);
-			})
-			.catch((err) => {
-				throw new Error(`listAvailableDurationForStartTime: ${err}`);
-			});
-	} else {
-		return listBookedEventsByRoom(startTimestamp, endTimestamp, roomId)
-			.then((jsonArr) => {
-				return filterDurationSlots(jsonArr, startTimestamp);
-			})
-			.catch((err) => {
-				throw new Error(`listAvailableDurationForStartTime: ${err}`);
-			});
-	}
 }
 
 export function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
@@ -388,6 +337,30 @@ export function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
 		}
 	}
 	return durOptions;
+}
+
+export function listAvailableDurationForStartTime(startDatetimeStr, roomId) {
+	const listAvailableTime = 21; // Check available time up to 9 pm
+	let startTimestamp = new Date(startDatetimeStr).getISO8601TimeStamp();
+	let endTimestamp = new Date(startDatetimeStr).getISO8601DateWithDefinedTime(listAvailableTime, 0, 0, 0);
+
+	if (roomId == roomInfoList.qc.id) {
+		return handleListingForTwoCalendars(startTimestamp, endTimestamp, roomId)
+			.then((timeslotObj) => {
+				return filterDurationSlots(timeslotObj, startTimestamp);
+			})
+			.catch((err) => {
+				throw new Error(`listAvailableDurationForStartTime: ${err}`);
+			});
+	} else {
+		return listBookedEventsByRoom(startTimestamp, endTimestamp, roomId)
+			.then((jsonArr) => {
+				return filterDurationSlots(jsonArr, startTimestamp);
+			})
+			.catch((err) => {
+				throw new Error(`listAvailableDurationForStartTime: ${err}`);
+			});
+	}
 }
 
 export function insertEventForCombinedRoom(room1Details, room2Details, username) {
@@ -502,7 +475,6 @@ function checkBookingTurn(username, bookTime, bookQueue) {
 		console.log('turn for ' + username + ' to insert event');
 		return true;
 	}
-
 	// not current booking's turn yet
 	return false;
 }
@@ -510,7 +482,7 @@ function checkBookingTurn(username, bookTime, bookQueue) {
 function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
 	let promiseList = [];
 	let statusList = [];
-	let jointRoom = jointRoomList[room];
+	let jointRoom = getChildFromJointRoomId(room);
 
 	for (let smallRoom in jointRoom) {
 		console.log('checkJointRoomFree: ' + jointRoom[smallRoom]);
@@ -523,12 +495,12 @@ function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
 					if (json != undefined && json.length > 0) {
 						statusList.push(false);
 						return false;
-					} else {
-						statusList.push(true);
-						return true;
 					}
+					statusList.push(true);
+					return true;
+
 				}).catch((err) => {
-					throw new Error("checkJointRoomFree: " + err);
+					throw new Error(`checkJointRoomFree: ${err}`);
 				})
 		);
 	}
@@ -597,17 +569,17 @@ export function deleteEvents(eventIdArray, roomId) {
 		for (let index in roomInfoList.qc.children) {
 			let childRoom = roomInfoList.qc.children[index];
 			let calendarId = calendarIdList[childRoom];
-			console.log(`\tAttempting to delete event: ${childRoom}, ${eventIdArray[index]} `)
+			console.log(`\tAttempting to delete event: ${childRoom}, ${eventIdArray[index]}`)
 			promiseList.push(cal.deleteEvent(calendarId, eventIdArray[index]));
 		}
 	} else {
-		console.log(`\tAttempting to delete event: ${roomId}, ${eventIdArray[0]} `)
+		console.log(`\tAttempting to delete event: ${roomId}, ${eventIdArray[0]}`)
 		promiseList.push(cal.deleteEvent(calendarIdList[roomId], eventIdArray[0]));
 	}
 	return Promise.all(promiseList).then((result) => {
 		console.log('\t' + JSON.stringify(result));
 		return result;
 	}).catch((err) => {
-		throw new Error('deleteEvents: ' + err);
+		throw new Error(`deleteEvents: ${err}`);
 	});
 }

@@ -6,7 +6,7 @@ import CalendarAPI from 'node-google-calendar';
 import './Date';
 import MESSAGES from './Messages';
 import USERS from '../data/users';
-import CONFIG, { ROOM_CONFIG } from '../config/settings';
+import CONFIG, { ROOM_CONFIG, BOOKING_DURATION_OPTIONS } from '../config/settings';
 import SessionManagement from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import * as ParamBuilder from './ParamBuilder';
@@ -16,6 +16,7 @@ import * as CalendarApp from './CalendarApp';
 const slimbot = new Slimbot(CONFIG.telegramBotToken);
 const Emitter = new EventEmitter();
 const SessionMgr = new SessionManagement(Emitter);
+
 // let log = new Logger('transaction.log', 'error.log');
 let botName;
 let anyBookList = {};
@@ -303,8 +304,7 @@ function promptTimeslotSelection(query, room, startDate) {
 // Step 3 - Duration
 function promptDurationSelection(query, room, startDate, startTime) {
 	CalendarApp.listAvailableDurationForStartTime(startDate.getISO8601DateWithDefinedTimeString(startTime), room)
-		.then(
-		(jsonArr) => {
+		.then((jsonArr) => {
 			let msg = ReplyBuilder.askForDuration(roomlist[room].name, startDate, startTime);
 			slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getDuration(jsonArr, room, startDate, startTime));
 			SessionMgr.extendSession(query.message.chat.id, query.message.message_id, query.message.chat.username);
@@ -316,7 +316,7 @@ function promptDurationSelection(query, room, startDate, startTime) {
 
 //Step 4 - Booking Description
 function promptDescription(query, room, startDate, startTime, duration) {
-	let msg = ReplyBuilder.askForDescription(roomlist[room].name, startDate, startTime, CalendarApp.getDurationOptionNameWithId(duration));
+	let msg = ReplyBuilder.askForDescription(roomlist[room].name, startDate, startTime, BOOKING_DURATION_OPTIONS[duration]);
 	slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getBackButton(room, startDate, startTime, duration))
 		.then((message) => {
 			let botId = message.result.chat.id;
