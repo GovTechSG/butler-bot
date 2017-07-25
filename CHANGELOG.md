@@ -1,6 +1,8 @@
 # Butler Bot Changelog
 
 ## [unreleased]
+
+## [0.1.4] - 25nd July 2017
 * Added Travis CI to run unit tests
 * Extracted available room, duration, colour options and session settings to config file
 * Minor bugfixes in de-conflicting recurring booking conflicts & delete booking
