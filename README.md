@@ -49,10 +49,12 @@ Report a bug [here](https://github.com/GovTechSG/butler-bot/issues).
 
 ## Releases
 
+### V0.1.4
+* Minor bug fixes in de-conflicting recurring booking conflicts & delete booking
 ### V0.1.3
 
 * Removed room options that are no longer available for booking
-* Minor Bug fixes
+* Minor bug fixes
 
 ### V0.1.2
 
