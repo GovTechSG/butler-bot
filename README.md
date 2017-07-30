@@ -1,6 +1,6 @@
 # Butler Bot
 [![Build Status](https://travis-ci.org/GovTechSG/butler-bot.svg?branch=master)](https://travis-ci.org/GovTechSG/butler-bot)
-[![Known Vulnerabilities](https://snyk.io/test/github/yuhong90/butler-calendar/badge.svg)](https://snyk.io/test/github/yuhong90/butler-calendar)
+[![Known Vulnerabilities](https://snyk.io/test/github/GovTechSG/butler-bot/badge.svg)](https://snyk.io/test/github/GovTechSG/butler-bot)
 
 A Telegram Bot that helps you book meetings rooms. Awesome!
 
