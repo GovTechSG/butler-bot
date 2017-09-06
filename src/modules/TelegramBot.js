@@ -86,6 +86,17 @@ slimbot.on('callback_query', (query) => {
 });
 // End of listeners
 
+const processManageUsersCallback = (query) => {
+	const callbackData = JSON.parse(query.data);
+	const users = loadUsers();
+	let userObj = users.find({ userId: callbackData.userId })[0];
+	users.update({ ...userObj, role: callbackData.role });
+	db.saveDatabase();
+	slimbot.sendMessage(callbackData.userId, 'You are now registered!');
+	SessionManagement.endSession(query.message.chat.id);
+};
+
+
 function processCallBack(query) {
 	if (query.data !== undefined && query.data.trim() === '') {
 		return;
@@ -94,6 +105,9 @@ function processCallBack(query) {
 
 	if (callback_data.exit !== undefined) {
 		SessionMgr.terminateSession(callback_data.exit);
+
+	} else if (callback_data.action === 'manage_users') {
+			processManageUsersCallback(query);
 
 	} else if (callback_data.date === undefined) {
 		promptTodayOrDateOption(callback_data.room, query, true);
