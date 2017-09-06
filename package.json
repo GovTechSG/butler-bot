@@ -34,6 +34,7 @@
 		"dotenv": "^4.0.0",
 		"eventemitter3": "^2.0.2",
 		"google-oauth-jwt": "^0.2.0",
+		"lokijs": "~1.5.0",
 		"node-google-calendar": "^0.1.5",
 		"slimbot": "^0.5.7",
 		"winston": "^2.3.1"

@@ -2,16 +2,23 @@ import Slimbot from 'slimbot';
 import EventEmitter from 'eventemitter3';
 import Chrono from 'chrono-node';
 import CalendarAPI from 'node-google-calendar';
+import Loki from 'lokijs';
 
 import './Date';
 import MESSAGES from './Messages';
-import USERS from '../data/users';
 import CONFIG, { ROOM_CONFIG, BOOKING_DURATION_OPTIONS } from '../config/settings';
 import SessionManagement from './SessionManagement';
 import * as ReplyBuilder from './ReplyBuilder';
 import * as ParamBuilder from './ParamBuilder';
 import * as CalendarApp from './CalendarApp';
 // import Logger from './Logger';
+
+const db = new Loki('src/data/users.json');
+
+db.loadDatabase({}, () => {
+  console.log('users loaded');
+});
+const loadUsers = () => db.getCollection('users');
 
 const slimbot = new Slimbot(CONFIG.telegramBotToken);
 const Emitter = new EventEmitter();
@@ -114,7 +121,7 @@ function processCallBack(query) {
 }
 
 function checkAuthorisedUsers(message) {
-	if (!USERS.hasOwnProperty(message.from.username)) {
+	if (!loadUsers().where(x => x.userId === message.from.id && x.role !== 'registree').length) {
 		slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
 		console.log(`Unauthenticated Access by ${message.from.username} on ${new Date().getISO8601TimeStamp()}`);
 		throw new Error('Unauthenticated access');
@@ -133,6 +140,10 @@ function checkRoomBookingCommands(message) {
 
 function checkCommandList(message) {
 	console.log(message);
+	if (message.text === '/register' && message.chat.type === 'private') {
+		registerUser(message);
+		return;
+	}
 	checkAuthorisedUsers(message);
 	checkRoomBookingCommands(message);
 
@@ -153,7 +164,6 @@ function checkCommandList(message) {
 
 	} else if (message.text === '/book') {
 		promptRoomSelection(message);
-
 	} else if ((message.text === '/booked' && message.chat.type === 'group') || (message.text === '/delete' && message.chat.type === 'group')) {
 		slimbot.sendMessage(message.chat.id, MESSAGES.private);
 	} else if (message.chat.type === 'private') {
@@ -165,7 +175,13 @@ function checkCommandList(message) {
 }
 
 function checkPrivateChatCommandList(message) {
-	if (message.text === '/start') {
+	if (message.text === '/manage') {
+		const isAdmin = loadUsers().find({userId: message.from.id})[0].role === 'admin';
+		if (isAdmin) {
+			console.log('ISADMIN!');
+		}
+
+	} else if (message.text === '/start') {
 		slimbot.sendMessage(message.chat.id, MESSAGES.start, { parse_mode: 'Markdown' });
 
 	} else if (message.text === '/help') {
@@ -495,4 +511,24 @@ function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms) {
 			}
 		});
 }
+
+const informAdmins = (message) => {
+	const admins = loadUsers().find({ role: 'admin' });
+	admins.forEach((admin) => {
+		slimbot.sendMessage(admin.userId, message);
+	});
+};
+
+const registerUser = (message) => {
+	const fullName = `${message.from.first_name}${message.from.last_name ? ` ${message.from.last_name}` : ''}`;
+	loadUsers().insert({
+		userId: message.from.id,
+		username: message.from.username,
+		fullName,
+		role: 'registree' });
+	db.saveDatabase();
+	informAdmins(`${fullName} is requesting authorization for butler bot!`);
+	slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
+};
+
 export { slimbot };

@@ -1,0 +1,82 @@
+{
+  "filename": "src/data/users.json",
+  "collections": [{
+    "name": "users",
+    "data": [
+      // NOTE: data in this array should be generated
+      // {
+      //   "userId": 12345678,
+      //   "username": "telegramusername",
+      //   "fullName": "john doe",
+      //   "role": "user",
+      //   "meta": {
+      //     "revision": 0,
+      //     "created": 1504587727079,
+      //     "version": 0
+      //   },
+      //   "$loki": 1
+      // }
+    ],
+    "idIndex": [],
+    "binaryIndices": {
+      "userId": {
+        "name": "userId",
+        "dirty": false,
+        "values": []
+      }
+    },
+    "constraints": null,
+    "uniqueNames": ["userId"],
+    "transforms": {},
+    "objType": "users",
+    "dirty": true,
+    "cachedIndex": null,
+    "cachedBinaryIndex": null,
+    "cachedData": null,
+    "adaptiveBinaryIndices": true,
+    "transactional": false,
+    "cloneObjects": false,
+    "cloneMethod": "parse-stringify",
+    "asyncListeners": false,
+    "disableChangesApi": true,
+    "autoupdate": false,
+    "serializableIndices": true,
+    "ttl": null,
+    "maxId": 9,
+    "DynamicViews": [],
+    "events": {
+      "insert": [null],
+      "update": [null],
+      "pre-insert": [],
+      "pre-update": [],
+      "close": [],
+      "flushbuffer": [],
+      "error": [],
+      "delete": [null],
+      "warning": [null]
+    },
+    "changes": []
+  }],
+  "databaseVersion": 1.5,
+  "engineVersion": 1.5,
+  "autosave": false,
+  "autosaveInterval": 5000,
+  "autosaveHandle": null,
+  "throttledSaves": true,
+  "options": {
+    "serializationMethod": "normal",
+    "destructureDelimiter": "$<\n"
+  },
+  "persistenceMethod": "fs",
+  "persistenceAdapter": null,
+  "verbose": false,
+  "events": {
+    "init": [null],
+    "loaded": [],
+    "flushChanges": [],
+    "close": [],
+    "changes": [],
+    "warning": []
+  },
+  "ENV": "NODEJS"
+}
