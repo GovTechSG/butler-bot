@@ -90,7 +90,8 @@ const processManageUsersCallback = (query) => {
 	const callbackData = JSON.parse(query.data);
 	const users = loadUsers();
 	let userObj = users.find({ userId: callbackData.userId })[0];
-	users.update({ ...userObj, role: callbackData.role });
+	userObj.role = callbackData.role;
+	users.update(userObj);
 	db.saveDatabase();
 	slimbot.sendMessage(callbackData.userId, 'You are now registered!');
 	SessionManagement.endSession(query.message.chat.id);
