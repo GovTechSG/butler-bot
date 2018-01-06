@@ -24,6 +24,7 @@
 	"license": "MIT",
 	"scripts": {
 		"start": "babel-node src",
+		"start:prod": "npm run build; pm2 start build/index.js",
 		"build": "babel src -d build --copy-files",
 		"test": "mocha --compilers js:babel-register",
 		"test watch": "mocha -w --compilers js:babel-register"
