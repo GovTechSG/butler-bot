@@ -222,7 +222,9 @@ export function listBookedEventsByRoom(startDateTimeStamp, endDateTimeStamp, que
 					end: json[i].end,
 					status: json[i].status
 				};
-				bookedEventsArray.push(event);
+				if (json[i].status === 'confirmed') {
+					bookedEventsArray.push(event);
+				}
 			}
 			return bookedEventsArray;
 		}).catch((err) => {
@@ -320,8 +322,12 @@ export function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
 		return durOptions;
 	}
 
-	for (let event in roomBusyTimeslot) {
-		let setOf30minsBlocks = new Date(startDatetimeStr).getMinuteDiff(new Date(roomBusyTimeslot[event].start.dateTime)) / 30;
+	for (let eventIndex in roomBusyTimeslot) {
+		let event = roomBusyTimeslot[eventIndex];
+		if (event.start === undefined || event.status !== 'confirmed') {
+			continue;
+		}
+		let setOf30minsBlocks = new Date(startDatetimeStr).getMinuteDiff(new Date(event.start.dateTime)) / 30;
 		if (setOf30minsBlocks < closestEventBlocksAway) {
 			closestEventBlocksAway = setOf30minsBlocks;
 		}
@@ -485,8 +491,6 @@ function checkJointRoomFree(startDateTimeStr, endDateTimeStr, room) {
 	let jointRoom = getChildFromJointRoomId(room);
 
 	for (let smallRoom in jointRoom) {
-		console.log('checkJointRoomFree: ' + jointRoom[smallRoom]);
-
 		let calendarId = calendarIdList[jointRoom[smallRoom]];
 
 		promiseList.push(

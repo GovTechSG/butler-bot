@@ -74,7 +74,6 @@ slimbot.on('message', (message) => {
 });
 
 slimbot.on('callback_query', (query) => {
-	console.log('callback');
 	processCallBack(query);
 });
 // End of listeners
@@ -308,7 +307,8 @@ function promptDurationSelection(query, room, startDate, startTime) {
 			let msg = ReplyBuilder.askForDuration(roomlist[room].name, startDate, startTime);
 			slimbot.editMessageText(query.message.chat.id, query.message.message_id, msg, ParamBuilder.getDuration(jsonArr, room, startDate, startTime));
 			SessionMgr.extendSession(query.message.chat.id, query.message.message_id, query.message.chat.username);
-		}, (err) => {
+		})
+		.catch((err) => {
 			console.log('Error promptDurationSelection: ' + JSON.stringify(err));
 			slimbot.editMessageText(query.message.chat.id, query.message.message_id, MESSAGES.error);
 		});

@@ -278,15 +278,15 @@ describe('CalendarApp', () => {
 			};
 			let recurEventForTest = {
 				start:
-				{
-					dateTime: '2017-03-18T17:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-03-18T17:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				end:
-				{
-					dateTime: '2017-03-18T18:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-03-18T18:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				recurrence: ['RRULE:FREQ=WEEKLY;COUNT=2;INTERVAL=3;BYDAY=SA']
 			};
 			let result = CalendarApp.parseRecurrenceEvent(recurEventForTest);
@@ -309,15 +309,15 @@ describe('CalendarApp', () => {
 			};
 			let recurEventForTest = {
 				start:
-				{
-					dateTime: '2017-03-18T17:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-03-18T17:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				end:
-				{
-					dateTime: '2017-03-18T18:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-03-18T18:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				recurrence: ['RRULE:FREQ=WEEKLY;UNTIL=20170506T020000Z;BYDAY=SU,MO,TU,WE,TH,FR,SA']
 			};
 			let result = CalendarApp.parseRecurrenceEvent(recurEventForTest);
@@ -441,15 +441,15 @@ describe('CalendarApp', () => {
 				summary: 'event',
 				location: 'Drone Room',
 				start:
-				{
-					dateTime: '2017-04-06T17:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-06T17:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				end:
-				{
-					dateTime: '2017-04-06T17:30:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-06T17:30:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				status: 'confirmed'
 			}];
 
@@ -479,15 +479,15 @@ describe('CalendarApp', () => {
 				summary: 'event',
 				location: 'Drone Room',
 				start:
-				{
-					dateTime: '2017-04-06T17:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-06T17:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				end:
-				{
-					dateTime: '2017-04-06T17:30:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-06T17:30:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				status: 'confirmed'
 			},
 			{
@@ -495,15 +495,15 @@ describe('CalendarApp', () => {
 				summary: 'Event',
 				location: 'Focus Group Room ',
 				start:
-				{
-					dateTime: '2017-04-05T17:30:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-05T17:30:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				end:
-				{
-					dateTime: '2017-04-05T18:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-05T18:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				status: 'confirmed'
 			}];
 
@@ -536,15 +536,15 @@ describe('CalendarApp', () => {
 				summary: 'event',
 				location: 'Drone Room',
 				start:
-				{
-					dateTime: '2017-04-06T10:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-06T10:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				end:
-				{
-					dateTime: '2017-04-06T12:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-06T12:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				status: 'confirmed'
 			}];
 
@@ -554,10 +554,10 @@ describe('CalendarApp', () => {
 
 		it('should return the maximum 4hr duration options given an upcoming event 5 hours away', () => {
 			let expectedResult = {
-				"1": "30 mins", "2": "1 hour",
-				"3": "1.5 hours", "4": "2 hours",
-				"5": "2.5 hours", "6": "3 hours",
-				"7": "3.5 hours", "8": "4 hours"
+				'1': '30 mins', '2': '1 hour',
+				'3': '1.5 hours', '4': '2 hours',
+				'5': '2.5 hours', '6': '3 hours',
+				'7': '3.5 hours', '8': '4 hours'
 			};
 			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(12, 0, 0, 0)
 			let events = [{
@@ -565,15 +565,15 @@ describe('CalendarApp', () => {
 				summary: 'event',
 				location: 'Drone Room',
 				start:
-				{
-					dateTime: '2017-04-06T17::00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-06T17::00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				end:
-				{
-					dateTime: '2017-04-06T18:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-06T18:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				status: 'confirmed'
 			}];
 
@@ -589,16 +589,47 @@ describe('CalendarApp', () => {
 				summary: 'event',
 				location: 'Drone Room',
 				start:
-				{
-					dateTime: '2017-04-06T10:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-06T10:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				end:
-				{
-					dateTime: '2017-04-06T12:00:00+08:00',
-					timeZone: 'Asia/Singapore'
-				},
+					{
+						dateTime: '2017-04-06T12:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
 				status: 'confirmed'
+			}];
+
+			let result = CalendarApp.filterDurationSlots(events, testStartTime);
+			expect(result).to.eql(expectedResult);
+		});
+
+		it('should ignore unexpected event given an erroneous event in roomBusyTimeslot list', () => {
+			let expectedResult = { '1': '30 mins', '2': '1 hour' };
+			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(9, 0, 0, 0)
+			let events = [{
+				id: '7j1f3ngpff65k8v8ta67lumi1g',
+				summary: 'event',
+				location: 'Drone Room',
+				start:
+					{
+						dateTime: '2017-04-06T10:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
+				end:
+					{
+						dateTime: '2017-04-06T12:00:00+08:00',
+						timeZone: 'Asia/Singapore'
+					},
+				status: 'confirmed'
+			}, {
+				id: 'error-event',
+				summary: 'error-event',
+				location: 'Drone Room',
+				start: undefined,
+				end: undefined,
+				status: 'cancelled'
 			}];
 
 			let result = CalendarApp.filterDurationSlots(events, testStartTime);
@@ -674,6 +705,43 @@ describe('CalendarApp', () => {
 			let expectedResult = [expectedReturnedEvent, expectedReturnedEvent];
 
 			return CalendarApp.listBookedEventsByRoom(testInput.startDateTime, testInput.endDateTime, testInput.roomId, testInput.today)
+				.then((promisedResult) => {
+					expect(promisedResult).to.eql(expectedResult);
+				});
+		});
+
+		it('should return array of booked non-cancelled events info', () => {
+			let testInput = {
+				startDateTime: '2017-07-01T00:00:00+08:00',
+				endDateTime: '2017-07-02T00:00:00+08:00',
+				roomId: 'fg'
+			};
+
+			let expectedReturnedEvent = {
+				id: mockEvent.id,
+				summary: mockEvent.summary,
+				status: mockEvent.status,
+				location: mockEvent.location,
+				start: { dateTime: mockEvent.start.dateTime },
+				end: { dateTime: mockEvent.end.dateTime }
+			};
+			let cancelledEvent = {
+				id: mockEvent.id,
+				summary: mockEvent.summary,
+				status: 'cancelled',
+				location: mockEvent.location,
+				start: { dateTime: mockEvent.start.dateTime },
+				end: { dateTime: mockEvent.end.dateTime }
+			};
+			let expectedResult = [expectedReturnedEvent];
+
+			let mockResponse = [mockEvent, cancelledEvent];
+			let mockCalendarAPI = {
+				listEvents: sinon.stub().resolves(mockResponse)
+			};
+			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing);
+
+			return CalendarApp.listBookedEventsByRoom(testInput.startDateTime, testInput.endDateTime, testInput.roomId)
 				.then((promisedResult) => {
 					expect(promisedResult).to.eql(expectedResult);
 				});

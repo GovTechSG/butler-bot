@@ -46,10 +46,14 @@ Report a bug [here](https://github.com/GovTechSG/butler-bot/issues).
 * [Feature] Users to state meeting participants and auto send email meeting invites 
 * [Improvement] Booking insert job queue improvement
 * [Improvement] Authenticate to only allow hive users to book (temporary workaround for now)   
+* [Feature] Improve admin workflow to user management
+* [Improvement] Break logs into mutiple streams/ files 
+* [Improvement] Clean up code    
 
 ## Releases
 
 ### V0.1.4
+* Bug fixes in handling erroneous cancelled events from google calendar during room selection 
 * Minor bug fixes in de-conflicting recurring booking conflicts & delete booking
 ### V0.1.3
 
