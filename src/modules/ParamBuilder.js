@@ -10,7 +10,7 @@ export function getTodayOrDateOptions(roomSelectedId) {
 			]
 		})
 	};
-};
+}
 
 export function getDateSelection(room) {
 	return {
@@ -19,7 +19,7 @@ export function getDateSelection(room) {
 			inline_keyboard: constructDateOptions(new Date(), room)
 		})
 	};
-};
+}
 
 export function getTimeslots(jsonArr, room, startDate) {
 	return {
@@ -28,7 +28,7 @@ export function getTimeslots(jsonArr, room, startDate) {
 			inline_keyboard: constructTimeslotOptions(jsonArr, room, startDate)
 		})
 	};
-};
+}
 
 export function getDuration(jsonArr, room, startDate, startTime) {
 	return {
@@ -37,13 +37,25 @@ export function getDuration(jsonArr, room, startDate, startTime) {
 			inline_keyboard: constructDurationOptions(jsonArr, room, startDate, startTime)
 		})
 	};
-};
+}
 
 export function getBackButton(room, startDate, startTime, duration) {
 	return {
 		parse_mode: 'Markdown',
 		reply_markup: JSON.stringify({
 			inline_keyboard: constructBackOption(room, startDate, startTime, duration)
+		})
+	};
+}
+
+export function getYesNoButtons(room, startDate, startTime, duration, messageChatId) {
+	return {
+		parse_mode: 'markdown',
+		reply_markup: JSON.stringify({
+			inline_keyboard: [[
+				{ text: 'Yes', callback_data: JSON.stringify({ date: startDate, time: startTime, dur: duration, room: room }) },
+				{ text: 'No', callback_data: JSON.stringify({ exit: messageChatId }) }
+			]]
 		})
 	};
 };
@@ -86,7 +98,7 @@ export function constructTimeslotOptions(availTimeJSON, room, date) {
 	}];
 	row.push(back);
 	return row;
-};
+}
 
 function constructDurationOptions(durationJSON, room, date, startTime) {
 	const btnInRow = 4;

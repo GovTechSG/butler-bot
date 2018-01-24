@@ -68,11 +68,11 @@ export function confirmAnyRoom(date, startTime, endTime, duration, room) {
 }
 
 export function rejectAnyRoomForLongBooking(date, startTime, endTime, duration) {
-	return `Okay, did you want to book *${date}* *${startTime} - ${endTime} (${duration} mins)*?\n\n` +
+	return `Okay, you wanted to book *${date}* *${startTime} - ${endTime} (${duration} mins)*?\n\n` +
 		`You can only book up to a maximum of 4 hours at one go. Let's give others a chance to use the rooms too:) \n\nTry sending me another datetime below again.`;
 }
 
 export function rejectAnyRoomForWrongDatetime(date, startTime, endTime, duration) {
-	return `Okay, did you want to book *${date}* *${startTime} - ${endTime} (${duration} mins)*?\n\n` +
+	return `Okay, you wanted to book *${date}* *${startTime} - ${endTime} (${duration} mins)*?\n\n` +
 		`You cannot make room booking for the past. \n\nTry sending me another datetime below again.`;
 }

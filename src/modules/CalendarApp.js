@@ -7,15 +7,17 @@ let config;
 let cal;
 let calendarIdList;
 let roomInfoList;
+let bookingDurationOptions;
 
 let EE = new EventEmitter();
 let bookingQueue = [];
 
-export function init(calendarApiInstance, configObj, roomlistObj) {
+export function init(calendarApiInstance, configObj, roomlisting, bookingDuration) {
 	cal = calendarApiInstance;
 	config = configObj;
 	calendarIdList = configObj.calendarId;
-	roomInfoList = roomlistObj;
+	roomInfoList = roomlisting;
+	bookingDurationOptions = bookingDuration;
 }
 
 export function getColourForRoom(roomname) {
@@ -307,16 +309,7 @@ export function listEmptySlotsInDay(date, roomId) {
 export function filterDurationSlots(roomBusyTimeslot, startDatetimeStr) {
 	let maxDurationBlocksAllowed = 8;
 	let closestEventBlocksAway = 99;
-	let durOptions = {
-		1: '30 mins',
-		2: '1 hour',
-		3: '1.5 hours',
-		4: '2 hours',
-		5: '2.5 hours',
-		6: '3 hours',
-		7: '3.5 hours',
-		8: '4 hours'
-	};
+	let durOptions = Object.assign({}, bookingDurationOptions);
 
 	if (roomBusyTimeslot.length === 0) {
 		return durOptions;
@@ -426,7 +419,6 @@ export function insertEvent(bookingSummary, startDateTimeStr, endDateTimeStr, lo
 	}
 	return cal.insertEvent(calendarId, bookingSummary, startDateTimeStr, endDateTimeStr, room, status, description, getColourForRoom(location))
 		.then((resp) => {
-			// console.log(resp.body);
 			let json = resp.body;
 			let results = {
 				'id': json.id,
