@@ -57,10 +57,12 @@ function clearUserSessionInfo(userChatId) {
 // Register Telegram listeners
 slimbot.on('message', (message) => {
 	console.log('incoming message');
+	checkAuthorisedUsers(message);
+
 	let isCommand = checkCommandList(message);
 
 	if (!isCommand && anyBookingList[message.chat.id] !== undefined) {
-		BookingSteps.anyRoom(slimbot, message, anyBookingList);
+		BookingSteps.any.processAnyRoomInputs(slimbot, message, anyBookingList);
 	}
 
 	if (Object.keys(bookerList).length === 0) {
@@ -68,7 +70,7 @@ slimbot.on('message', (message) => {
 	}
 
 	if (!isCommand) {
-		BookingSteps.completeBooking(slimbot, message, bookerList);
+		BookingSteps.book.completeBooking(slimbot, message, bookerList);
 	}
 });
 
@@ -87,25 +89,25 @@ function processCallBack(query) {
 		SessionMgr.terminateSession(callback_data.exit);
 
 	} else if (callback_data.date === undefined) {
-		BookingSteps.promptTodayOrDateOption(slimbot, callback_data.room, query, true);
+		BookingSteps.book.selectTodayOrDate(slimbot, callback_data.room, query, true);
 
 	} else if (callback_data.date === 'pick_today') {
-		BookingSteps.promptTimeslotSelection(slimbot, query, callback_data.room, new Date());
+		BookingSteps.book.selectTimeslot(slimbot, query, callback_data.room, new Date());
 
 	} else if (callback_data.date === 'pick_date') {
 		if (callback_data.month === undefined) {
-			BookingSteps.promptDateSelection(slimbot, query, callback_data.room, new Date());
+			BookingSteps.book.selectDate(slimbot, query, callback_data.room, new Date());
 		}
 	} else {
 		// date selected
 		if (callback_data.time === undefined) {
-			BookingSteps.promptTimeslotSelection(slimbot, query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date));
+			BookingSteps.book.selectTimeslot(slimbot, query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date));
 
 		} else if (callback_data.dur === undefined) {
-			BookingSteps.promptDurationSelection(slimbot, query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date), callback_data.time);
+			BookingSteps.book.selectDuration(slimbot, query, callback_data.room, new Date().setDateWithSimpleFormat(callback_data.date), callback_data.time);
 
 		} else if (callback_data.description === undefined) {
-			BookingSteps.promptDescription(
+			BookingSteps.book.selectDescription(
 				slimbot,
 				query,
 				callback_data.room,
@@ -130,7 +132,7 @@ function checkRoomBookingCommands(message) {
 	let commandlist = ROOM_CONFIG.roomsOpenForBooking;
 	for (let key in commandlist) {
 		if (commandlist[key].command === message.text) {
-			BookingSteps.promptTodayOrDateOption(slimbot, key, message);
+			BookingSteps.book.selectTodayOrDate(slimbot, key, message);
 			return;
 		}
 	}
@@ -138,7 +140,6 @@ function checkRoomBookingCommands(message) {
 
 function checkCommandList(message) {
 	console.log(message);
-	checkAuthorisedUsers(message);
 	checkRoomBookingCommands(message);
 
 	if (message.text === '/version') {
@@ -154,10 +155,10 @@ function checkCommandList(message) {
 		slimbot.sendMessage(message.chat.id, MESSAGES.view);
 
 	} else if (message.text === '/book_any' || message.text === '/any') {
-		BookingSteps.askAny(slimbot, message, anyBookingList);
+		BookingSteps.any.promptAny(slimbot, message, anyBookingList);
 
 	} else if (message.text === '/book') {
-		BookingSteps.promptRoomSelection(slimbot, message);
+		BookingSteps.book.selectRoom(slimbot, message);
 
 	} else if ((message.text === '/booked' && message.chat.type === 'group') || (message.text === '/delete' && message.chat.type === 'group')) {
 		slimbot.sendMessage(message.chat.id, MESSAGES.private);

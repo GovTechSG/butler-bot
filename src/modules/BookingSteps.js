@@ -53,8 +53,6 @@ function promptTimeslotSelection(bot, query, room, startDate) {
 
 	CalendarApp.listEmptySlotsInDay(startDateStr, room)
 		.then((jsonArr) => {
-			console.log('promptTimeslotSelection - listEmptySlotsInDay done:');
-			console.log(jsonArr);
 			let msg = ReplyBuilder.askForTime(roomlist[room].name, startDate);
 			if (jsonArr === undefined || jsonArr === {} || Object.keys(jsonArr).length === 0) {
 				msg = ReplyBuilder.informNoTimeslot(roomlist[room].name, startDate);
@@ -251,15 +249,20 @@ function checkRoomFreeAtTimeslot(bot, message, startDate, endDate, rooms, anyBoo
 }
 
 const BookingSteps = {
-	promptRoomSelection,
-	promptTodayOrDateOption,
-	promptDateSelection,
-	promptTimeslotSelection,
-	promptDurationSelection,
-	promptDescription,
-	completeBooking,
-	askAny,
-	anyRoom
+	book: {
+		selectRoom: promptRoomSelection,
+		selectTodayOrDate: promptTodayOrDateOption,
+		selectDate: promptDateSelection,
+		selectTimeslot: promptTimeslotSelection,
+		selectDuration: promptDurationSelection,
+		selectDescription: promptDescription,
+		completeBooking: completeBooking
+	},
+	any: {
+		promptAny: askAny,
+		processAnyRoomInputs: anyRoom
+
+	}
 };
 
 export default BookingSteps;
