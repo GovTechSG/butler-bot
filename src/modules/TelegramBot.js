@@ -147,7 +147,8 @@ function checkCommandList(message) {
 
 	} else if (message.text === '/exit') {
 		SessionMgr.terminateSession(message.chat.id);
-
+	} else if (message.text === '/contribute') {
+		slimbot.sendMessage(message.chat.id, MESSAGES.contribute, { parse_mode: 'Markdown' });
 	} else if (message.text === `/help@${botName}` || message.text === '/help') {
 		slimbot.sendMessage(message.chat.id, MESSAGES.help, { parse_mode: 'Markdown' });
 

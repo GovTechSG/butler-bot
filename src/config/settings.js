@@ -10,19 +10,31 @@ const CONFIG = {
 };
 const ROOM_CONFIG = {
 	roomsOpenForBooking: {
-		'fg': { 'command': '/book_fgd', 'text': 'Focus Group Room' },
-		'qc': { 'command': '/book_queen_combined', 'text': 'Queen Room Combined' },
-		'q1': { 'command': '/book_queen_video', 'text': 'Queen (Video)' },
-		'q2': { 'command': '/book_queen_projector', 'text': 'Queen (Projector)' }
+		'cc': { 'command': '/book_cc', 'text': '[L7] Chin Chow' },
+		'ml': { 'command': '/book_ml', 'text': '[L7] Milo (Boardroom)' },
+		'kp': { 'command': '/book_kp', 'text': '[L7] Kopi' },
+		'th': { 'command': '/book_th', 'text': '[L7] Teh' },
+		'hl': { 'command': '/book_hl', 'text': '[L7] Horlick (Glassroom)' },
+		'fg': { 'command': '/book_fg', 'text': '[L8] FGD' },
+		'bb': { 'command': '/book_bb', 'text': '[L8] Bumblebee' },
+		'dr': { 'command': '/book_dr', 'text': '[L8] Drone' },
+		'q1': { 'command': '/book_q1', 'text': '[L8] Queen (Video)' },
+		'q2': { 'command': '/book_q2', 'text': '[L8] Queen (Projector)' },
+		'qc': { 'command': '/book_qc', 'text': '[L8] Queen (Combined)' }
 	},
 	roomsListing: {						// used for insert, reading & displaying event room info
-		'primary': { name: 'Open Space', id: 'primary' },
-		'fg': { name: 'Focus Group Room', id: 'fg', colour: 5 },
-		'q1': { name: 'Queen (Video)', id: 'q1', colour: 6 },
-		'q2': { name: 'Queen (Projector)', id: 'q2', colour: 10 },
-		'qc': { name: 'Queen (Combined)', id: 'qc', children: ['q1', 'q2'], colour: 11 },
-		'dr': { name: 'Drone', id: 'dr', colour: 7 },
-		'bb': { name: 'Bumblebee', id: 'bb', colour: 3 }
+		'cc': { name: 'Chin Chow [Level 7]', id: 'cc' },
+		'ml': { name: '[L7] Milo (Boardroom) [Level 7]', id: 'ml' },
+		'kp': { name: '[L7] Kopi [Level 7]', id: 'kp' },
+		'th': { name: '[L7] Teh [Level 7]', id: 'th' },
+		'hl': { name: '[L7] Horlick (Glassroom) [Level 7]', id: 'hl' },
+		'primary': { name: 'Open Space [Level 8]', id: 'primary' },
+		'fg': { name: 'Focus Group Room [Level 8]', id: 'fg', colour: 5 },
+		'q1': { name: 'Queen (Video) [Level 8]', id: 'q1', colour: 6 },
+		'q2': { name: 'Queen (Projector) [Level 8]', id: 'q2', colour: 10 },
+		'qc': { name: 'Queen (Combined) [Level 8]', id: 'qc', children: ['q1', 'q2'], colour: 11 },
+		'dr': { name: 'Drone [Level 8]', id: 'dr', colour: 7 },
+		'bb': { name: 'Bumblebee [Level 8]', id: 'bb', colour: 3 }
 	}
 };
 const SESSION_LENGTH = 1000 * 60 * 3;
