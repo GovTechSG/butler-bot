@@ -10,24 +10,25 @@ const CONFIG = {
 };
 const ROOM_CONFIG = {
 	roomsOpenForBooking: {
-		'cc': { 'command': '/book_cc', 'text': '[L7] Chin Chow' },
-		'bb': { 'command': '/book_bb', 'text': '[L8] Bumblebee' },
 		'th': { 'command': '/book_th', 'text': '[L7] Teh' },
-		'dr': { 'command': '/book_dr', 'text': '[L8] Drone' },
-		'kp': { 'command': '/book_kp', 'text': '[L7] Kopi' },
 		'fg': { 'command': '/book_fg', 'text': '[L8] FGD' },
-		'ml': { 'command': '/book_ml', 'text': '[L7] Milo (Boardroom)' },
+		'ko': { 'command': '/book_cc', 'text': '[L7] Kopi-O' },
 		'kg': { 'command': '/book_kg', 'text': '[L8] King' },
+		'kc': { 'command': '/book_kp', 'text': '[L7] Kopi-C' },
+		'dr': { 'command': '/book_dr', 'text': '[L8] Drone' },
+		'hl': { 'command': '/book_kg', 'text': '[L7] Horlick' },
+		'bb': { 'command': '/book_bb', 'text': '[L8] Bumblebee' },
+		'ml': { 'command': '/book_ml', 'text': '[L7] Milo (Boardroom)' },
 		'q1': { 'command': '/book_q1', 'text': '[L8] Queen (Video)' },
-		'q2': { 'command': '/book_q2', 'text': '[L8] Queen (Projector)' },
-		'qc': { 'command': '/book_qc', 'text': '[L8] Queen (Combined)' }
+		'qc': { 'command': '/book_qc', 'text': '[L8] Queen (Combined)' },
+		'q2': { 'command': '/book_q2', 'text': '[L8] Queen (Projector)' }
 	},
 	roomsListing: {						// used for insert, reading & displaying event room info
-		'cc': { name: 'Chin Chow [Level 7]', id: 'cc' },
-		'ml': { name: 'Milo (Boardroom) [Level 7]', id: 'ml' },
-		'kp': { name: 'Kopi [Level 7]', id: 'kp' },
 		'th': { name: 'Teh [Level 7]', id: 'th' },
-		'hl': { name: 'Horlick (Glassroom) [Level 7]', id: 'hl' },
+		'ko': { name: 'Kopi-O [Level 7]', id: 'ko' },
+		'kc': { name: 'Kopi-C [Level 7]', id: 'kc' },
+		'hl': { name: 'Horlick [Level 7]', id: 'hl' },
+		'ml': { name: 'Milo (Boardroom) [Level 7]', id: 'ml' },
 		'primary': { name: 'Open Space [Level 8]', id: 'primary' },
 		'fg': { name: 'Focus Group Room [Level 8]', id: 'fg', colour: 5 },
 		'q1': { name: 'Queen (Video) [Level 8]', id: 'q1', colour: 6 },

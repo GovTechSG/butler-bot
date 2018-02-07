@@ -210,7 +210,7 @@ function anyRoom(bot, message, anyBookList) {
 	bot.sendMessage(message.chat.id, ReplyBuilder.checkAnyRoom(), { parse_mode: 'markdown' });
 
 	// look up lowest-priority cal for available slot
-	let rooms = ['cc', 'kp', 'th', 'ml', 'bb', 'kg', 'fg', 'q1', 'q2', 'qc'];
+	let rooms = ['th', 'ko', 'kc', 'hl', 'ml', 'dr', 'bb', 'kg', 'fg', 'q1', 'q2', 'qc'];
 	rooms.sort(() => (Math.random() * 2) - 1);
 	checkRoomFreeAtTimeslot(bot, message, startTime, endTime, rooms, anyBookList);
 }
