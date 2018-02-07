@@ -325,30 +325,6 @@ describe('CalendarApp', () => {
 		});
 	});
 
-	describe('getRoomNameFromId', () => {
-		beforeEach(() => {
-			let CalAPI = new CalendarAPI(CONFIG);
-			CalendarApp.init(CalAPI, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
-		});
-		it('should return correct roomnames for all room ids', () => {
-			let roomNames = {
-				'fg': 'Focus Group Room',
-				'q1': 'Queen (Video)',
-				'q2': 'Queen (Projector)',
-				'qc': 'Queen (Combined)',
-				'dr': 'Drone',
-				'bb': 'Bumblebee'
-			};
-			for (let key in roomNames) {
-				if (roomNames.hasOwnProperty(key)) {
-					let expectedResult = roomNames[key];
-					let result = CalendarApp.getRoomNameFromId(key);
-					expect(result).to.eql(expectedResult);
-				}
-			}
-		});
-	});
-
 	describe('setupTimeArray', () => {
 		it('should return full 8am - 830pm list of timeslots when setupTimeArray called at 1200am', () => {
 			let expectedResult = {
@@ -528,6 +504,13 @@ describe('CalendarApp', () => {
 	});
 
 	describe('filterDurationSlots', () => {
+		beforeEach(() => {
+			let mockCalendarAPI = {
+				listEvents: sinon.stub().resolves({})
+			};
+			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
+		});
+
 		it('should return only 30min duration option given an upcoming event 30 mins away', () => {
 			let expectedResult = { '1': '30 mins' };
 			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(9, 30, 0, 0)

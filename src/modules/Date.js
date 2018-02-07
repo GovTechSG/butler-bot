@@ -4,9 +4,9 @@
 Date.prototype.setDateWithSimpleFormat = function (dateString) {
 	//dateString to be in dd/mm/yyyy
 	let ary = dateString.split('/');
-	this.setDate(ary[0]);
-	this.setMonth(ary[1] - 1);
 	this.setYear(ary[2]);
+	this.setMonth(ary[1] - 1);
+	this.setDate(ary[0]);
 	this.setHours(0, 0, 0, 0);
 	return this;
 };
