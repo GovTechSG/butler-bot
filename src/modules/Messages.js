@@ -4,7 +4,7 @@ const MESSAGES = {
 	contribute: `You can contribute or report a bug at [https://github.com/GovTechSG/butler-bot](https://github.com/GovTechSG/butler-bot) :D`,
 	unrecognisedCommands: `I don't understand your command, try using valid commands listed in /help menu.`,
 	book: `Which room would you like to book?`,
-	view: 'Check out this link for the overall room booking schedules: https://sgtravelbot.com',
+	view: 'Check out this link for the overall room booking schedules: https://sweezharbot.dcube.cf',
 	delete: `You have successfully deleted your booking`,
 	deleteErr: `Oops, something went wrong while deleting your booking.`,
 	deleteInstruction: `\nClick on the following command to delete your booking: \n`,
