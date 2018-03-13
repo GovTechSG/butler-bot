@@ -1,6 +1,6 @@
 # Butler Bot
 [![Build Status](https://travis-ci.org/GovTechSG/butler-bot.svg?branch=master)](https://travis-ci.org/GovTechSG/butler-bot)
-[![Known Vulnerabilities](https://snyk.io/test/github/yuhong90/butler-calendar/badge.svg)](https://snyk.io/test/github/yuhong90/butler-calendar)
+[![Known Vulnerabilities](https://snyk.io/test/github/GovTechSG/butler-bot/badge.svg)](https://snyk.io/test/github/GovTechSG/butler-bot)
 
 A Telegram Bot that helps you book meetings rooms. Awesome!
 
@@ -41,15 +41,24 @@ References:
 Report a bug [here](https://github.com/GovTechSG/butler-bot/issues).
 
 ## Todo
+* [Feature] Improve admin workflow to user management
+* [Feature] Improve admin workflow to add / remove rooms opened for booking
 * [Feature] Quick command to check available rooms in the next coming x hour
 * [Improvement] Improve /any booking flow
 * [Feature] Users to state meeting participants and auto send email meeting invites 
 * [Improvement] Booking insert job queue improvement
 * [Improvement] Authenticate to only allow hive users to book (temporary workaround for now)   
+* [Improvement] Break logs into mutiple streams/ files 
+* [Improvement] Clean up code    
 
 ## Releases
 
+### V0.1.5
+* Refactor of code
+* Added room new room options for /book and /any
+
 ### V0.1.4
+* Bug fixes in handling erroneous cancelled events from google calendar during room selection 
 * Minor bug fixes in de-conflicting recurring booking conflicts & delete booking
 ### V0.1.3
 
