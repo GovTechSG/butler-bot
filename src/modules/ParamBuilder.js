@@ -202,3 +202,9 @@ export function constructRoomOptions(roomConfig) {
 	}
 	return btnArr;
 }
+
+export function approveRegistree(userId) {
+	return [
+		[{ text: 'Approve', callback_data: JSON.stringify({ action: 'manage_users', userId }) }]
+	];
+}

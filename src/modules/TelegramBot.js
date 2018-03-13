@@ -136,7 +136,7 @@ function processCallBack(query) {
 }
 
 function checkAuthorisedUsers(message) {
-	if (!loadUsers().where(x => x.userId === message.from.id && x.role !== 'registree').length) {
+	if (!loadUsers().where(x => x.username === message.from.username && x.role !== 'registree').length) {
 		slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
 		console.log(`Unauthenticated Access by ${message.from.username} on ${new Date().getISO8601TimeStamp()}`);
 		throw new Error('Unauthenticated access');
@@ -193,7 +193,7 @@ function checkPrivateChatCommandList(message) {
 	if (message.text === '/manage') {
 		const isAdmin = loadUsers().find({userId: message.from.id})[0].role === 'admin';
 		if (isAdmin) {
-			console.log('ISADMIN!');
+			slimbot.sendMessage(message.chat.id, MESSAGES.admin);
 		}
 
 	} else if (message.text === '/start') {
@@ -527,10 +527,15 @@ function checkRoomFreeAtTimeslot(message, startDate, endDate, rooms) {
 		});
 }
 
-const informAdmins = (message) => {
+const informAdmins = (message, userId) => {
 	const admins = loadUsers().find({ role: 'admin' });
+	let optionalParams = {
+		reply_markup: JSON.stringify({
+			inline_keyboard: ParamBuilder.approveRegistree(userId)
+		})
+	};
 	admins.forEach((admin) => {
-		slimbot.sendMessage(admin.userId, message);
+		slimbot.sendMessage(admin.userId, message, optionalParams);
 	});
 };
 
@@ -542,7 +547,7 @@ const registerUser = (message) => {
 		fullName,
 		role: 'registree' });
 	db.saveDatabase();
-	informAdmins(`${fullName} is requesting authorization for butler bot!`);
+	informAdmins(`${fullName} is requesting authorization for butler bot!`, message.from.id);
 	slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
 };
 
