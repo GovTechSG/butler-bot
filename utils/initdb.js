@@ -12,7 +12,10 @@ if (!users) {
 Object.keys(USERS).forEach((username) => {
   // Use username as the user's fullname for now, can be edited later
   console.log(`Inserting ${username} ${USERS[username]}`);
-  users.insert({ userId: USERS[username], username, fullName: username });
+  let user = { userId: USERS[username], username, fullName: username };
+
+  user.role = USERS[username] ? 'admin' : 'user';
+  users.insert(user);
 });
 
 db.saveDatabase();

@@ -205,6 +205,7 @@ export function constructRoomOptions(roomConfig) {
 
 export function approveRegistree(userId) {
 	return [
-		[{ text: 'Approve', callback_data: JSON.stringify({ action: 'manage_users', userId }) }]
+		[{ text: 'User', callback_data: JSON.stringify({ action: 'manage_users', role: 'user', userId }) },
+		{ text: 'Admin', callback_data: JSON.stringify({ action: 'manage_users', role: 'admin', userId }) }]
 	];
 }

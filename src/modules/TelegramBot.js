@@ -93,8 +93,8 @@ const processManageUsersCallback = (query) => {
 	userObj.role = callbackData.role;
 	users.update(userObj);
 	db.saveDatabase();
+	slimbot.editMessageText(query.message.chat.id, query.message.message_id, `You have approved!`);
 	slimbot.sendMessage(callbackData.userId, 'You are now registered!');
-	SessionManagement.endSession(query.message.chat.id);
 };
 
 
@@ -541,14 +541,21 @@ const informAdmins = (message, userId) => {
 
 const registerUser = (message) => {
 	const fullName = `${message.from.first_name}${message.from.last_name ? ` ${message.from.last_name}` : ''}`;
-	loadUsers().insert({
-		userId: message.from.id,
-		username: message.from.username,
-		fullName,
-		role: 'registree' });
-	db.saveDatabase();
-	informAdmins(`${fullName} is requesting authorization for butler bot!`, message.from.id);
-	slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
+	const userQuery = loadUsers();
+	const user = userQuery.findOne({ userId: message.from.id });
+	if (!user) {
+		userQuery.insert({
+			userId: message.from.id,
+			username: message.from.username,
+			fullName,
+			role: 'registree' });
+		db.saveDatabase();
+		informAdmins(`${fullName}(@${message.from.username}) is requesting authorization for butler bot!`, message.from.id);
+		slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
+	}
+	if (user.role === 'admin' || user.role === 'user') {
+		slimbot.sendMessage(message.chat.id, 'You are registered!');
+	}
 };
 
 export { slimbot };
