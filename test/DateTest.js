@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+
 require('../src/modules/Date');
 
 describe('Date', () => {
@@ -6,7 +7,7 @@ describe('Date', () => {
 		it('should return 30/1/2017 as Date with "30/1/2017" as input', () => {
 			let date = new Date().setDateWithSimpleFormat('30/1/2017');
 			let expectedResult = new Date(2017, 0, 30, 0, 0, 0, 0);
-			expect(expectedResult).to.eql(date);
+			expect(date).to.eql(expectedResult);
 		});
 	});
 
