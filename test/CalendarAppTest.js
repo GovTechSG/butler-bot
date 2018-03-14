@@ -621,7 +621,7 @@ describe('CalendarApp', () => {
 	});
 
 	describe('listBookedEventsByRoom', () => {
-		it('should return array of booked events info for non-recurring single room events', () => {
+		it('should return array of booked events info for non-recurring single room events', async () => {
 			let testInput = {
 				startDateTime: '2017-07-01T00:00:00+08:00',
 				endDateTime: '2017-07-02T00:00:00+08:00',
@@ -644,10 +644,8 @@ describe('CalendarApp', () => {
 			};
 			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
-			return CalendarApp.listBookedEventsByRoom(testInput.startDateTime, testInput.endDateTime, testInput.roomId)
-				.then((promisedResult) => {
-					expect(promisedResult).to.eql(expectedResult);
-				});
+			const promisedResult = await CalendarApp.listBookedEventsByRoom(testInput.startDateTime, testInput.endDateTime, testInput.roomId)
+			expect(promisedResult).to.eql(expectedResult);
 		});
 
 		it('should return array of booked events info for recurring single room events', () => {

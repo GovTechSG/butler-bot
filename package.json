@@ -26,7 +26,7 @@
 		"start": "babel-node src",
 		"start:prod": "npm run build; pm2 start build/index.js",
 		"build": "babel src -d build --copy-files",
-		"test": "mocha --compilers js:babel-register",
+		"test": "mocha --compilers js:babel-register --require babel-polyfill",
 		"test watch": "mocha -w --compilers js:babel-register"
 	},
 	"dependencies": {

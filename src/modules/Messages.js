@@ -15,8 +15,8 @@ const MESSAGES = {
 	\n*/any* book any available meeting room at a time of your choosing;\n*/book* to start booking from a list of rooms available;\n*/exit* terminate current booking process;\n*/booked* in a private chat - for list of rooms you have booked;\n*/delete* in a private chat - delete a booking;\n*/view* see all bookings in hive.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Viviean thank you velly much 😛`,
 	unrecognisedCommands: `I don't understand your command, try using valid commands listed in /help menu.`,
 	book: `Which room would you like to book?`,
-	admin: 'Congratulations, brace yourself for the flood of approvals',
-	view: 'Check out this link for the overall room booking schedules: https://sgtravelbot.com',
+	admin: 'Good luck ah, you will be veri beesy.',
+	view: 'Check out this link for the overall room booking schedules: https://sweedarbot.dcube.cf',
 	delete: `You have successfully deleted your booking`,
 	deleteErr: `Oops, something went wrong while deleting your booking.`,
 	deleteInstruction: `\nClick on the following command to delete your booking: \n`,
@@ -31,7 +31,7 @@ const MESSAGES = {
 	session_expired: 'Ehh you took too long to book. I wait until fed up! 😡😡😡\n\nTry restarting your booking session with /book or /any again.',
 	session_terminated: '😢 I just cancelled your booking... you want to try again?',
 	session_outdated: 'This booking session has expired. \nPlease refer to the latest booking message.',
-	unauthenticated: 'You are not authenticated to use this bot yet. Please use /register',
+	unauthenticated: 'Aiyo, you haven\'t /register leh',
 	notBookedByMe: '\nThis room is not booked by you. Please contact @chanyan or @Doriskeith for more information.\n'
 };
 
