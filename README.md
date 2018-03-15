@@ -41,7 +41,6 @@ References:
 Report a bug [here](https://github.com/GovTechSG/butler-bot/issues).
 
 ## Todo
-* [Feature] Improve admin workflow to user management
 * [Feature] Improve admin workflow to add / remove rooms opened for booking
 * [Feature] Quick command to check available rooms in the next coming x hour
 * [Improvement] Improve /any booking flow
