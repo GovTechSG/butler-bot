@@ -93,8 +93,8 @@ const processManageUsersCallback = (query) => {
 	userObj.role = callbackData.role;
 	users.update(userObj);
 	db.saveDatabase();
-	slimbot.editMessageText(query.message.chat.id, query.message.message_id, `You have approved!`);
-	slimbot.sendMessage(callbackData.userId, 'You are now registered!');
+	slimbot.editMessageText(query.message.chat.id, query.message.message_id, MESSAGES.newUserApproved);
+	slimbot.sendMessage(callbackData.userId, MESSAGES.registered);
 };
 
 
