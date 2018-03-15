@@ -7,6 +7,7 @@ import './Date';
 import MESSAGES from './Messages';
 import CONFIG, { ROOM_CONFIG, BOOKING_DURATION_OPTIONS } from '../config/settings';
 import SessionManagement from './SessionManagement';
+import * as ParamBuilder from './ParamBuilder';
 import * as ReplyBuilder from './ReplyBuilder';
 import * as CalendarApp from './CalendarApp';
 import BookingSteps from './BookingSteps';
@@ -164,7 +165,8 @@ function checkCommandList(message) {
 	if (message.text === '/register' && message.chat.type === 'private') {
 		registerUser(message);
 		return;
-	}
+	}	
+
 	checkAuthorisedUsers(message);
 	checkRoomBookingCommands(message);
 
@@ -329,6 +331,8 @@ const registerUser = (message) => {
 	}
 	if (user.role === 'admin' || user.role === 'user') {
 		slimbot.sendMessage(message.chat.id, 'You are registered!');
+	} else if (user.role === 'registree') {
+		slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
 	}
 };
 
