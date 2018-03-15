@@ -1,8 +1,8 @@
 // Create and initialize user db
 import Loki from 'lokijs';
-import USERS from '../src/data/users';
+import USERS from '../data/users';
 
-const db = new Loki('src/data/users.json');
+const db = new Loki('data/users.json');
 
 let users = db.getCollection('users');
 if (!users) {
@@ -19,4 +19,4 @@ Object.keys(USERS).forEach((username) => {
 });
 
 db.saveDatabase();
-console.log('Done migrating users from src/data/users.js to src/data/users.json');
+console.log('Done migrating users from data/users.js to data/users.json');
