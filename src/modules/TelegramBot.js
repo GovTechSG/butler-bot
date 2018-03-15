@@ -64,7 +64,6 @@ function clearUserSessionInfo(userChatId) {
 // Register Telegram listeners
 slimbot.on('message', (message) => {
 	console.log('incoming message');
-	checkAuthorisedUsers(message);
 
 	let isCommand = checkCommandList(message);
 
