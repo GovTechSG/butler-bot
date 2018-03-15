@@ -13,7 +13,7 @@ import * as CalendarApp from './CalendarApp';
 import BookingSteps from './BookingSteps';
 // import Logger from './Logger';
 
-const db = new Loki('src/data/users.json');
+const db = new Loki('data/users.json');
 
 db.loadDatabase({}, () => {
   console.log('users loaded');

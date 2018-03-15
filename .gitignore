@@ -38,11 +38,11 @@ ehthumbs.db
 Thumbs.db
 
 node_modules
-src/data/users.js
-src/data/users.json
+data/users.js
+data/users.json
 build/
 yarn-error.log
 .idea
 *.pem
-src/data/list
+data/list
 .env
