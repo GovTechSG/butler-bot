@@ -48,37 +48,5 @@ Report a bug [here](https://github.com/GovTechSG/butler-bot/issues).
 * [Improvement] Booking insert job queue improvement
 * [Improvement] Authenticate to only allow hive users to book (temporary workaround for now)   
 * [Improvement] Break logs into mutiple streams/ files 
-* [Improvement] Clean up code    
-
-## Releases
-
-### V0.1.5
-* Refactor of code
-* Added room new room options for /book and /any
-
-### V0.1.4
-* Bug fixes in handling erroneous cancelled events from google calendar during room selection 
-* Minor bug fixes in de-conflicting recurring booking conflicts & delete booking
-### V0.1.3
-
-* Removed room options that are no longer available for booking
-* Minor bug fixes
-
-### V0.1.2
-
-* Supports recurring bookings made through google calendar
-* /booked now shows your latest upcoming booking occurrence for recurring bookings
-
-### V0.1.1
-
-* Store room bookings with google calendar
-* /book command to initiate room booking
-* /help command for instructions
-* /booked command to check user's upcoming bookings
-* /exit command to terminate current booking process
-* /delete command to mirror /booked command with delete link
-* Booking Session timeout after being inactive
-* Html calendar page to display all calendar bookings
-* /view command for to show link for calendar listing
-* /any command for easy booking of any meeting room at given date & time
+* [Improvement] Clean up code 
 

@@ -1,9 +1,12 @@
 # Butler Bot Changelog
 
 ## [unreleased]
-## [0.1.5] - 15 Mar 2018
+## [0.1.6] - 15 Mar 2018
 * Improve admin workflow to user management
 * Update messages
+## [0.1.5] - 7 Feb 2018
+* Refactor Code
+* Add new rooms for /book and /any
 
 ## [0.1.4] - 25nd July 2017
 * Added Travis CI to run unit tests
