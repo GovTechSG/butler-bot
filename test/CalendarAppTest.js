@@ -3,7 +3,7 @@ import sinon from 'sinon';
 
 import CalendarAPI from 'node-google-calendar';
 import * as CalendarApp from '../src/modules/CalendarApp';
-import CONFIG, { ROOM_CONFIG } from '../src/config/settings';
+import CONFIG, { ROOM_CONFIG, BOOKING_DURATION_OPTIONS } from '../src/config/settings';
 
 describe('CalendarApp', () => {
 	let mockEvent = {
@@ -325,30 +325,6 @@ describe('CalendarApp', () => {
 		});
 	});
 
-	describe('getRoomNameFromId', () => {
-		beforeEach(() => {
-			let CalAPI = new CalendarAPI(CONFIG);
-			CalendarApp.init(CalAPI, CONFIG, ROOM_CONFIG.roomsListing);
-		});
-		it('should return correct roomnames for all room ids', () => {
-			let roomNames = {
-				'fg': 'Focus Group Room',
-				'q1': 'Queen (Video)',
-				'q2': 'Queen (Projector)',
-				'qc': 'Queen (Combined)',
-				'dr': 'Drone',
-				'bb': 'Bumblebee'
-			};
-			for (let key in roomNames) {
-				if (roomNames.hasOwnProperty(key)) {
-					let expectedResult = roomNames[key];
-					let result = CalendarApp.getRoomNameFromId(key);
-					expect(result).to.eql(expectedResult);
-				}
-			}
-		});
-	});
-
 	describe('setupTimeArray', () => {
 		it('should return full 8am - 830pm list of timeslots when setupTimeArray called at 1200am', () => {
 			let expectedResult = {
@@ -528,6 +504,13 @@ describe('CalendarApp', () => {
 	});
 
 	describe('filterDurationSlots', () => {
+		beforeEach(() => {
+			let mockCalendarAPI = {
+				listEvents: sinon.stub().resolves({})
+			};
+			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
+		});
+
 		it('should return only 30min duration option given an upcoming event 30 mins away', () => {
 			let expectedResult = { '1': '30 mins' };
 			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(9, 30, 0, 0)
@@ -638,7 +621,7 @@ describe('CalendarApp', () => {
 	});
 
 	describe('listBookedEventsByRoom', () => {
-		it('should return array of booked events info for non-recurring single room events', () => {
+		it('should return array of booked events info for non-recurring single room events', async () => {
 			let testInput = {
 				startDateTime: '2017-07-01T00:00:00+08:00',
 				endDateTime: '2017-07-02T00:00:00+08:00',
@@ -659,12 +642,10 @@ describe('CalendarApp', () => {
 			let mockCalendarAPI = {
 				listEvents: sinon.stub().resolves(mockResponse)
 			};
-			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
-			return CalendarApp.listBookedEventsByRoom(testInput.startDateTime, testInput.endDateTime, testInput.roomId)
-				.then((promisedResult) => {
-					expect(promisedResult).to.eql(expectedResult);
-				});
+			const promisedResult = await CalendarApp.listBookedEventsByRoom(testInput.startDateTime, testInput.endDateTime, testInput.roomId)
+			expect(promisedResult).to.eql(expectedResult);
 		});
 
 		it('should return array of booked events info for recurring single room events', () => {
@@ -692,7 +673,7 @@ describe('CalendarApp', () => {
 			let mockCalendarAPI = {
 				listEvents: sinon.stub().resolves(mockResponse)
 			};
-			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			let expectedReturnedEvent = {
 				id: mockRecurringEvent.id,
@@ -739,7 +720,7 @@ describe('CalendarApp', () => {
 			let mockCalendarAPI = {
 				listEvents: sinon.stub().resolves(mockResponse)
 			};
-			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(mockCalendarAPI, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			return CalendarApp.listBookedEventsByRoom(testInput.startDateTime, testInput.endDateTime, testInput.roomId)
 				.then((promisedResult) => {
@@ -801,7 +782,7 @@ describe('CalendarApp', () => {
 
 			stub = sinon.stub(CalendarApp, 'listBookedEventsByRoom').resolves(respStub);
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			return CalendarApp.listEmptySlotsInDay(testInput.datetime, testInput.roomId)
 				.then((promisedResult) => {
@@ -873,7 +854,7 @@ describe('CalendarApp', () => {
 			stub.onSecondCall().resolves(respStubQ2);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			return CalendarApp.listEmptySlotsInDay(testInput.datetime, testInput.roomId)
 				.then((promisedResult) => {
@@ -993,7 +974,7 @@ describe('CalendarApp', () => {
 			stub = sinon.stub(CalendarAPI.prototype, 'insertEvent').resolves(mockAPIResp);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			return CalendarApp.insertEvent(testInput.bookingSummary, testInput.startdate, testInput.enddate, testInput.room, testInput.status, testInput.description, testInput.username)
 				.then((promisedResult) => {
@@ -1054,7 +1035,7 @@ describe('CalendarApp', () => {
 			stub.onSecondCall().resolves(mockAPIRespR1);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			return CalendarApp.insertEvent(testInput.bookingSummary, testInput.startdate, testInput.enddate, testInput.room, testInput.status, testInput.description, testInput.username)
 				.then((promisedResult) => {
@@ -1076,7 +1057,7 @@ describe('CalendarApp', () => {
 			stub = sinon.stub(CalendarAPI.prototype, 'deleteEvent').resolves(mockAPIResp);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			return CalendarApp.deleteEvents([testInput.eventId], testInput.room)
 				.then((promisedResult) => {
@@ -1098,7 +1079,7 @@ describe('CalendarApp', () => {
 			stub = sinon.stub(CalendarAPI.prototype, 'deleteEvent').rejects(mockAPIResp);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			return CalendarApp.deleteEvents([testInput.eventId], testInput.room)
 				.catch((err) => {
@@ -1117,7 +1098,7 @@ describe('CalendarApp', () => {
 			stub = sinon.stub(CalendarAPI.prototype, 'deleteEvent').resolves(mockAPIResp);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			return CalendarApp.deleteEvents([testInput.event1Id, testInput.event2Id], testInput.room)
 				.then((promisedResult) => {
@@ -1166,7 +1147,7 @@ describe('CalendarApp', () => {
 			stub.resolves([]);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			return CalendarApp.listBookedEventsByUser(testInput.startDateTime, testInput.user)
 				.then((promisedResult) => {
@@ -1234,7 +1215,7 @@ describe('CalendarApp', () => {
 			stub.onCall(3).resolves([mockCombinedEvents[1]]);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			return CalendarApp.listBookedEventsByUser(testInput.startDateTime, testInput.user)
 				.then((promisedResult) => {
@@ -1265,7 +1246,7 @@ describe('CalendarApp', () => {
 			stub.resolves([]);
 
 			let calApiInstance = new CalendarAPI(CONFIG);
-			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing);
+			CalendarApp.init(calApiInstance, CONFIG, ROOM_CONFIG.roomsListing, BOOKING_DURATION_OPTIONS);
 
 			let expectedResult = [{
 				id: mockRecurringEvent.id,

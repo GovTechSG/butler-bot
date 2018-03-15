@@ -39,6 +39,7 @@ Thumbs.db
 
 node_modules
 src/data/users.js
+src/data/users.json
 build/
 yarn-error.log
 .idea

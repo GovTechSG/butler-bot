@@ -41,16 +41,20 @@ References:
 Report a bug [here](https://github.com/GovTechSG/butler-bot/issues).
 
 ## Todo
+* [Feature] Improve admin workflow to add / remove rooms opened for booking
 * [Feature] Quick command to check available rooms in the next coming x hour
 * [Improvement] Improve /any booking flow
 * [Feature] Users to state meeting participants and auto send email meeting invites 
 * [Improvement] Booking insert job queue improvement
 * [Improvement] Authenticate to only allow hive users to book (temporary workaround for now)   
-* [Feature] Improve admin workflow to user management
 * [Improvement] Break logs into mutiple streams/ files 
 * [Improvement] Clean up code    
 
 ## Releases
+
+### V0.1.5
+* Refactor of code
+* Added room new room options for /book and /any
 
 ### V0.1.4
 * Bug fixes in handling erroneous cancelled events from google calendar during room selection 
