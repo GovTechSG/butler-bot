@@ -143,6 +143,14 @@ function processCallBack(query) {
 }
 
 function checkAuthorisedUsers(message) {
+	const Users = loadUsers();
+	const oldUser = Users.findOne(x => x.username === message.from.username && x.userId === '');
+	if (oldUser) {
+		oldUser.userId = message.from.id;
+		Users.update(oldUser);
+		db.saveDatabase();
+	}
+
 	if (!loadUsers().where(x => x.username === message.from.username && x.role !== 'registree').length) {
 		slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
 		console.log(`Unauthenticated Access by ${message.from.username} on ${new Date().getISO8601TimeStamp()}`);
