@@ -1,20 +1,23 @@
 export default class UserManager {
-  constructor(database) {
-    this.database = database;
+  constructor(collection) {
+    this.users = collection;
   }
 
-  loadUsers() {
-    return this.database.getCollection('users');
+  isUserAuthorized(user) {
+    const result = this.users.where(x => x.username === user.username && x.role !== 'registree');
+    return result.length === 1;
   }
 
-  checkAuthorisedUsers(user) {
-    const result = this.loadUsers().where(x => x.username === user.username);
-    if (result.length) {
-      console.log('result', result);
-      console.log('user.username', user.username);
-      console.log('true', true);
-      return true;
+  upsertUser(user) {
+    const savedUser = this.getUser(user);
+
+    if (savedUser.userId === '') {
+      savedUser.userId = user.id;
+      this.users.update(savedUser);
     }
-    return false;
+  }
+
+  getUser(user) {
+    return this.users.findOne(x => x.username === user.username);
   }
 }

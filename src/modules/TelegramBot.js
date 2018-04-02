@@ -11,14 +11,20 @@ import * as ParamBuilder from './ParamBuilder';
 import * as ReplyBuilder from './ReplyBuilder';
 import * as CalendarApp from './CalendarApp';
 import BookingSteps from './BookingSteps';
+import UserManager from './UserManager';
 // import Logger from './Logger';
 
 const db = new Loki('data/users.json');
 
+let userManager;
 db.loadDatabase({}, () => {
-  console.log('users loaded');
+	console.log('users loaded');
+	const USERS = db.getCollection('users');
+	userManager = new UserManager(USERS);
 });
+
 const loadUsers = () => db.getCollection('users');
+
 
 const slimbot = new Slimbot(CONFIG.telegramBotToken);
 const Emitter = new EventEmitter();
@@ -108,7 +114,7 @@ function processCallBack(query) {
 		SessionMgr.terminateSession(callback_data.exit);
 
 	} else if (callback_data.action === 'manage_users') {
-			processManageUsersCallback(query);
+		processManageUsersCallback(query);
 
 	} else if (callback_data.date === undefined) {
 		BookingSteps.book.selectTodayOrDate(slimbot, callback_data.room, query, true);
@@ -143,19 +149,14 @@ function processCallBack(query) {
 }
 
 function checkAuthorisedUsers(message) {
-	const Users = loadUsers();
-	const oldUser = Users.findOne(x => x.username === message.from.username && x.userId === '');
-	if (oldUser) {
-		oldUser.userId = message.from.id;
-		Users.update(oldUser);
-		db.saveDatabase();
-	}
-
-	if (!loadUsers().where(x => x.username === message.from.username && x.role !== 'registree').length) {
+	if (!userManager.isUserAuthorized(message.from)) {
 		slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
 		console.log(`Unauthenticated Access by ${message.from.username} on ${new Date().getISO8601TimeStamp()}`);
 		throw new Error('Unauthenticated access');
 	}
+
+	userManager.upsertUser(message.from);
+	db.saveDatabase();
 }
 
 function checkRoomBookingCommands(message) {
@@ -173,7 +174,7 @@ function checkCommandList(message) {
 	if (message.text === '/register' && message.chat.type === 'private') {
 		registerUser(message);
 		return;
-	}	
+	}
 
 	checkAuthorisedUsers(message);
 	checkRoomBookingCommands(message);
@@ -209,7 +210,7 @@ function checkCommandList(message) {
 
 function checkPrivateChatCommandList(message) {
 	if (message.text === '/manage') {
-		const isAdmin = loadUsers().find({userId: message.from.id})[0].role === 'admin';
+		const isAdmin = loadUsers().find({ userId: message.from.id })[0].role === 'admin';
 		if (isAdmin) {
 			slimbot.sendMessage(message.chat.id, MESSAGES.admin);
 		}
@@ -332,7 +333,8 @@ const registerUser = (message) => {
 			userId: message.from.id,
 			username: message.from.username,
 			fullName,
-			role: 'registree' });
+			role: 'registree'
+		});
 		db.saveDatabase();
 		informAdmins(`${fullName}(@${message.from.username}) is requesting authorization for butler bot!`, message.from.id);
 		slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");

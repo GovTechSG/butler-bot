@@ -3,6 +3,7 @@ import Loki from 'lokijs';
 import UserManager from '../src/modules/UserManager';
 
 const db = new Loki('test/mock-users.json');
+const users = db.addCollection('users');
 
 describe('UserManager', () => {
   beforeEach((done) => {
@@ -11,12 +12,41 @@ describe('UserManager', () => {
     });
   });
 
-  describe('#checkAuthorizedUsers', () => {
-    it('should return true', () => {
-      const userMananger = new UserManager(db);
-      
-      const result = userMananger.checkAuthorisedUsers({ username: 'false' });
+  afterEach(() => {
+    users.clear();
+  });
+
+  describe('#isUserAuthorized', () => {
+    it('should return true for valid user', () => {
+      users.insert({ username: 'valid_user', role: 'user' });
+
+      const userMananger = new UserManager(users);
+      const result = userMananger.isUserAuthorized({ username: 'valid_user' });
+      expect(result).to.eq(true);
+    });
+
+    it('should return false for unregistered users', () => {
+      const userManager = new UserManager(users);
+      const result = userManager.isUserAuthorized({ username: 'unregistered', role: 'not registered' });
       expect(result).to.eq(false);
+    });
+  });
+
+  describe('#upsertUser', () => {
+    it('should add IDs for old users', () => {
+      users.insert({ username: 'valid_user', userId: '' });
+
+      const userManager = new UserManager(users);
+      userManager.upsertUser({ username: 'valid_user', id: 1234567 });
+      expect(users.findOne(x => x.username === 'valid_user').userId).to.eq(1234567);
+    });
+
+    it('should not insert new users', () => {
+      users.insert({ username: 'valid_user', userId: 1234567 });
+
+      const userManager = new UserManager(users);
+      userManager.upsertUser({ username: 'valid_user', id: 1234567 });
+      expect(users.data.length).to.eq(1);
     });
   });
 });
