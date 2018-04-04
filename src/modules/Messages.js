@@ -1,16 +1,5 @@
 const MESSAGES = {
-	start: `Allo!💁 To get started, type:
-	*/help* in a private chat - for more info on how to book a room;
-	*/register* to register to use the bot.
-		
-	*/any* book any available meeting room at a time of your choosing;
-	*/book* to start booking from a list of rooms available;
-	*/exit* terminate current booking process;
-	*/booked* in a private chat - for list of rooms you have booked;
-	*/delete* in a private chat - delete a booking;
-	*/view* see all bookings in hive.
-	
-	Thank you for using SweeZharBot™! If got problem please don't come and find Viviean thank you velly much 😛`,
+	start: 'Allo!💁 Use /any to anyhowly book',
 	help: `Type:\n
 	\n*/any* book any available meeting room at a time of your choosing;\n*/book* to start booking from a list of rooms available;\n*/exit* terminate current booking process;\n*/booked* in a private chat - for list of rooms you have booked;\n*/delete* in a private chat - delete a booking;\n*/view* see all bookings in hive.\n\nThank you for using SweeZharBot™! If got problem please don't come and find Viviean thank you velly much 😛`,
 	unrecognisedCommands: `I don't understand your command, try using valid commands listed in /help menu.`,

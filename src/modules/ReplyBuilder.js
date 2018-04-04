@@ -62,9 +62,9 @@ export function askAnyRoomNoRoom() {
 	return `Sorry leh, don't have any room at all. Why don't you look at the calendar and see which timeslot is free first? Then send me another timing below again.\n\n[Click here to view calendar](https://sgtravelbot.com)`;
 }
 
-export function confirmAnyRoom(date, startTime, endTime, duration, room) {
+export function confirmAnyRoom(date, startTime, endTime, duration) {
 	return `Steady, confirm *${date}* *${startTime} - ${endTime} (${duration} mins)*?\n` +
-		`The *${room}* room is available! Would you like to book it?`;
+		`First come first serve. Quickly press if you want!`;
 }
 
 export function rejectAnyRoomForLongBooking(date, startTime, endTime, duration) {

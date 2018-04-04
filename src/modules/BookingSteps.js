@@ -215,38 +215,43 @@ function anyRoom(bot, message, anyBookList) {
 	checkRoomFreeAtTimeslot(bot, message, startTime, endTime, rooms, anyBookList);
 }
 
-function checkRoomFreeAtTimeslot(bot, message, startDate, endDate, rooms, anyBookList) {
+function checkRoomFreeAtTimeslot(bot, message, startDate, endDate, rooms, anyBookList, freeRooms = []) {
 	if (!rooms.length) {
-		bot.sendMessage(message.chat.id, ReplyBuilder.askAnyRoomNoRoom(), { parse_mode: 'markdown' });
-		return;
+		if (!freeRooms.length) {
+			bot.sendMessage(message.chat.id, ReplyBuilder.askAnyRoomNoRoom(), { parse_mode: 'markdown' });
+			return;
+		}
+
+		delete anyBookList[message.chat.id];
+
+		let numOfSlots = Math.round(startDate.getMinuteDiff(endDate) / 30);
+		let optionalParams = ParamBuilder.getFreeRooms(freeRooms,
+			startDate.getSimpleDate(),
+			startDate.getFormattedTime(),
+			numOfSlots,
+			message.chat.id);
+
+		bot.sendMessage(message.chat.id, ReplyBuilder.confirmAnyRoom(
+			startDate.getFormattedDate(),
+			startDate.getFormattedTime(),
+			endDate.getFormattedTime(),
+			startDate.getMinuteDiff(endDate)), optionalParams)
+			.then((sentMsg) => {
+				SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
+			});
+	} else {
+		CalendarApp.checkTimeslotFree(startDate, endDate, rooms[0])
+			.then((roomFree) => {
+				const firstRoom = rooms.shift();
+				if (roomFree) {
+					freeRooms.push({ name: roomlist[firstRoom].name, code: firstRoom });
+				} else {
+					console.log(`${firstRoom} is not free, trying next room`);
+				}
+
+				checkRoomFreeAtTimeslot(bot, message, startDate, endDate, rooms, anyBookList, freeRooms);
+			});
 	}
-	return CalendarApp.checkTimeslotFree(startDate, endDate, rooms[0])
-		.then((roomFree) => {
-			if (roomFree) {
-				delete anyBookList[message.chat.id];
-
-				let numOfSlots = Math.round(startDate.getMinuteDiff(endDate) / 30);
-				let optionalParams = ParamBuilder.getYesNoButtons(rooms[0],
-					startDate.getSimpleDate(),
-					startDate.getFormattedTime(),
-					numOfSlots,
-					message.chat.id);
-
-				bot.sendMessage(message.chat.id, ReplyBuilder.confirmAnyRoom(
-					startDate.getFormattedDate(),
-					startDate.getFormattedTime(),
-					endDate.getFormattedTime(),
-					startDate.getMinuteDiff(endDate),
-					roomlist[rooms[0]].name), optionalParams)
-					.then((sentMsg) => {
-						SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
-					});
-			} else {
-				console.log(`${rooms[0]} is not free, trying next room`);
-				rooms.shift();
-				checkRoomFreeAtTimeslot(bot, message, startDate, endDate, rooms, anyBookList);
-			}
-		});
 }
 
 const BookingSteps = {

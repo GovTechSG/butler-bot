@@ -58,7 +58,23 @@ export function getYesNoButtons(room, startDate, startTime, duration, messageCha
 			]]
 		})
 	};
-};
+}
+
+export function getFreeRooms(rooms, startDate, startTime, duration, messageChatId) {
+	const roomButtons = rooms.map(room => [{
+		text: room.name, callback_data: JSON.stringify({ date: startDate, time: startTime, dur: duration, room: room.code })
+	}]);
+	roomButtons.push([{
+		text: 'Cancel', callback_data: JSON.stringify({ exit: messageChatId })
+	}]);
+	
+	return {
+		parse_mode: 'markdown',
+		reply_markup: JSON.stringify({
+			inline_keyboard: roomButtons
+		})
+	};
+}
 
 function constructBackOption(room, date, startTime, duration) {
 	let row = [];
