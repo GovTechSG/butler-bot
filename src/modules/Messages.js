@@ -17,7 +17,7 @@ const MESSAGES = {
 	book: `Which room would you like to book?`,
 	admin: 'Good luck ah, you will be veri beesy.',
 	registered: 'Swee! You can start booking liao',
-	newUserApproved: 'One more user approved hor.',
+	newUserApproved: 'thankew you.',
 	view: 'Check out this link for the overall room booking schedules: https://sweezharbot.dcube.cf',
 	delete: `You have successfully deleted your booking`,
 	deleteErr: `Oops, something went wrong while deleting your booking.`,

@@ -18,8 +18,8 @@ const db = new Loki('data/users.json');
 
 let userManager;
 db.loadDatabase({}, () => {
-	console.log('users loaded');
-	const USERS = db.getCollection('users');
+	console.log('database loaded');
+	const USERS = () => db.getCollection('users');
 	userManager = new UserManager(USERS);
 });
 
@@ -95,11 +95,13 @@ slimbot.on('callback_query', (query) => {
 const processManageUsersCallback = (query) => {
 	const callbackData = JSON.parse(query.data);
 	const users = loadUsers();
-	let userObj = users.find({ userId: callbackData.userId })[0];
+	let userObj = users.findOne({ userId: callbackData.userId });
 	userObj.role = callbackData.role;
 	users.update(userObj);
 	db.saveDatabase();
-	slimbot.editMessageText(query.message.chat.id, query.message.message_id, MESSAGES.newUserApproved);
+	userObj.approvals.forEach((approval) => {
+		slimbot.editMessageText(approval.chat.id, approval.message_id, `${callbackData.approver} approved ${userObj.fullName}! ${MESSAGES.newUserApproved}`);
+	});
 	slimbot.sendMessage(callbackData.userId, MESSAGES.registered);
 };
 
@@ -314,35 +316,38 @@ function replyCancelBookProcess(query) {
 
 const informAdmins = (message, userId) => {
 	const admins = loadUsers().find({ role: 'admin' });
-	let optionalParams = {
-		reply_markup: JSON.stringify({
-			inline_keyboard: ParamBuilder.approveRegistree(userId)
-		})
-	};
-	admins.forEach((admin) => {
-		slimbot.sendMessage(admin.userId, message, optionalParams);
+	const user = userManager.getUser({ userId });
+
+	admins.forEach(async (admin) => {
+		let optionalParams = {
+			reply_markup: JSON.stringify({
+				inline_keyboard: ParamBuilder.approveRegistree(userId, admin.fullname)
+			})
+		};
+		const message = await slimbot.sendMessage(admin.userId, message, optionalParams);
+		user.approvals = user.approvals ? user.approvals.push(message) : [message];
 	});
 };
 
 const registerUser = (message) => {
-	const fullName = `${message.from.first_name}${message.from.last_name ? ` ${message.from.last_name}` : ''}`;
-	const userQuery = loadUsers();
-	const user = userQuery.findOne({ userId: message.from.id });
-	if (!user) {
-		userQuery.insert({
-			userId: message.from.id,
-			username: message.from.username,
-			fullName,
-			role: 'registree'
-		});
-		db.saveDatabase();
-		informAdmins(`${fullName}(@${message.from.username}) is requesting authorization for butler bot!`, message.from.id);
-		slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
-	}
-	if (user.role === 'admin' || user.role === 'user') {
-		slimbot.sendMessage(message.chat.id, 'You are registered!');
-	} else if (user.role === 'registree') {
-		slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
+	const action = userManager.upsertUser(message.from);
+	db.saveDatabase();
+	const user = userManager.getUser(message.from);
+
+	switch (action) {
+		case 'insert':
+			informAdmins(`${user.fullName}(@${user.username}) is requesting authorization for butler bot!`, user.userId);
+			slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
+			break;
+		case 'update':
+		default: {
+			if (user.role === 'admin' || user.role === 'user') {
+				slimbot.sendMessage(message.chat.id, 'You are registered!');
+			} else if (user.role === 'registree') {
+				slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
+			}
+			break;
+		}
 	}
 };
 
