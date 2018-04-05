@@ -84,7 +84,7 @@ describe('UserManager', () => {
     it('should return empty if not in database', () => {
       const userManager = new UserManager(users);
       const userInDB = userManager.getUser({ username: 'bo_zhar_bor' });
-      expect(userInDB).to.be.null;
+      expect(userInDB).to.be.undefined;
     });
   });
 });

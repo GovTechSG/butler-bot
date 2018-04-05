@@ -31,6 +31,9 @@ export default class UserManager {
   }
 
   getUser(user) {
-    return this.users().findOne({ username: user.username });
+    return this.users().where(
+      x => (user.username && x.username === user.username) ||
+      (user.id && x.userId === user.id)
+    )[0];
   }
 }

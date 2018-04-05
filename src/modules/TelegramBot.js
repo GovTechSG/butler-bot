@@ -92,19 +92,6 @@ slimbot.on('callback_query', (query) => {
 });
 // End of listeners
 
-const processManageUsersCallback = (query) => {
-	const callbackData = JSON.parse(query.data);
-	const users = loadUsers();
-	let userObj = users.findOne({ userId: callbackData.userId });
-	userObj.role = callbackData.role;
-	users.update(userObj);
-	db.saveDatabase();
-	userObj.approvals.forEach((approval) => {
-		slimbot.editMessageText(approval.chat.id, approval.message_id, `${callbackData.approver} approved ${userObj.fullName}! ${MESSAGES.newUserApproved}`);
-	});
-	slimbot.sendMessage(callbackData.userId, MESSAGES.registered);
-};
-
 
 function processCallBack(query) {
 	if (query.data !== undefined && query.data.trim() === '') {
@@ -314,18 +301,40 @@ function replyCancelBookProcess(query) {
 	slimbot.editMessageText(query.from.id, query.message.message_id, MESSAGES.canceled);
 }
 
-const informAdmins = (message, userId) => {
+const processManageUsersCallback = (query) => {
+	const callbackData = JSON.parse(query.data);
+	const users = loadUsers();
+	let userObj = users.findOne({ userId: callbackData.userId });
+	const { approvals } = userObj;
+	delete userObj.approvals;
+	userObj.role = callbackData.role;
+	users.update(userObj);
+	db.saveDatabase();
+	approvals.forEach((approval) => {
+		slimbot.editMessageText(approval.chat.id, approval.message_id, `Admin has approved ${userObj.fullName}! ${MESSAGES.newUserApproved}`);
+	});
+	slimbot.sendMessage(callbackData.userId, MESSAGES.registered);
+};
+
+const informAdmins = (message, id) => {
 	const admins = loadUsers().find({ role: 'admin' });
-	const user = userManager.getUser({ userId });
+	const user = userManager.getUser({ id });
 
 	admins.forEach(async (admin) => {
 		let optionalParams = {
 			reply_markup: JSON.stringify({
-				inline_keyboard: ParamBuilder.approveRegistree(userId, admin.fullname)
+				inline_keyboard: ParamBuilder.approveRegistree(id)
 			})
 		};
-		const message = await slimbot.sendMessage(admin.userId, message, optionalParams);
-		user.approvals = user.approvals ? user.approvals.push(message) : [message];
+		const responseMsg = await slimbot.sendMessage(admin.userId, message, optionalParams);
+		const { chat, message_id } = responseMsg.result;
+		if (user.approvals) {
+			user.approvals.push({ chat, message_id });
+		} else {
+			user.approvals = [{ chat, message_id }];
+		}
+		loadUsers().update(user);
+		db.saveDatabase();
 	});
 };
 
