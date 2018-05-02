@@ -5,7 +5,7 @@
 A Telegram Bot that helps you book meetings rooms. Awesome!
 
 ## Getting Started
-Grab dependencies
+Install dependencies
 ```javascript
 npm i
 ```
@@ -15,7 +15,7 @@ Run the bot
 npm start
 ```
 
-Running tests (After you have setup the env vars)
+Run tests (After you have setup the env vars)
 ```javascript
 npm test
 ```
