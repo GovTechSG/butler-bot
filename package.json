@@ -1,6 +1,6 @@
 {
   "name": "butler-bot",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A Telegram bot that helps you book meeting rooms",
   "author": {
     "name": "DCUBE Team",

@@ -211,41 +211,42 @@ function anyRoom(bot, message, anyBookList) {
 
 	// look up lowest-priority cal for available slot
 	let rooms = ['th', 'ko', 'kc', 'hl', 'ml', 'dr', 'bb', 'kg', 'fg', 'q1', 'q2', 'qc'];
-	rooms.sort(() => (Math.random() * 2) - 1);
 	checkRoomFreeAtTimeslot(bot, message, startTime, endTime, rooms, anyBookList);
 }
 
-function checkRoomFreeAtTimeslot(bot, message, startDate, endDate, rooms, anyBookList) {
-	if (!rooms.length) {
+async function checkRoomFreeAtTimeslot(bot, message, startDate, endDate, rooms, anyBookList) {
+	let responses = await Promise.all(rooms.map(room => CalendarApp.checkTimeslotFree(startDate, endDate, room)));
+
+	const freeRooms = responses.reduce((result, isRoomFree, index) => {
+		if (isRoomFree) {
+			const roomCode = rooms[index];
+			result.push({ name: roomlist[roomCode].name, code: roomCode });
+		}
+
+		return result;
+	}, []);
+
+	if (!freeRooms.length) {
 		bot.sendMessage(message.chat.id, ReplyBuilder.askAnyRoomNoRoom(), { parse_mode: 'markdown' });
 		return;
 	}
-	return CalendarApp.checkTimeslotFree(startDate, endDate, rooms[0])
-		.then((roomFree) => {
-			if (roomFree) {
-				delete anyBookList[message.chat.id];
 
-				let numOfSlots = Math.round(startDate.getMinuteDiff(endDate) / 30);
-				let optionalParams = ParamBuilder.getYesNoButtons(rooms[0],
-					startDate.getSimpleDate(),
-					startDate.getFormattedTime(),
-					numOfSlots,
-					message.chat.id);
+	delete anyBookList[message.chat.id];
 
-				bot.sendMessage(message.chat.id, ReplyBuilder.confirmAnyRoom(
-					startDate.getFormattedDate(),
-					startDate.getFormattedTime(),
-					endDate.getFormattedTime(),
-					startDate.getMinuteDiff(endDate),
-					roomlist[rooms[0]].name), optionalParams)
-					.then((sentMsg) => {
-						SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
-					});
-			} else {
-				console.log(`${rooms[0]} is not free, trying next room`);
-				rooms.shift();
-				checkRoomFreeAtTimeslot(bot, message, startDate, endDate, rooms, anyBookList);
-			}
+	let numOfSlots = Math.round(startDate.getMinuteDiff(endDate) / 30);
+	let optionalParams = ParamBuilder.getFreeRooms(freeRooms,
+		startDate.getSimpleDate(),
+		startDate.getFormattedTime(),
+		numOfSlots,
+		message.chat.id);
+
+	bot.sendMessage(message.chat.id, ReplyBuilder.confirmAnyRoom(
+		startDate.getFormattedDate(),
+		startDate.getFormattedTime(),
+		endDate.getFormattedTime(),
+		startDate.getMinuteDiff(endDate)), optionalParams)
+		.then((sentMsg) => {
+			SessionMgr.extendSession(sentMsg.result.chat.id, sentMsg.result.message_id, sentMsg.result.chat.username);
 		});
 }
 
