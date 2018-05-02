@@ -11,14 +11,20 @@ import * as ParamBuilder from './ParamBuilder';
 import * as ReplyBuilder from './ReplyBuilder';
 import * as CalendarApp from './CalendarApp';
 import BookingSteps from './BookingSteps';
+import UserManager from './UserManager';
 // import Logger from './Logger';
 
 const db = new Loki('data/users.json');
 
+let userManager;
 db.loadDatabase({}, () => {
-  console.log('users loaded');
+	console.log('database loaded');
+	const USERS = () => db.getCollection('users');
+	userManager = new UserManager(USERS);
 });
+
 const loadUsers = () => db.getCollection('users');
+
 
 const slimbot = new Slimbot(CONFIG.telegramBotToken);
 const Emitter = new EventEmitter();
@@ -86,17 +92,6 @@ slimbot.on('callback_query', (query) => {
 });
 // End of listeners
 
-const processManageUsersCallback = (query) => {
-	const callbackData = JSON.parse(query.data);
-	const users = loadUsers();
-	let userObj = users.find({ userId: callbackData.userId })[0];
-	userObj.role = callbackData.role;
-	users.update(userObj);
-	db.saveDatabase();
-	slimbot.editMessageText(query.message.chat.id, query.message.message_id, MESSAGES.newUserApproved);
-	slimbot.sendMessage(callbackData.userId, MESSAGES.registered);
-};
-
 
 function processCallBack(query) {
 	if (query.data !== undefined && query.data.trim() === '') {
@@ -108,7 +103,7 @@ function processCallBack(query) {
 		SessionMgr.terminateSession(callback_data.exit);
 
 	} else if (callback_data.action === 'manage_users') {
-			processManageUsersCallback(query);
+		processManageUsersCallback(query);
 
 	} else if (callback_data.date === undefined) {
 		BookingSteps.book.selectTodayOrDate(slimbot, callback_data.room, query, true);
@@ -143,11 +138,14 @@ function processCallBack(query) {
 }
 
 function checkAuthorisedUsers(message) {
-	if (!loadUsers().where(x => x.username === message.from.username && x.role !== 'registree').length) {
+	if (!userManager.isUserAuthorized(message.from)) {
 		slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
 		console.log(`Unauthenticated Access by ${message.from.username} on ${new Date().getISO8601TimeStamp()}`);
 		throw new Error('Unauthenticated access');
 	}
+
+	userManager.upsertUser(message.from);
+	db.saveDatabase();
 }
 
 function checkRoomBookingCommands(message) {
@@ -165,7 +163,7 @@ function checkCommandList(message) {
 	if (message.text === '/register' && message.chat.type === 'private') {
 		registerUser(message);
 		return;
-	}	
+	}
 
 	checkAuthorisedUsers(message);
 	checkRoomBookingCommands(message);
@@ -201,7 +199,7 @@ function checkCommandList(message) {
 
 function checkPrivateChatCommandList(message) {
 	if (message.text === '/manage') {
-		const isAdmin = loadUsers().find({userId: message.from.id})[0].role === 'admin';
+		const isAdmin = loadUsers().find({ userId: message.from.id })[0].role === 'admin';
 		if (isAdmin) {
 			slimbot.sendMessage(message.chat.id, MESSAGES.admin);
 		}
@@ -303,36 +301,62 @@ function replyCancelBookProcess(query) {
 	slimbot.editMessageText(query.from.id, query.message.message_id, MESSAGES.canceled);
 }
 
-const informAdmins = (message, userId) => {
+const processManageUsersCallback = (query) => {
+	const callbackData = JSON.parse(query.data);
+	const users = loadUsers();
+	let userObj = users.findOne({ userId: callbackData.userId });
+	const { approvals } = userObj;
+	delete userObj.approvals;
+	userObj.role = callbackData.role;
+	users.update(userObj);
+	db.saveDatabase();
+	approvals.forEach((approval) => {
+		slimbot.editMessageText(approval.chat.id, approval.message_id, `Admin has approved ${userObj.fullName}! ${MESSAGES.newUserApproved}`);
+	});
+	slimbot.sendMessage(callbackData.userId, MESSAGES.registered);
+};
+
+const informAdmins = (message, id) => {
 	const admins = loadUsers().find({ role: 'admin' });
-	let optionalParams = {
-		reply_markup: JSON.stringify({
-			inline_keyboard: ParamBuilder.approveRegistree(userId)
-		})
-	};
-	admins.forEach((admin) => {
-		slimbot.sendMessage(admin.userId, message, optionalParams);
+	const user = userManager.getUser({ id });
+
+	admins.forEach(async (admin) => {
+		let optionalParams = {
+			reply_markup: JSON.stringify({
+				inline_keyboard: ParamBuilder.approveRegistree(id)
+			})
+		};
+		const responseMsg = await slimbot.sendMessage(admin.userId, message, optionalParams);
+		const { chat, message_id } = responseMsg.result;
+		if (user.approvals) {
+			user.approvals.push({ chat, message_id });
+		} else {
+			user.approvals = [{ chat, message_id }];
+		}
+		loadUsers().update(user);
+		db.saveDatabase();
 	});
 };
 
 const registerUser = (message) => {
-	const fullName = `${message.from.first_name}${message.from.last_name ? ` ${message.from.last_name}` : ''}`;
-	const userQuery = loadUsers();
-	const user = userQuery.findOne({ userId: message.from.id });
-	if (!user) {
-		userQuery.insert({
-			userId: message.from.id,
-			username: message.from.username,
-			fullName,
-			role: 'registree' });
-		db.saveDatabase();
-		informAdmins(`${fullName}(@${message.from.username}) is requesting authorization for butler bot!`, message.from.id);
-		slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
-	}
-	if (user.role === 'admin' || user.role === 'user') {
-		slimbot.sendMessage(message.chat.id, 'You are registered!');
-	} else if (user.role === 'registree') {
-		slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
+	const action = userManager.upsertUser(message.from);
+	db.saveDatabase();
+	const user = userManager.getUser(message.from);
+
+	switch (action) {
+		case 'insert':
+			informAdmins(`${user.fullName}(@${user.username}) is requesting authorization for butler bot!`, user.userId);
+			slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
+			break;
+		case 'update':
+		default: {
+			if (user.role === 'admin' || user.role === 'user') {
+				slimbot.sendMessage(message.chat.id, 'You are registered!');
+			} else if (user.role === 'registree') {
+				slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
+			}
+			break;
+		}
 	}
 };
 
