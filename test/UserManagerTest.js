@@ -50,19 +50,19 @@ describe('UserManager', () => {
     });
 
     it('should add IDs for old users', () => {
-      users().insert({ username: 'valid_user', userId: '' });
+      users().insert({ 'username': 'valid_user', userId: '' });
 
       const userManager = new UserManager(users);
       const action = userManager.upsertUser({ username: 'valid_user', id: 1234567 });
       expect(action).to.eq('update');
-      expect(users().findOne({ username: 'valid_user' }).userId).to.eq(1234567);
+      expect(users().findOne({ 'username': 'valid_user' }).userId).to.eq(1234567);
     });
 
     it('should not insert new users', () => {
-      users().insert({ username: 'valid_user', userId: 1234567 });
+      users().insert({ 'username': 'valid_user', userId: 1234567 });
 
       const userManager = new UserManager(users);
-      const action = userManager.upsertUser({ username: 'valid_user', id: 12345687 });
+      const action = userManager.upsertUser({ 'username': 'valid_user', id: 12345687 });
       expect(action).to.eq('');
       expect(users().data.length).to.eq(1);
     });

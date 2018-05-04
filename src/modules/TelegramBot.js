@@ -304,7 +304,7 @@ function replyCancelBookProcess(query) {
 const processManageUsersCallback = (query) => {
 	const callbackData = JSON.parse(query.data);
 	const users = loadUsers();
-	let userObj = users.findOne({ userId: callbackData.userId });
+	let userObj = users.where(x => x.userId !== undefined && x.userId === callbackData.userId)[0];
 	const { approvals } = userObj;
 	delete userObj.approvals;
 	userObj.role = callbackData.role;
