@@ -5,7 +5,7 @@ import Loki from 'lokijs';
 
 import './Date';
 import MESSAGES from './Messages';
-import CONFIG, { ROOM_CONFIG, BOOKING_DURATION_OPTIONS } from '../config/settings';
+import CONFIG, { ROOM_CONFIG, BOOKING_DURATION_OPTIONS } from '../../config/settings';
 import SessionManagement from './SessionManagement';
 import * as ParamBuilder from './ParamBuilder';
 import * as ReplyBuilder from './ReplyBuilder';

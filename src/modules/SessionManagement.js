@@ -1,5 +1,5 @@
 import MESSAGES from './Messages';
-import { SESSION_LENGTH as sessionLength } from '../config/settings';
+import { SESSION_LENGTH as sessionLength } from '../../config/settings';
 
 let activeUsers = {};       // stores userId, lastMsgId, username, timer
 let Emitter;

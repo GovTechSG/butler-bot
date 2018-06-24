@@ -3,7 +3,7 @@ import sinon from 'sinon';
 
 import CalendarAPI from 'node-google-calendar';
 import * as CalendarApp from '../src/modules/CalendarApp';
-import CONFIG, { ROOM_CONFIG, BOOKING_DURATION_OPTIONS } from '../src/config/settings';
+import CONFIG, { ROOM_CONFIG, BOOKING_DURATION_OPTIONS } from '../config/settings';
 
 describe('CalendarApp', () => {
 	let mockEvent = {

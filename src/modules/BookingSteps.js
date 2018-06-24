@@ -5,7 +5,7 @@ import * as ReplyBuilder from './ReplyBuilder';
 import { SessionMgr } from './TelegramBot';
 import MESSAGES from './Messages';
 
-import { ROOM_CONFIG, BOOKING_DURATION_OPTIONS } from '../config/settings';
+import { ROOM_CONFIG, BOOKING_DURATION_OPTIONS } from '../../config/settings';
 
 let roomlist = ROOM_CONFIG.roomsListing;
 
@@ -210,7 +210,7 @@ function anyRoom(bot, message, anyBookList) {
 	bot.sendMessage(message.chat.id, ReplyBuilder.checkAnyRoom(), { parse_mode: 'markdown' });
 
 	// look up lowest-priority cal for available slot
-	let rooms = ['th', 'ko', 'kc', 'hl', 'ml', 'dr', 'bb', 'kg', 'fg', 'q1', 'q2', 'qc'];
+	let rooms = Object.keys(ROOM_CONFIG.roomsListing).filter(x => x !== 'primary');
 	checkRoomFreeAtTimeslot(bot, message, startTime, endTime, rooms, anyBookList);
 }
 
