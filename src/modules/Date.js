@@ -4,11 +4,7 @@
 Date.prototype.setDateWithSimpleFormat = function (dateString) {
 	//dateString to be in dd/mm/yyyy
 	let ary = dateString.split('/');
-	this.setYear(ary[2]);
-	this.setMonth(ary[1] - 1);
-	this.setDate(ary[0]);
-	this.setHours(0, 0, 0, 0);
-	return this;
+	return new Date(ary[2], ary[1] - 1, ary[0], 0, 0, 0, 0);
 };
 
 Date.prototype.setDateWithGoogleRecurEventISO8601Format = function (dateString) {
