@@ -10,10 +10,12 @@ export default class UserManager {
 
   upsertUser(user) {
     const savedUser = this.getUser(user);
-
-    if (savedUser && savedUser.userId === '') {
+    
+    if (savedUser && !savedUser.userId) {
       savedUser.userId = user.id;
       this.users().update(savedUser);
+      console.log('Updated User ==>', savedUser);
+      console.log('to ==>', user);
       return 'update';
     } else if (!savedUser) {
       const fullName = `${user.first_name}${user.last_name ? ` ${user.last_name}` : ''}`;
@@ -32,8 +34,8 @@ export default class UserManager {
 
   getUser(user) {
     return this.users().where(
-      x => (user.username && x.username === user.username) ||
-      (user.id && x.userId === user.id)
+      x => (user.id && x.userId === user.id) ||
+      (user.username && x.username === user.username)
     )[0];
   }
 }

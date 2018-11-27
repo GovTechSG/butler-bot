@@ -49,7 +49,16 @@ describe('UserManager', () => {
       expect(users().findOne(x => x.username === 'sweezharbot').role).to.eq('registree');
     });
 
-    it('should add IDs for old users', () => {
+    it('should add IDs for old users with blank userId', () => {
+      users().insert({ 'username': 'valid_user', userId: '' });
+
+      const userManager = new UserManager(users);
+      const action = userManager.upsertUser({ username: 'valid_user', id: 1234567 });
+      expect(action).to.eq('update');
+      expect(users().findOne({ 'username': 'valid_user' }).userId).to.eq(1234567);
+    });
+
+    it('should add IDs for old users with undefined userId', () => {
       users().insert({ 'username': 'valid_user', userId: '' });
 
       const userManager = new UserManager(users);
@@ -65,6 +74,16 @@ describe('UserManager', () => {
       const action = userManager.upsertUser({ 'username': 'valid_user', id: 12345687 });
       expect(action).to.eq('');
       expect(users().data.length).to.eq(1);
+    });
+
+    it('should allow users without usernames', () => {
+      users().insert({ userId: 12345698 });
+
+      const userManager = new UserManager(users);
+      const action = userManager.upsertUser({ id: 1234567 });
+      expect(action).to.eq('insert');
+      expect(users().data.length).to.eq(2);
+      expect(users().find({ 'userId': 12345698 })).to.have.lengthOf(1);
     });
   });
 
