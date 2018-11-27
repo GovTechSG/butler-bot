@@ -29,7 +29,8 @@ describe('CalendarApp', () => {
 
 	describe('checkWithinWeek', () => {
 		it('should return correct days till upcoming occurrence from startdate given future-start events', () => {
-			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(6, 30, 0, 0);	// SA
+			let today = new Date().setDateWithSimpleFormat('1/4/2017');
+			today.setHours(6, 30, 0, 0);	// SA
 			let eventStart = new Date(today).addDays(+2);	// SU
 			let testEvent = {
 				start: {
@@ -52,7 +53,8 @@ describe('CalendarApp', () => {
 			expect(result).to.eql(expectedResult);
 		});
 		it('should return correct days till upcoming occurrence from startdate given events across weeks', () => {
-			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(6, 30, 0, 0);	// SA
+			let today = new Date().setDateWithSimpleFormat('1/4/2017');
+			today.setHours(6, 30, 0, 0);	// SA
 			let eventStart = new Date(today).addDays(-2);	// TH
 			let testEvent = {
 				start: {
@@ -75,7 +77,8 @@ describe('CalendarApp', () => {
 			expect(result).to.eql(expectedResult);
 		});
 		it('should return -1 given no events within the week can be found to start after today', () => {
-			let today = new Date().setDateWithSimpleFormat('3/4/2017').setTime(6, 30, 0, 0);	// TU
+			let today = new Date().setDateWithSimpleFormat('3/4/2017')
+			today.setHours(6, 30, 0, 0);	// TU
 			let eventStart = new Date(today).addDays(-7);	// TH
 			let testEvent = {
 				start: {
@@ -108,7 +111,8 @@ describe('CalendarApp', () => {
 		// RRULE:FREQ=WEEKLY;COUNT=2;INTERVAL=2;BYDAY=SA
 
 		it('should return correct start/enddate for event recurring daily', () => {
-			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(16, 30, 0, 0);
+			let today = new Date().setDateWithSimpleFormat('1/4/2017');
+			today.setHours(16, 30, 0, 0);
 			let eventStart = new Date(today).addDays(-1);
 			let testEvent = {
 				start: {
@@ -122,14 +126,17 @@ describe('CalendarApp', () => {
 				freq: 'DAILY',
 				count: '5'
 			};
-			let expectedResultStart = new Date(today).setTime(17, 0, 0, 0);
-			let expectedResultEnd = new Date(today).setTime(18, 0, 0, 0);
+			let expectedResultStart = new Date(today);
+			expectedResultStart.setHours(17, 0, 0, 0);
+			let expectedResultEnd = new Date(today);
+			expectedResultEnd.setHours(18, 0, 0, 0);
 			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
 			expect(startDate).to.eql(expectedResultStart);
 			expect(endDate).to.eql(expectedResultEnd);
 		});
 		it('should return correct start/enddate for event recurring every 3 days', () => {
-			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(17, 30, 0, 0);
+			let today = new Date().setDateWithSimpleFormat('1/4/2017');
+			today.setHours(17, 30, 0, 0);
 			let eventStart = new Date(today).addDays(-1);
 			let testEvent = {
 				start: {
@@ -143,15 +150,18 @@ describe('CalendarApp', () => {
 				freq: 'DAILY',
 				interval: '3'
 			};
-			let expectedResultStart = new Date().setDateWithSimpleFormat('3/4/2017').setTime(17, 0, 0, 0);
-			let expectedResultEnd = new Date(today).setDateWithSimpleFormat('3/4/2017').setTime(18, 0, 0, 0);
+			let expectedResultStart = new Date().setDateWithSimpleFormat('3/4/2017');
+			expectedResultStart.setHours(17, 0, 0, 0);
+			let expectedResultEnd = new Date(today).setDateWithSimpleFormat('3/4/2017');
+			expectedResultEnd.setHours(18, 0, 0, 0);
 			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
 
 			expect(startDate).to.eql(expectedResultStart);
 			expect(endDate).to.eql(expectedResultEnd);
 		});
 		it('should return correct start/enddate for event recurring once every 2 weeks', () => {
-			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(17, 0, 0, 0);
+			let today = new Date().setDateWithSimpleFormat('1/4/2017');
+			today.setHours(17, 0, 0, 0);
 			let eventStart = new Date(today).addDays(-14);
 			let testEvent = {
 				start: {
@@ -167,14 +177,17 @@ describe('CalendarApp', () => {
 				interval: '2',
 				byday: 'SA'
 			};
-			let expectedResultStart = new Date(today).setTime(17, 0, 0, 0);
-			let expectedResultEnd = new Date(today).setTime(18, 0, 0, 0);
+			let expectedResultStart = new Date(today);
+			expectedResultStart.setHours(17, 0, 0, 0);
+			let expectedResultEnd = new Date(today);
+			expectedResultEnd.setHours(18, 0, 0, 0);
 			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
 			expect(startDate).to.eql(expectedResultStart);
 			expect(endDate).to.eql(expectedResultEnd);
 		});
 		it('should return correct start/enddate for event recurring 4 times every week', () => {
-			let today = new Date().setDateWithSimpleFormat('3/4/2017').setTime(17, 20, 0, 0);	// MO
+			let today = new Date().setDateWithSimpleFormat('3/4/2017');
+			today.setHours(17, 20, 0, 0);	// MO
 			let eventStart = new Date().setDateWithSimpleFormat('17/3/2017');					// FR
 			let testEvent = {
 				start: {
@@ -189,14 +202,17 @@ describe('CalendarApp', () => {
 				count: '3',
 				byday: 'MO,TU,TH,FR'
 			};
-			let expectedResultStart = new Date().setDateWithSimpleFormat('04/04/2017').setTime(17, 0, 0, 0);	// TU
-			let expectedResultEnd = new Date().setDateWithSimpleFormat('04/04/2017').setTime(18, 0, 0, 0);
+			let expectedResultStart = new Date().setDateWithSimpleFormat('04/04/2017');
+			expectedResultStart.setHours(17, 0, 0, 0);	// TU
+			let expectedResultEnd = new Date().setDateWithSimpleFormat('04/04/2017');
+			expectedResultEnd.setHours(18, 0, 0, 0);
 			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
 			expect(startDate).to.eql(expectedResultStart);
 			expect(endDate).to.eql(expectedResultEnd);
 		});
 		it('should return correct start/enddate for recurring event ending on until date', () => {
-			let today = new Date().setDateWithSimpleFormat('1/4/2017').setTime(21, 20, 0, 0);	// SA
+			let today = new Date().setDateWithSimpleFormat('1/4/2017');
+			today.setHours(21, 20, 0, 0);	// SA
 			let eventStart = new Date().setDateWithSimpleFormat('18/3/2017');					// SA
 			let testEvent = {
 				start: {
@@ -212,14 +228,17 @@ describe('CalendarApp', () => {
 				until: '20170415T090000Z',
 				byday: 'SA'
 			};
-			let expectedResultStart = new Date().setDateWithSimpleFormat('15/04/2017').setTime(17, 0, 0, 0);	// SA
-			let expectedResultEnd = new Date().setDateWithSimpleFormat('15/04/2017').setTime(18, 0, 0, 0);
+			let expectedResultStart = new Date().setDateWithSimpleFormat('15/04/2017');
+			expectedResultStart.setHours(17, 0, 0, 0);	// SA
+			let expectedResultEnd = new Date().setDateWithSimpleFormat('15/04/2017');
+			expectedResultEnd.setHours(18, 0, 0, 0);
 			let { startDate, endDate } = CalendarApp.calculateUpcomingRecurrence(testEvent, today);
 			expect(startDate).to.eql(expectedResultStart);
 			expect(endDate).to.eql(expectedResultEnd);
 		});
 		it('should return {} as start/enddate for recurring events that exceeded recur count', () => {
-			let today = new Date().setDateWithSimpleFormat('3/4/2017').setTime(17, 20, 0, 0);	// MO
+			let today = new Date().setDateWithSimpleFormat('3/4/2017');
+			today.setHours(17, 20, 0, 0);	// MO
 			let eventStart = new Date().setDateWithSimpleFormat('17/3/2017');					// FR
 			let testEvent = {
 				start: {
@@ -239,7 +258,8 @@ describe('CalendarApp', () => {
 			expect(endDate).to.eql(undefined);
 		});
 		it('should return {} as start/enddate for recurring events that exceeded until date', () => {
-			let today = new Date().setDateWithSimpleFormat('3/4/2017').setTime(17, 20, 0, 0);	// MO
+			let today = new Date().setDateWithSimpleFormat('3/4/2017');
+			today.setHours(17, 20, 0, 0);	// MO
 			let eventStart = new Date().setDateWithSimpleFormat('17/3/2017');					// FR
 			let testEvent = {
 				start: {
@@ -342,7 +362,9 @@ describe('CalendarApp', () => {
 				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
 				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
 			};
-			let result = CalendarApp.setupTimeArray(new Date().setTime(0, 0, 0, 0));
+			const testStartTime = new Date();
+			testStartTime.setHours(0, 0, 0, 0);
+			let result = CalendarApp.setupTimeArray(testStartTime);
 			expect(result).to.eql(expectedResult);
 		});
 
@@ -350,19 +372,25 @@ describe('CalendarApp', () => {
 			let expectedResult = {
 				'8:30 PM': '8:30 PM'
 			};
-			let result = CalendarApp.setupTimeArray(new Date().setTime(20, 30, 0, 0));
+			const testStartTime = new Date();
+			testStartTime.setHours(20, 30, 0, 0);
+			let result = CalendarApp.setupTimeArray(testStartTime);
 			expect(result).to.eql(expectedResult);
 		});
 
 		it('should return {} when setupTimeArray called at 831pm', () => {
 			let expectedResult = {};
-			let result = CalendarApp.setupTimeArray(new Date().setTime(20, 31, 0, 0));
+			const testStartTime = new Date();
+			testStartTime.setHours(20, 31, 0, 0);
+			let result = CalendarApp.setupTimeArray(testStartTime);
 			expect(result).to.eql(expectedResult);
 		});
 
 		it('should return {} when setupTimeArray called at 1159pm', () => {
 			let expectedResult = {};
-			let result = CalendarApp.setupTimeArray(new Date().setTime(23, 59, 0, 0));
+			const testStartTime = new Date();
+			testStartTime.setHours(20, 31, 0, 0);
+			let result = CalendarApp.setupTimeArray(testStartTime);
 			expect(result).to.eql(expectedResult);
 		});
 	});
@@ -406,7 +434,9 @@ describe('CalendarApp', () => {
 				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
 				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
 			};
-			let fullTimeSlot = CalendarApp.setupTimeArray(new Date().setTime(0, 0, 0, 0));
+			const testStartTime = new Date();
+			testStartTime.setHours(0, 0, 0, 0);
+			let fullTimeSlot = CalendarApp.setupTimeArray(testStartTime);
 			let result = CalendarApp.filterBusyTimeslots(fullTimeSlot, events);
 			expect(result).to.eql(expectedResult);
 		});
@@ -444,7 +474,9 @@ describe('CalendarApp', () => {
 				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
 				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
 			};
-			let fullTimeSlot = CalendarApp.setupTimeArray(new Date().setTime(0, 0, 0, 0));
+			const testStartTime = new Date();
+			testStartTime.setHours(0, 0, 0, 0);
+			let fullTimeSlot = CalendarApp.setupTimeArray(testStartTime);
 			let result = CalendarApp.filterBusyTimeslots(fullTimeSlot, events);
 			expect(result).to.eql(expectedResult);
 		});
@@ -497,7 +529,9 @@ describe('CalendarApp', () => {
 				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
 				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
 			};
-			let fullTimeSlot = CalendarApp.setupTimeArray(new Date().setTime(0, 0, 0, 0));
+			const testStartTime = new Date();
+			testStartTime.setHours(0, 0, 0, 0);
+			let fullTimeSlot = CalendarApp.setupTimeArray(testStartTime);
 			let result = CalendarApp.filterBusyTimeslots(fullTimeSlot, events);
 			expect(result).to.eql(expectedResult);
 		});
@@ -513,7 +547,8 @@ describe('CalendarApp', () => {
 
 		it('should return only 30min duration option given an upcoming event 30 mins away', () => {
 			let expectedResult = { '1': '30 mins' };
-			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(9, 30, 0, 0)
+			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017');
+			testStartTime.setHours(9, 30, 0, 0);
 			let events = [{
 				id: '7j1f3ngpff65k8v8ta67lumi1g',
 				summary: 'event',
@@ -542,7 +577,8 @@ describe('CalendarApp', () => {
 				'5': '2.5 hours', '6': '3 hours',
 				'7': '3.5 hours', '8': '4 hours'
 			};
-			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(12, 0, 0, 0)
+			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017');
+			testStartTime.setHours(12, 0, 0, 0);
 			let events = [{
 				id: '7j1f3ngpff65k8v8ta67lumi1g',
 				summary: 'event',
@@ -566,7 +602,8 @@ describe('CalendarApp', () => {
 
 		it('should return {} given an upcoming event 29 mins away', () => {
 			let expectedResult = {};
-			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(9, 31, 0, 0)
+			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017');
+			testStartTime.setHours(9, 31, 0, 0);
 			let events = [{
 				id: '7j1f3ngpff65k8v8ta67lumi1g',
 				summary: 'event',
@@ -590,7 +627,8 @@ describe('CalendarApp', () => {
 
 		it('should ignore unexpected event given an erroneous event in roomBusyTimeslot list', () => {
 			let expectedResult = { '1': '30 mins', '2': '1 hour' };
-			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017').setTime(9, 0, 0, 0)
+			let testStartTime = new Date().setDateWithSimpleFormat('06/04/2017');
+			testStartTime.setHours(9, 0, 0, 0);
 			let events = [{
 				id: '7j1f3ngpff65k8v8ta67lumi1g',
 				summary: 'event',

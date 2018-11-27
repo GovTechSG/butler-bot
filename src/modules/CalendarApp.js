@@ -39,9 +39,11 @@ function getTimeslotName(startTime) {
 }
 
 export function setupTimeArray(datetimeStr) {
-	let earliestSlotToday = new Date(datetimeStr).setTime(8, 0, 0, 0);
+	let earliestSlotToday = new Date(datetimeStr);
+	earliestSlotToday.setHours(8, 0, 0, 0);
 	let startTime = new Date(datetimeStr);
-	let endTime = new Date(datetimeStr).setTime(21, 0, 0, 0);
+	let endTime = new Date(datetimeStr);
+	endTime.setHours(21, 0, 0, 0);
 
 	if (!startTime.isDateToday() || startTime < earliestSlotToday) {
 		startTime = earliestSlotToday;
@@ -117,7 +119,7 @@ export function calculateUpcomingRecurrence(recurrenceEvent, today) {
 		endDate.addDays(interval * recurCount);
 	}
 
-	if ((startDate < today) || (startDate > terminatingDate)) {
+	if (terminatingDate < startDate || startDate < today) {
 		return {};
 	}
 	return { startDate, endDate };

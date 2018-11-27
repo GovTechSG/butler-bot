@@ -15,12 +15,7 @@ Date.prototype.setDateWithGoogleRecurEventISO8601Format = function (dateString) 
 	time = `${time.slice(0, 2)}:${time.slice(2, 4)}:${time.slice(4)}`;
 	this.setDateWithSimpleFormat(`${day}/${month}/${year}`);
 	let newDate = new Date(`${year}-${month}-${day}T${time}`);
-	this.setTime(newDate.getHours(), newDate.getMinutes(), newDate.getSeconds(), newDate.getMilliseconds());
-	return this;
-};
-
-Date.prototype.setTime = function (hr, min, sec, ms) {
-	this.setHours(hr, min, sec, ms);
+	this.setTime(newDate.getTime());
 	return this;
 };
 
