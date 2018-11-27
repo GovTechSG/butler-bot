@@ -38,8 +38,7 @@ ehthumbs.db
 Thumbs.db
 
 node_modules
-data/users.js
-data/users.json
+data/
 config/*
 build/
 yarn-error.log
