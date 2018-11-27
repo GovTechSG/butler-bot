@@ -232,7 +232,7 @@ export function constructRoomOptions(roomConfig) {
 }
 
 export function approveRegistree(userId) {
-	return [['User', 'Admin'].map(v => ({
+	return [['User', 'Admin', 'Ban'].map(v => ({
 		text: v, callback_data: JSON.stringify({ action: 'manage_users', role: v.toLowerCase(), userId })
 	}))];
 }

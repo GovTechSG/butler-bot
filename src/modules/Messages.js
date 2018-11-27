@@ -6,7 +6,10 @@ const MESSAGES = {
 	unrecognisedCommands: `I don't understand your command, try using valid commands listed in /help menu.`,
 	book: `Which room would you like to book?`,
 	admin: 'Good luck ah, you will be veri beesy.',
-	registered: 'Swee! You can /start booking liao',
+	approve: {
+		registered: 'Swee! You can /start booking liao',
+		banned: 'Sori ah, you kena blacklist leh. Pls ask admin for help'
+	},
 	newUserApproved: 'thankew you.',
 	view: 'Check out this link for the overall room booking schedules: https://sweezharbot.dcube.cf',
 	delete: `You have successfully deleted your booking`,

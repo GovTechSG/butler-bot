@@ -139,6 +139,7 @@ function processCallBack(query) {
 
 function checkAuthorisedUsers(message) {
 	if (!userManager.isUserAuthorized(message.from)) {
+		console.log('message.from', message.from);
 		slimbot.sendMessage(message.chat.id, MESSAGES.unauthenticated);
 		console.log(`Unauthenticated Access by ${message.from.username} on ${new Date().getISO8601TimeStamp()}`);
 		throw new Error('Unauthenticated access');
@@ -310,10 +311,12 @@ const processManageUsersCallback = (query) => {
 	userObj.role = callbackData.role;
 	users.update(userObj);
 	db.saveDatabase();
+
+	const action = callbackData.role === 'ban' ? 'banned' : 'registered';
 	approvals.forEach((approval) => {
-		slimbot.editMessageText(approval.chat.id, approval.message_id, `Admin has approved ${userObj.fullName}! ${MESSAGES.newUserApproved}`);
+		slimbot.editMessageText(approval.chat.id, approval.message_id, `Admin has ${action} ${userObj.fullName}! ${MESSAGES.newUserApproved}`);
 	});
-	slimbot.sendMessage(callbackData.userId, MESSAGES.registered);
+	slimbot.sendMessage(callbackData.userId, MESSAGES.approve[action]);
 };
 
 const informAdmins = (message, id) => {
@@ -342,6 +345,8 @@ const registerUser = (message) => {
 	const action = userManager.upsertUser(message.from);
 	db.saveDatabase();
 	const user = userManager.getUser(message.from);
+	user.approvals = [];
+	db.saveDatabase();
 
 	switch (action) {
 		case 'insert':
@@ -353,7 +358,10 @@ const registerUser = (message) => {
 			if (user.role === 'admin' || user.role === 'user') {
 				slimbot.sendMessage(message.chat.id, 'You are registered!');
 			} else if (user.role === 'registree') {
+				informAdmins(`${user.fullName}(@${user.username}) is requesting authorization for butler bot!`, user.userId);
 				slimbot.sendMessage(message.chat.id, "You'll be notified when the admins have approved your registration!");
+			} else if (user.role === 'ban') {
+				slimbot.sendMessage(message.chat.id, MESSAGES.approve.banned);
 			}
 			break;
 		}

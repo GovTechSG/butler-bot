@@ -4,7 +4,7 @@ export default class UserManager {
   }
 
   isUserAuthorized(user) {
-    const result = this.users().where(x => (x.username === user.username || x.userId === user.id) && x.role !== 'registree');
+    const result = this.users().where(x => (x.username === user.username || x.userId === user.id) && (x.role === 'user' || x.role === 'admin'));
     return result.length === 1;
   }
 
