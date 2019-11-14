@@ -342,6 +342,12 @@ const informAdmins = (message, id) => {
 };
 
 const registerUser = (message) => {
+
+	if (!message.from.username) {
+		slimbot.sendMessage(message.chat.id, `Welcome, ${message.from.last_name} (@${message.from.username})! \n\nCheck that you have a valid telegram username before registering!`);
+		return;
+	}
+
 	const action = userManager.upsertUser(message.from);
 	db.saveDatabase();
 	const user = userManager.getUser(message.from);
