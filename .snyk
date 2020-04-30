@@ -1,0 +1,10 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.14.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-567746:
+    - node-google-calendar > request-promise > request-promise-core > lodash:
+        patched: '2020-04-30T21:03:40.455Z'
+    - slimbot > request-promise > request-promise-core > lodash:
+        patched: '2020-04-30T21:03:40.455Z'
