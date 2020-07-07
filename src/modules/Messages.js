@@ -11,7 +11,7 @@ const MESSAGES = {
 		banned: 'Sori ah, you kena blacklist leh. Pls ask admin for help'
 	},
 	newUserApproved: 'thankew you.',
-	view: 'Check out this link for the overall room booking schedules: https://sweezharbot.dcube.cf',
+	view: 'Check out this link for the overall room booking schedules: https://sweezharbot.dcube.team',
 	delete: `You have successfully deleted your booking`,
 	deleteErr: `Oops, something went wrong while deleting your booking.`,
 	deleteInstruction: `\nClick on the following command to delete your booking: \n`,
