@@ -24,11 +24,11 @@
   "license": "MIT",
   "scripts": {
     "start": "babel-node src",
-		"start:prod": "npm run build; pm2 start build/index.js",
-		"migrate": "babel-node utils/initdb.js",
+    "start:prod": "npm run build; pm2 start build/index.js",
+    "migrate": "babel-node utils/initdb.js",
     "build": "babel src -d build --copy-files",
-    "test": "mocha --compilers js:babel-register --require babel-polyfill",
-    "test watch": "mocha -w --compilers js:babel-register"
+    "test": "mocha --require babel-register",
+    "test:watch": "mocha -w  --require babel-register"
   },
   "dependencies": {
     "bluebird": "^3.5.0",
@@ -44,14 +44,14 @@
   "devDependencies": {
     "babel-cli": "^6.24.0",
     "babel-preset-env": "^1.2.2",
-    "babel-register": "^6.24.0",
+    "babel-register": "^6.26.0",
     "chai": "^3.5.0",
     "eslint": "^3.18.0",
     "eslint-config-airbnb": "^14.1.0",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3",
-    "mocha": "^3.2.0",
+    "mocha": "^8.3.0",
     "sinon": "^2.1.0"
   },
   "bugs": {
