@@ -38,7 +38,7 @@
     "google-oauth-jwt": "^0.2.0",
     "lokijs": "^1.5.3",
     "node-google-calendar": "^0.1.5",
-    "slimbot": "^0.5.7",
+    "slimbot": "^5.0.0",
     "winston": "^2.3.1"
   },
   "devDependencies": {
