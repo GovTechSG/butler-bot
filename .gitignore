@@ -40,6 +40,7 @@ Thumbs.db
 node_modules
 data/
 config/*
+!config/settings.js
 build/
 yarn-error.log
 .idea

@@ -298,15 +298,15 @@ describe('CalendarApp', () => {
 			};
 			let recurEventForTest = {
 				start:
-					{
-						dateTime: '2017-03-18T17:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-03-18T17:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				end:
-					{
-						dateTime: '2017-03-18T18:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-03-18T18:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				recurrence: ['RRULE:FREQ=WEEKLY;COUNT=2;INTERVAL=3;BYDAY=SA']
 			};
 			let result = CalendarApp.parseRecurrenceEvent(recurEventForTest);
@@ -329,15 +329,15 @@ describe('CalendarApp', () => {
 			};
 			let recurEventForTest = {
 				start:
-					{
-						dateTime: '2017-03-18T17:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-03-18T17:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				end:
-					{
-						dateTime: '2017-03-18T18:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-03-18T18:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				recurrence: ['RRULE:FREQ=WEEKLY;UNTIL=20170506T020000Z;BYDAY=SU,MO,TU,WE,TH,FR,SA']
 			};
 			let result = CalendarApp.parseRecurrenceEvent(recurEventForTest);
@@ -348,19 +348,19 @@ describe('CalendarApp', () => {
 	describe('setupTimeArray', () => {
 		it('should return full 8am - 830pm list of timeslots when setupTimeArray called at 1200am', () => {
 			let expectedResult = {
-				'8:00 AM': '8:00 AM', '8:30 AM': '8:30 AM',
-				'9:00 AM': '9:00 AM', '9:30 AM': '9:30 AM',
+				'08:00 AM': '08:00 AM', '08:30 AM': '08:30 AM',
+				'09:00 AM': '09:00 AM', '09:30 AM': '09:30 AM',
 				'10:00 AM': '10:00 AM', '10:30 AM': '10:30 AM',
 				'11:00 AM': '11:00 AM', '11:30 AM': '11:30 AM',
 				'12:00 PM': '12:00 PM', '12:30 PM': '12:30 PM',
-				'1:00 PM': '1:00 PM', '1:30 PM': '1:30 PM',
-				'2:00 PM': '2:00 PM', '2:30 PM': '2:30 PM',
-				'3:00 PM': '3:00 PM', '3:30 PM': '3:30 PM',
-				'4:00 PM': '4:00 PM', '4:30 PM': '4:30 PM',
-				'5:00 PM': '5:00 PM', '5:30 PM': '5:30 PM',
-				'6:00 PM': '6:00 PM', '6:30 PM': '6:30 PM',
-				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
-				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
+				'01:00 PM': '01:00 PM', '01:30 PM': '01:30 PM',
+				'02:00 PM': '02:00 PM', '02:30 PM': '02:30 PM',
+				'03:00 PM': '03:00 PM', '03:30 PM': '03:30 PM',
+				'04:00 PM': '04:00 PM', '04:30 PM': '04:30 PM',
+				'05:00 PM': '05:00 PM', '05:30 PM': '05:30 PM',
+				'06:00 PM': '06:00 PM', '06:30 PM': '06:30 PM',
+				'07:00 PM': '07:00 PM', '07:30 PM': '07:30 PM',
+				'08:00 PM': '08:00 PM', '08:30 PM': '08:30 PM'
 			};
 			const testStartTime = new Date();
 			testStartTime.setHours(0, 0, 0, 0);
@@ -370,11 +370,12 @@ describe('CalendarApp', () => {
 
 		it('should return last slot of the day (830pm) when setupTimeArray called at 830pm', () => {
 			let expectedResult = {
-				'8:30 PM': '8:30 PM'
+				'08:30 PM': '08:30 PM'
 			};
 			const testStartTime = new Date();
 			testStartTime.setHours(20, 30, 0, 0);
 			let result = CalendarApp.setupTimeArray(testStartTime);
+
 			expect(result).to.eql(expectedResult);
 		});
 
@@ -420,19 +421,19 @@ describe('CalendarApp', () => {
 			}];
 
 			let expectedResult = {
-				'8:00 AM': '8:00 AM', '8:30 AM': '8:30 AM',
-				'9:00 AM': '9:00 AM', '9:30 AM': '9:30 AM',
+				'08:00 AM': '08:00 AM', '08:30 AM': '08:30 AM',
+				'09:00 AM': '09:00 AM', '09:30 AM': '09:30 AM',
 				'10:00 AM': '10:00 AM', '10:30 AM': '10:30 AM',
 				'11:00 AM': '11:00 AM', '11:30 AM': '11:30 AM',
 				'12:00 PM': '12:00 PM', '12:30 PM': '12:30 PM',
-				'1:00 PM': '1:00 PM', '1:30 PM': '1:30 PM',
-				'2:00 PM': '2:00 PM', '2:30 PM': '2:30 PM',
-				'3:00 PM': '3:00 PM', '3:30 PM': '3:30 PM',
-				'4:00 PM': '4:00 PM', '4:30 PM': '4:30 PM',
-				'5:30 PM': '5:30 PM',
-				'6:00 PM': '6:00 PM', '6:30 PM': '6:30 PM',
-				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
-				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
+				'01:00 PM': '01:00 PM', '01:30 PM': '01:30 PM',
+				'02:00 PM': '02:00 PM', '02:30 PM': '02:30 PM',
+				'03:00 PM': '03:00 PM', '03:30 PM': '03:30 PM',
+				'04:00 PM': '04:00 PM', '04:30 PM': '04:30 PM',
+				'05:30 PM': '05:30 PM',
+				'06:00 PM': '06:00 PM', '06:30 PM': '06:30 PM',
+				'07:00 PM': '07:00 PM', '07:30 PM': '07:30 PM',
+				'08:00 PM': '08:00 PM', '08:30 PM': '08:30 PM'
 			};
 			const testStartTime = new Date();
 			testStartTime.setHours(0, 0, 0, 0);
@@ -447,32 +448,32 @@ describe('CalendarApp', () => {
 				summary: 'event',
 				location: 'Drone Room',
 				start:
-					{
-						dateTime: '2017-04-06T17:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T17:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				end:
-					{
-						dateTime: '2017-04-06T17:30:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T17:30:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				status: 'confirmed'
 			}];
 
 			let expectedResult = {
-				'8:00 AM': '8:00 AM', '8:30 AM': '8:30 AM',
-				'9:00 AM': '9:00 AM', '9:30 AM': '9:30 AM',
+				'08:00 AM': '08:00 AM', '08:30 AM': '08:30 AM',
+				'09:00 AM': '09:00 AM', '09:30 AM': '09:30 AM',
 				'10:00 AM': '10:00 AM', '10:30 AM': '10:30 AM',
 				'11:00 AM': '11:00 AM', '11:30 AM': '11:30 AM',
 				'12:00 PM': '12:00 PM', '12:30 PM': '12:30 PM',
-				'1:00 PM': '1:00 PM', '1:30 PM': '1:30 PM',
-				'2:00 PM': '2:00 PM', '2:30 PM': '2:30 PM',
-				'3:00 PM': '3:00 PM', '3:30 PM': '3:30 PM',
-				'4:00 PM': '4:00 PM', '4:30 PM': '4:30 PM',
-				'5:30 PM': '5:30 PM',
-				'6:00 PM': '6:00 PM', '6:30 PM': '6:30 PM',
-				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
-				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
+				'01:00 PM': '01:00 PM', '01:30 PM': '01:30 PM',
+				'02:00 PM': '02:00 PM', '02:30 PM': '02:30 PM',
+				'03:00 PM': '03:00 PM', '03:30 PM': '03:30 PM',
+				'04:00 PM': '04:00 PM', '04:30 PM': '04:30 PM',
+				'05:30 PM': '05:30 PM',
+				'06:00 PM': '06:00 PM', '06:30 PM': '06:30 PM',
+				'07:00 PM': '07:00 PM', '07:30 PM': '07:30 PM',
+				'08:00 PM': '08:00 PM', '08:30 PM': '08:30 PM'
 			};
 			const testStartTime = new Date();
 			testStartTime.setHours(0, 0, 0, 0);
@@ -487,15 +488,15 @@ describe('CalendarApp', () => {
 				summary: 'event',
 				location: 'Drone Room',
 				start:
-					{
-						dateTime: '2017-04-06T17:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T17:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				end:
-					{
-						dateTime: '2017-04-06T17:30:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T17:30:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				status: 'confirmed'
 			},
 			{
@@ -503,31 +504,31 @@ describe('CalendarApp', () => {
 				summary: 'Event',
 				location: 'Focus Group Room ',
 				start:
-					{
-						dateTime: '2017-04-05T17:30:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-05T17:30:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				end:
-					{
-						dateTime: '2017-04-05T18:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-05T18:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				status: 'confirmed'
 			}];
 
 			let expectedResult = {
-				'8:00 AM': '8:00 AM', '8:30 AM': '8:30 AM',
-				'9:00 AM': '9:00 AM', '9:30 AM': '9:30 AM',
+				'08:00 AM': '08:00 AM', '08:30 AM': '08:30 AM',
+				'09:00 AM': '09:00 AM', '09:30 AM': '09:30 AM',
 				'10:00 AM': '10:00 AM', '10:30 AM': '10:30 AM',
 				'11:00 AM': '11:00 AM', '11:30 AM': '11:30 AM',
 				'12:00 PM': '12:00 PM', '12:30 PM': '12:30 PM',
-				'1:00 PM': '1:00 PM', '1:30 PM': '1:30 PM',
-				'2:00 PM': '2:00 PM', '2:30 PM': '2:30 PM',
-				'3:00 PM': '3:00 PM', '3:30 PM': '3:30 PM',
-				'4:00 PM': '4:00 PM', '4:30 PM': '4:30 PM',
-				'6:00 PM': '6:00 PM', '6:30 PM': '6:30 PM',
-				'7:00 PM': '7:00 PM', '7:30 PM': '7:30 PM',
-				'8:00 PM': '8:00 PM', '8:30 PM': '8:30 PM'
+				'01:00 PM': '01:00 PM', '01:30 PM': '01:30 PM',
+				'02:00 PM': '02:00 PM', '02:30 PM': '02:30 PM',
+				'03:00 PM': '03:00 PM', '03:30 PM': '03:30 PM',
+				'04:00 PM': '04:00 PM', '04:30 PM': '04:30 PM',
+				'06:00 PM': '06:00 PM', '06:30 PM': '06:30 PM',
+				'07:00 PM': '07:00 PM', '07:30 PM': '07:30 PM',
+				'08:00 PM': '08:00 PM', '08:30 PM': '08:30 PM'
 			};
 			const testStartTime = new Date();
 			testStartTime.setHours(0, 0, 0, 0);
@@ -554,15 +555,15 @@ describe('CalendarApp', () => {
 				summary: 'event',
 				location: 'Drone Room',
 				start:
-					{
-						dateTime: '2017-04-06T10:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T10:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				end:
-					{
-						dateTime: '2017-04-06T12:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T12:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				status: 'confirmed'
 			}];
 
@@ -584,15 +585,15 @@ describe('CalendarApp', () => {
 				summary: 'event',
 				location: 'Drone Room',
 				start:
-					{
-						dateTime: '2017-04-06T17::00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T17::00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				end:
-					{
-						dateTime: '2017-04-06T18:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T18:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				status: 'confirmed'
 			}];
 
@@ -609,15 +610,15 @@ describe('CalendarApp', () => {
 				summary: 'event',
 				location: 'Drone Room',
 				start:
-					{
-						dateTime: '2017-04-06T10:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T10:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				end:
-					{
-						dateTime: '2017-04-06T12:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T12:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				status: 'confirmed'
 			}];
 
@@ -634,15 +635,15 @@ describe('CalendarApp', () => {
 				summary: 'event',
 				location: 'Drone Room',
 				start:
-					{
-						dateTime: '2017-04-06T10:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T10:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				end:
-					{
-						dateTime: '2017-04-06T12:00:00+08:00',
-						timeZone: 'Asia/Singapore'
-					},
+				{
+					dateTime: '2017-04-06T12:00:00+08:00',
+					timeZone: 'Asia/Singapore'
+				},
 				status: 'confirmed'
 			}, {
 				id: 'error-event',
@@ -784,22 +785,22 @@ describe('CalendarApp', () => {
 				'11:30 AM': '11:30 AM',
 				'12:00 PM': '12:00 PM',
 				'12:30 PM': '12:30 PM',
-				'1:00 PM': '1:00 PM',
-				'1:30 PM': '1:30 PM',
-				'2:00 PM': '2:00 PM',
-				'2:30 PM': '2:30 PM',
-				'3:00 PM': '3:00 PM',
-				'3:30 PM': '3:30 PM',
-				'4:00 PM': '4:00 PM',
-				'4:30 PM': '4:30 PM',
-				'5:00 PM': '5:00 PM',
-				'5:30 PM': '5:30 PM',
-				'6:00 PM': '6:00 PM',
-				'6:30 PM': '6:30 PM',
-				'7:00 PM': '7:00 PM',
-				'7:30 PM': '7:30 PM',
-				'8:00 PM': '8:00 PM',
-				'8:30 PM': '8:30 PM'
+				'01:00 PM': '01:00 PM',
+				'01:30 PM': '01:30 PM',
+				'02:00 PM': '02:00 PM',
+				'02:30 PM': '02:30 PM',
+				'03:00 PM': '03:00 PM',
+				'03:30 PM': '03:30 PM',
+				'04:00 PM': '04:00 PM',
+				'04:30 PM': '04:30 PM',
+				'05:00 PM': '05:00 PM',
+				'05:30 PM': '05:30 PM',
+				'06:00 PM': '06:00 PM',
+				'06:30 PM': '06:30 PM',
+				'07:00 PM': '07:00 PM',
+				'07:30 PM': '07:30 PM',
+				'08:00 PM': '08:00 PM',
+				'08:30 PM': '08:30 PM'
 			};
 
 			let respStub = [{
@@ -837,22 +838,22 @@ describe('CalendarApp', () => {
 			let expectedResult = {
 				'12:00 PM': '12:00 PM',
 				'12:30 PM': '12:30 PM',
-				'1:00 PM': '1:00 PM',
-				'1:30 PM': '1:30 PM',
-				'2:00 PM': '2:00 PM',
-				'2:30 PM': '2:30 PM',
-				'3:00 PM': '3:00 PM',
-				'3:30 PM': '3:30 PM',
-				'4:00 PM': '4:00 PM',
-				'4:30 PM': '4:30 PM',
-				'5:00 PM': '5:00 PM',
-				'5:30 PM': '5:30 PM',
-				'6:00 PM': '6:00 PM',
-				'6:30 PM': '6:30 PM',
-				'7:00 PM': '7:00 PM',
-				'7:30 PM': '7:30 PM',
-				'8:00 PM': '8:00 PM',
-				'8:30 PM': '8:30 PM'
+				'01:00 PM': '01:00 PM',
+				'01:30 PM': '01:30 PM',
+				'02:00 PM': '02:00 PM',
+				'02:30 PM': '02:30 PM',
+				'03:00 PM': '03:00 PM',
+				'03:30 PM': '03:30 PM',
+				'04:00 PM': '04:00 PM',
+				'04:30 PM': '04:30 PM',
+				'05:00 PM': '05:00 PM',
+				'05:30 PM': '05:30 PM',
+				'06:00 PM': '06:00 PM',
+				'06:30 PM': '06:30 PM',
+				'07:00 PM': '07:00 PM',
+				'07:30 PM': '07:30 PM',
+				'08:00 PM': '08:00 PM',
+				'08:30 PM': '08:30 PM'
 			};
 
 			let respStubQ1 = [{
@@ -1172,7 +1173,7 @@ describe('CalendarApp', () => {
 				end: mockEvent.end,
 				status: mockEvent.status,
 				description: mockEvent.description,
-				room: 'fg',	// second calendar on the list
+				room: 'th',	// second calendar on the list
 				isByMe: mockEvent.description.indexOf('booked via butler') !== -1,
 				recurrent: mockEvent.recurrent
 			}];
