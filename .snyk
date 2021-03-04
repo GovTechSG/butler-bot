@@ -1,0 +1,60 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.19.0
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:debug:20170905':
+    - google-oauth-jwt > debug:
+        patched: '2021-03-04T07:54:45.785Z'
+    - node-google-calendar > google-oauth-jwt > debug:
+        patched: '2021-03-04T07:54:45.785Z'
+  'npm:extend:20180424':
+    - google-oauth-jwt > request > extend:
+        patched: '2021-03-04T07:54:45.785Z'
+    - node-google-calendar > google-oauth-jwt > request > extend:
+        patched: '2021-03-04T07:54:45.785Z'
+  'npm:hoek:20180212':
+    - google-oauth-jwt > request > hawk > hoek:
+        patched: '2021-03-04T07:54:45.785Z'
+    - google-oauth-jwt > request > hawk > boom > hoek:
+        patched: '2021-03-04T07:54:45.785Z'
+    - google-oauth-jwt > request > hawk > sntp > hoek:
+        patched: '2021-03-04T07:54:45.785Z'
+    - node-google-calendar > google-oauth-jwt > request > hawk > hoek:
+        patched: '2021-03-04T07:54:45.785Z'
+    - google-oauth-jwt > request > hawk > cryptiles > boom > hoek:
+        patched: '2021-03-04T07:54:45.785Z'
+    - node-google-calendar > google-oauth-jwt > request > hawk > boom > hoek:
+        patched: '2021-03-04T07:54:45.785Z'
+    - node-google-calendar > google-oauth-jwt > request > hawk > sntp > hoek:
+        patched: '2021-03-04T07:54:45.785Z'
+    - node-google-calendar > google-oauth-jwt > request > hawk > cryptiles > boom > hoek:
+        patched: '2021-03-04T07:54:45.785Z'
+  SNYK-JS-LODASH-567746:
+    - node-google-calendar > request-promise > request-promise-core > lodash:
+        patched: '2021-03-04T07:54:45.785Z'
+  'npm:ms:20170412':
+    - google-oauth-jwt > debug > ms:
+        patched: '2021-03-04T07:54:45.785Z'
+    - node-google-calendar > google-oauth-jwt > debug > ms:
+        patched: '2021-03-04T07:54:45.785Z'
+  'npm:qs:20170213':
+    - google-oauth-jwt > request > qs:
+        patched: '2021-03-04T07:54:45.785Z'
+    - node-google-calendar > google-oauth-jwt > request > qs:
+        patched: '2021-03-04T07:54:45.785Z'
+  'npm:stringstream:20180511':
+    - google-oauth-jwt > request > stringstream:
+        patched: '2021-03-04T07:54:45.785Z'
+    - node-google-calendar > google-oauth-jwt > request > stringstream:
+        patched: '2021-03-04T07:54:45.785Z'
+  'npm:tough-cookie:20170905':
+    - google-oauth-jwt > request > tough-cookie:
+        patched: '2021-03-04T07:54:45.785Z'
+    - node-google-calendar > google-oauth-jwt > request > tough-cookie:
+        patched: '2021-03-04T07:54:45.785Z'
+  'npm:tunnel-agent:20170305':
+    - google-oauth-jwt > request > tunnel-agent:
+        patched: '2021-03-04T07:54:45.785Z'
+    - node-google-calendar > google-oauth-jwt > request > tunnel-agent:
+        patched: '2021-03-04T07:54:45.785Z'
