@@ -1,4 +1,12 @@
 {
+    "primary": {
+        "name": "[L8] Open Space",
+        "id": "primary"
+    },
+    "bd": {
+        "name": "[L7] Bandung",
+        "id": "bd"
+    },
     "th": {
         "name": "[L7] Teh (4 pax)",
         "id": "th"
@@ -18,6 +26,10 @@
     "ml": {
         "name": "[L7] Milo (Boardroom) (12 pax)",
         "id": "ml"
+    },
+    "kg": {
+        "name": "[L8] King Room",
+        "id": "kg"
     },
     "bb": {
         "name": "[L8] Bumblebee (6 pax)",

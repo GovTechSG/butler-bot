@@ -37,11 +37,9 @@ function generateRoomOptionsForBooking(calList) {
 function generateRoomConfigForListing(calList) {
     const roomConfigForListing = {};
     calList.forEach((cal) => {
-        if (!cal.availableForBooking) {
-            return;
-        }
+        const capacity = cal.capacity ? ` (${cal.capacity} pax)` : '';
         roomConfigForListing[cal.shortId] = {
-            name: `[${cal.location}] ${cal.displayName} (${cal.capacity} pax)`,
+            name: `[${cal.location}] ${cal.displayName}${capacity}`,
             id: cal.shortId,
             children: cal.children ? cal.children : undefined
         };
@@ -53,9 +51,6 @@ function generateRoomConfigForListing(calList) {
 function generateCalendarIdConfig(calList) {
     const calendarIdConfig = {};
     calList.forEach((cal) => {
-        if (!cal.availableForBooking) {
-            return;
-        }
         calendarIdConfig[cal.shortId] = cal.calendarId;
     });
     return calendarIdConfig;
@@ -64,8 +59,11 @@ function generateCalendarIdConfig(calList) {
 function generateAndWriteConfig() {
     console.log('[Generate Room Config]');
 
+    // maintain pri cal as 1st
+    const primaryCal = calConfig.shift();
     const roomList = calConfig.concat(virtualRooms);
     roomList.sort(sortCalendar);
+    roomList.unshift(primaryCal);
 
     const roomOptionsConfig = generateRoomOptionsForBooking(roomList);
     console.log('Writing room booking option config', ROOM_OPTIONS_FOR_BOOKING_FILE_LOCATION);

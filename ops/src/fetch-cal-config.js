@@ -27,7 +27,11 @@ function parseCalList(calList) {
             colorId,
             availableForBooking: !notForBooking
         };
-        configList.push(calConfig);
+        if (shortId === 'primary') {
+            configList.unshift(calConfig);
+        } else {
+            configList.push(calConfig);
+        }
     });
     return configList;
 }
@@ -37,7 +41,10 @@ function fetchCalendarConfig() {
     const calList = calApi.CalendarList.list({ maxResults: 100, showHidden: true })
         .then((resp) => {
             const configList = parseCalList(resp);
+            // maintain pri cal as 1st
+            const primaryCal = configList.shift();
             configList.sort(sortCalendar);
+            configList.unshift(primaryCal);
 
             console.log('Writing cal config output', CONFIG_OUTPUT_FILE_LOCATION);
             fs.writeFileSync(CONFIG_OUTPUT_FILE_LOCATION, JSON.stringify(configList));
