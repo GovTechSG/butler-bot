@@ -1162,7 +1162,7 @@ describe('CalendarApp', () => {
 				end: mockEvent.end,
 				status: mockEvent.status,
 				description: mockEvent.description,
-				room: 'primary',	// first calendar on the list
+				room: Object.keys(CONFIG.calendarId)[0],	// first calendar on the list
 				isByMe: mockEvent.description.indexOf('booked via butler') !== -1,
 				recurrent: mockEvent.recurrent
 			}, {
@@ -1173,7 +1173,7 @@ describe('CalendarApp', () => {
 				end: mockEvent.end,
 				status: mockEvent.status,
 				description: mockEvent.description,
-				room: 'th',	// second calendar on the list
+				room: Object.keys(CONFIG.calendarId)[1],	// second calendar on the list
 				isByMe: mockEvent.description.indexOf('booked via butler') !== -1,
 				recurrent: mockEvent.recurrent
 			}];
