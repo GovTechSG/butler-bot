@@ -1,0 +1,22 @@
+{
+  "name": "booking-calendar-mgmt-ops",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "update-calendar-config": "npm run fetch-config; npm run generate-room-config; npm run generate-view-page",
+    "fetch-config": "node src/fetch-cal-config.js",
+    "generate-room-config": "node src/generate-room-config.js",
+    "generate-view-page": "node src/generate-view-page.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jsdom": "^19.0.0",
+    "mustache": "^4.2.0",
+    "node-google-calendar": "^1.1.1"
+  },
+  "devDependencies": {
+    "dotenv": "^10.0.0"
+  }
+}
