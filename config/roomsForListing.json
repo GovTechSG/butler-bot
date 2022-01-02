@@ -71,6 +71,14 @@
         "name": "[L9] Tutu Kueh (8 pax)",
         "id": "tt"
     },
+    "zk": {
+        "name": "[L9] Zui Kueh (8 pax)",
+        "id": "zk"
+    },
+    "sk": {
+        "name": "[L9] Soon Kueh (8 pax)",
+        "id": "sk"
+    },
     "ak": {
         "name": "[L9] Ang Ku Kueh (12 pax)",
         "id": "ak"

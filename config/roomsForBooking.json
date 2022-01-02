@@ -67,6 +67,14 @@
         "text": "[L9] Tutu Kueh",
         "command": "book_tt"
     },
+    "zk": {
+        "text": "[L9] Zui Kueh",
+        "command": "book_zk"
+    },
+    "sk": {
+        "text": "[L9] Soon Kueh",
+        "command": "book_sk"
+    },
     "ak": {
         "text": "[L9] Ang Ku Kueh",
         "command": "book_ak"
