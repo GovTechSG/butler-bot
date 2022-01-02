@@ -41,9 +41,12 @@ node_modules
 data/
 config/*
 !config/settings.js
+!config/roomsForBooking.json
+!config/roomsForListing.json
 build/
 yarn-error.log
 .idea
 *.pem
 data/list
 .env
+generated

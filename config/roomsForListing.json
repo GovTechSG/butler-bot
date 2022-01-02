@@ -1,0 +1,78 @@
+{
+    "th": {
+        "name": "[L7] Teh (4 pax)",
+        "id": "th"
+    },
+    "ko": {
+        "name": "[L7] Kopi-O (4 pax)",
+        "id": "ko"
+    },
+    "hl": {
+        "name": "[L7] Horlick (6 pax)",
+        "id": "hl"
+    },
+    "kc": {
+        "name": "[L7] Kopi C (6 pax)",
+        "id": "kc"
+    },
+    "ml": {
+        "name": "[L7] Milo (Boardroom) (12 pax)",
+        "id": "ml"
+    },
+    "bb": {
+        "name": "[L8] Bumblebee (6 pax)",
+        "id": "bb"
+    },
+    "dr": {
+        "name": "[L8] Drone (8 pax)",
+        "id": "dr"
+    },
+    "q1": {
+        "name": "[L8] Queen (Video) (8 pax)",
+        "id": "q1"
+    },
+    "q2": {
+        "name": "[L8] Queen (Projector) (8 pax)",
+        "id": "q2"
+    },
+    "fg": {
+        "name": "[L8] FGD (12 pax)",
+        "id": "fg"
+    },
+    "qc": {
+        "name": "[L8] Queen (Combined) (16 pax)",
+        "id": "qc",
+        "children": [
+            "q1",
+            "q2"
+        ]
+    },
+    "lc": {
+        "name": "[L8-02] Lychee (4 pax)",
+        "id": "lc"
+    },
+    "bl": {
+        "name": "[L8-02] Ba Long Long (5 pax)",
+        "id": "bl"
+    },
+    "rb": {
+        "name": "[L8-02] Rambutan (5 pax)",
+        "id": "rb"
+    },
+    "ms": {
+        "name": "[L8-02] Mau Shang Wang (10 pax)",
+        "id": "ms"
+    },
+    "mc": {
+        "name": "[L9] Muah Chee (6 pax)",
+        "id": "mc"
+    },
+    "tt": {
+        "name": "[L9] Tutu Kueh (8 pax)",
+        "id": "tt"
+    },
+    "ak": {
+        "name": "[L9] Ang Ku Kueh (12 pax)",
+        "id": "ak"
+    }
+}
