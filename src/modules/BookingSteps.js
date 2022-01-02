@@ -1,4 +1,4 @@
-import Chrono from 'chrono-node';
+import * as Chrono from 'chrono-node';
 import * as CalendarApp from './CalendarApp';
 import * as ParamBuilder from './ParamBuilder';
 import * as ReplyBuilder from './ReplyBuilder';
