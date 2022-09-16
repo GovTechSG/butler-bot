@@ -261,7 +261,7 @@ function checkUserBookings(message, searchQuery, NoBookingReplyText, isDelete) {
 				let recur = booking.recurrent === undefined ? '' : booking.recurrent;
 				console.log(recur);
 				msg += ReplyBuilder.checkBookings(count, details[0] + recur, booking.location, booking.start.dateTime, booking.end.dateTime, details[1]);
-				if (undefined !== isDelete) {
+				if (isDelete !== undefined) {
 					if (!booking.isByMe) {
 						msg += MESSAGES.notBookedByMe;
 					} else {
