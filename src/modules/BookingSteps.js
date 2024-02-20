@@ -113,7 +113,7 @@ function completeBooking(bot, query, bookerList) {
 
 	if (booking.chatType == query.chat.type) {
 		let summary = query.text;
-		let fullname = query.from.first_name + ' ' + query.from.last_name;
+		let fullname = `${query.from.first_name}${query.from.last_name ? ` ${query.from.last_name}` : ''}`;
 
 		insertBookingIntoCalendar(bot, booking.id, booking.msgid, summary, booking.room,
 			new Date().setDateWithSimpleFormat(booking.date), booking.time, booking.dur, booking.name, fullname);
